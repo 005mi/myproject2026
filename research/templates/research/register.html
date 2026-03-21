@@ -1,0 +1,177 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>สมัครสมาชิก - RTEC Repository</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f4f7f6; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+        .register-card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 450px; 
+            margin: 20px; 
+        }
+        .register-card h2 { 
+            color: #800000; 
+            text-align: center; 
+            margin-bottom: 5px; 
+        }
+        .subtitle { 
+            text-align: center; 
+            color: #666; 
+            font-size: 0.9em; 
+            margin-bottom: 25px; 
+        }
+        
+        /* สไตล์ Form */
+        form p { 
+            margin-bottom: 18px; 
+            position: relative; /* เพื่อให้ปุ่มเกาะกับ input */
+        } 
+        form label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            color: #444; 
+            font-size: 0.9em;
+        }
+        form input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-family: 'Sarabun', sans-serif;
+        }
+        
+        /* ปุ่มสลับการมองเห็นรหัสผ่าน (Text แทน Emoji) */
+        .toggle-pass-btn {
+            position: absolute;
+            right: 10px;
+            top: 34px; /* ปรับระดับให้ตรงกลางช่อง input */
+            background: #eeeeee;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 6px;
+            color: #555;
+            z-index: 10;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .toggle-pass-btn:hover {
+            background: #e0e0e0;
+            color: #000;
+        }
+
+        .errorlist_msg { 
+            color: #d9534f; 
+            background: #fdf7f7; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border-left: 5px solid #d9534f; 
+            margin-bottom: 20px; 
+            font-size: 0.85em; 
+        }
+        .helptext { 
+            display: block; 
+            color: #888; 
+            font-size: 0.8em; 
+            margin-top: 5px; 
+            line-height: 1.4; 
+        }
+
+        button[type="submit"] { 
+            width: 100%; 
+            padding: 14px; 
+            background: #800000; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1.1em; 
+            font-weight: bold; 
+            transition: 0.3s; 
+            margin-top: 10px; 
+        }
+        button[type="submit"]:hover { 
+            background: #a00000; 
+            transform: translateY(-1px); 
+        }
+        .footer-link { 
+            text-align: center; 
+            margin-top: 25px; 
+            font-size: 0.9em; 
+            color: #666; 
+        }
+        .footer-link a { 
+            color: #800000; 
+            text-decoration: none; 
+            font-weight: bold; 
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <h2>สมัครสมาชิกใหม่</h2>
+        <p class="subtitle">ระบบรวบรวมผลงานวิชาการ เทคนิคร้อยเอ็ด</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            {% if form.errors %}
+                <div class="errorlist_msg">
+                    <b>ไม่สามารถสมัครสมาชิกได้:</b><br>
+                    โปรดตรวจสอบข้อกำหนดรหัสผ่าน (เช่น ความยาว หรือการพิมพ์ไม่ตรงกัน)
+                </div>
+            {% endif %}
+
+            {{ form.as_p }}
+            
+            <button type="submit">ยืนยันการสมัครสมาชิก</button>
+        </form>
+
+        <div class="footer-link">
+            มีบัญชีอยู่แล้ว? <a href="{% url 'login' %}">เข้าสู่ระบบที่นี่</a>
+        </div>
+    </div>
+
+    <script>
+        // ใช้คำว่า SHOW/HIDE แทนการใช้อิโมจิ
+        document.querySelectorAll('input[type="password"]').forEach(function(inputField) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = 'SHOW';
+            btn.className = 'toggle-pass-btn';
+            
+            // ตรวจสอบว่า parent (แท็ก p) มีการกำหนดตำแหน่งไว้
+            inputField.parentNode.style.position = 'relative';
+            inputField.parentNode.appendChild(btn);
+
+            btn.addEventListener('click', function() {
+                if (inputField.type === 'password') {
+                    inputField.type = 'text';
+                    btn.textContent = 'HIDE';
+                } else {
+                    inputField.type = 'password';
+                    btn.textContent = 'SHOW';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
