@@ -16,7 +16,8 @@ SECRET_KEY = 'django-insecure-(4234al7eaw96cx42qunr+v*m)etgj)!%-tmr@=d8k591#_!j@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 🔥 แก้ตรงนี้
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -32,12 +33,16 @@ INSTALLED_APPS = [
     # แอปพลิเคชันของคุณ
     'research', 
     
-    # ระบบลบไฟล์ขยะอัตโนมัติ (ต้องติดตั้ง pip install django-cleanup ก่อน)
+    # ระบบลบไฟล์ขยะอัตโนมัติ
     'django_cleanup.apps.CleanupConfig', 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    
+    # 🔥 เพิ่ม whitenoise สำหรับ static บน Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -51,7 +56,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')], # เพิ่มโฟลเดอร์ templates ส่วนกลาง (ถ้ามี)
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,26 +91,30 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-LANGUAGE_CODE = 'th' # เปลี่ยนเป็นภาษาไทย
-TIME_ZONE = 'Asia/Bangkok' # เปลี่ยนเป็นเวลาประเทศไทย
+LANGUAGE_CODE = 'th'
+TIME_ZONE = 'Asia/Bangkok'
 USE_I18N = True
 USE_TZ = True
 
 
-# --- Static files (CSS, JavaScript, Images) ---
+# --- Static files ---
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # สำหรับตอนใช้งานจริง
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# --- Media files (PDF Uploads) ---
+# 🔥 เพิ่มบรรทัดนี้ (สำคัญสำหรับ Render)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# --- Media files ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # --- Login / Logout Settings ---
-LOGIN_URL = '/login/'           # เมื่อเข้าหน้าที่ต้อง Login จะถูกส่งมาที่นี่
-LOGIN_REDIRECT_URL = '/'        # Login สำเร็จ ส่งไปหน้าแรก
-LOGOUT_REDIRECT_URL = '/login/' # Logout เสร็จ ส่งไปหน้า Login
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 
 # Default primary key field type
