@@ -3,69 +3,274 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>เพิ่มผลงานวิชาการ | RTEC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>เพิ่มผลงานวิชาการ | RETC Academic Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f8f9fa; padding: 40px 20px; color: #333; }
-        .form-container { max-width: 1000px; margin: auto; background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
-        .logo-img { max-height: 80px; display: block; margin: 0 auto 20px; }
-        h2 { color: #800000; text-align: center; margin-bottom: 5px; font-weight: 700; }
-        .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 0.95em; }
-        
-        .text-danger { color: #ff0000 !important; font-weight: bold; }
-
-        /* Section Styling */
-        .form-section-title { 
-            background: #800000; color: white; padding: 14px 22px; border-radius: 12px; 
-            margin: 35px 0 20px 0; font-weight: bold; display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 4px 10px rgba(128,0,0,0.2);
+        :root {
+            --crimson:    #7a0c22;
+            --crimson-dk: #4e0715;
+            --crimson-lt: #a01030;
+            --gold:       #c9972b;
+            --gold-lt:    #f0c060;
+            --cream:      #fdf8f2;
+            --ink:        #1a1210;
+            --muted:      #7a6e6a;
+            --border:     rgba(122,12,34,0.12);
+            --card-bg:    #ffffff;
         }
 
-        /* Layout Grid */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            padding: clamp(16px, 4vw, 40px) clamp(12px, 4vw, 20px);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 70% 50% at 10% 0%, rgba(122,12,34,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 90% 100%, rgba(201,151,43,0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* ── CONTAINER ── */
+        .form-container {
+            position: relative; z-index: 1;
+            max-width: 980px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: clamp(20px, 4vw, 28px);
+            box-shadow: 0 20px 60px rgba(122,12,34,0.09), 0 4px 16px rgba(0,0,0,0.04);
+            padding: clamp(24px, 5vw, 48px);
+            animation: fadeUp .5s ease both;
+        }
+
+        /* ── HEADER ── */
+        .page-header {
+            text-align: center;
+            margin-bottom: clamp(20px, 4vw, 36px);
+            padding-bottom: clamp(16px, 3vw, 24px);
+            border-bottom: 2px solid var(--border);
+        }
+        .logo-img {
+            height: clamp(52px, 10vw, 72px);
+            display: block; margin: 0 auto clamp(10px, 2vw, 16px);
+            filter: drop-shadow(0 3px 8px rgba(122,12,34,0.15));
+        }
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.3em, 4vw, 1.75em);
+            font-weight: 900;
+            color: var(--crimson-dk);
+            margin-bottom: 6px;
+        }
+        .page-sub {
+            color: var(--muted);
+            font-size: clamp(0.8em, 2.5vw, 0.9em);
+        }
+        .text-danger { color: #c0392b; font-weight: 700; }
+
+        /* ── FLOATING MESSAGE ── */
+        .message-container {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999; width: auto;
+            min-width: min(320px, 90vw);
+        }
+        .alert-custom {
+            background: white; padding: 14px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            border-left: 5px solid var(--crimson);
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; color: var(--crimson);
+            font-size: clamp(0.85em, 2.5vw, 0.95em);
+            white-space: nowrap;
+        }
+
+        /* ── SECTION TITLE ── */
+        .form-section-title {
+            background: linear-gradient(135deg, var(--crimson-dk) 0%, var(--crimson) 100%);
+            color: white;
+            padding: clamp(12px, 2.5vw, 16px) clamp(16px, 3vw, 22px);
+            border-radius: 14px;
+            margin: clamp(24px, 5vw, 38px) 0 clamp(16px, 3vw, 22px);
+            font-weight: 700;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 14px rgba(122,12,34,0.22);
+        }
+        .form-section-title i { font-size: 1.1em; opacity: 0.9; }
+
+        /* ── GRID ── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(14px, 3vw, 22px);
+        }
         .full-width { grid-column: span 2; }
 
-        /* Field Styling */
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 0.95em; }
-        
-        .form-control { 
-            width: 100%; padding: 12px 15px; border: 1.5px solid #e1e1e1; border-radius: 10px; 
-            box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 1em;
-            transition: all 0.3s ease; background-color: #fdfdfd;
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
         }
-        .form-control:focus { border-color: #800000; outline: none; box-shadow: 0 0 0 4px rgba(128,0,0,0.1); background-color: #fff; }
 
-        /* 🔘 ปุ่มบันทึก (ปรับใหม่ให้เข้าธีม) */
-        .btn-submit { 
-            width: 100%; padding: 18px; 
-            background: #800000; /* เปลี่ยนเป็นสีเลือดหมู */
-            color: white; border: none; 
-            border-radius: 15px; cursor: pointer; font-size: 1.15em; font-weight: bold; 
-            transition: all 0.3s ease; margin-top: 20px; 
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            box-shadow: 0 4px 15px rgba(128, 0, 0, 0.2);
+        /* ── FORM GROUP ── */
+        .form-group { margin-bottom: clamp(14px, 3vw, 20px); }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 700;
+            color: var(--crimson);
+            font-size: clamp(0.8em, 2.5vw, 0.9em);
         }
-        .btn-submit:hover { 
-            background: #a00000; /* สีสว่างขึ้นนิดนึงเวลาวางเมาส์ */
-            transform: translateY(-2px); 
-            box-shadow: 0 8px 25px rgba(128, 0, 0, 0.3); 
+
+        /* Django form widgets override */
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="email"],
+        .form-group input[type="file"],
+        .form-group select,
+        .form-group textarea,
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: clamp(10px, 2.5vw, 13px) clamp(12px, 3vw, 16px);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: max(16px, 0.95em); /* กัน iOS zoom */
+            color: var(--ink);
+            background: #faf7f4;
+            transition: border-color .2s, box-shadow .2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--crimson);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(122,12,34,0.08);
+            background: white;
+        }
+        textarea {
+            resize: vertical;
+            min-height: clamp(90px, 15vw, 120px);
+            line-height: 1.6;
+        }
+
+        /* select arrow */
+        .form-group { position: relative; }
+        select {
+            padding-right: 36px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6e6a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        /* file input */
+        input[type="file"] {
+            padding: clamp(10px, 2.5vw, 13px) 14px;
+            cursor: pointer;
+            background: #faf7f4;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            background: var(--crimson);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 700;
+            font-size: 0.85em;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+        .field-hint {
+            margin-top: 6px;
+            font-size: clamp(0.72em, 2vw, 0.8em);
+            color: var(--muted);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        /* ── SUBMIT ── */
+        .btn-submit {
+            width: 100%;
+            padding: clamp(14px, 3.5vw, 18px);
+            background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-lt) 100%);
+            color: white; border: none;
+            border-radius: 14px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: clamp(1em, 3vw, 1.12em);
+            font-weight: 700;
+            cursor: pointer;
+            transition: box-shadow .2s, transform .2s;
+            box-shadow: 0 4px 18px rgba(122,12,34,0.28);
+            margin-top: clamp(16px, 3vw, 24px);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            touch-action: manipulation;
+        }
+        .btn-submit:hover {
+            box-shadow: 0 8px 28px rgba(122,12,34,0.38);
+            transform: translateY(-2px);
         }
         .btn-submit:active { transform: translateY(0); }
-        
-        .btn-back { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; font-weight: 600; transition: 0.2s; }
-        .btn-back:hover { color: #800000; }
 
-        /* Floating Message */
-        .message-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; width: auto; }
-        .alert-custom { background: white; padding: 15px 25px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 5px solid #800000; display: flex; align-items: center; gap: 10px; font-weight: bold; color: #800000; }
+        .btn-back {
+            display: block; text-align: center;
+            margin-top: clamp(14px, 3vw, 20px);
+            color: var(--muted); text-decoration: none;
+            font-weight: 600; font-size: clamp(0.85em, 2.5vw, 0.9em);
+            transition: color .2s;
+            touch-action: manipulation;
+        }
+        .btn-back:hover { color: var(--crimson); }
+
+        /* ── ANIMATION ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── LANDSCAPE MOBILE ── */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body { padding: 12px; }
+            .form-container { padding: 20px 24px; }
+            .page-header { padding-bottom: 14px; margin-bottom: 14px; }
+        }
+
+        /* ── SMALL PHONES ── */
+        @media (max-width: 359px) {
+            .form-container { padding: 18px 14px; border-radius: 18px; }
+            .form-section-title { border-radius: 10px; }
+        }
+
+        /* ── TABLET & UP ── */
+        @media (min-width: 768px) {
+            body { padding: 40px 20px; }
+        }
     </style>
 </head>
 <body>
 
     {% if messages %}
-    <div class="message-container">
+    <div class="message-container" id="msg-box">
         {% for message in messages %}
         <div class="alert-custom">
             <i class="fas fa-check-circle"></i> {{ message }}
@@ -75,13 +280,19 @@
     {% endif %}
 
     <div class="form-container">
-        <img src="{% static 'logoretc.png' %}" alt="Logo" class="logo-img">
-        <h2>เพิ่มผลงานวิชาการ</h2>
-        <p class="subtitle"><span class="text-danger">*</span> กรุณากรอกข้อมูลให้ครบถ้วน ข้อมูลที่กรอกจะถูกนำไปแสดงในหน้ารายละเอียดผลงาน</p>
-        
+        <div class="page-header">
+            <img src="{% static 'logoretc.png' %}" alt="Logo RETC" class="logo-img">
+            <div class="page-title">เพิ่มผลงานวิชาการ</div>
+            <p class="page-sub">
+                <span class="text-danger">*</span>
+                กรุณากรอกข้อมูลให้ครบถ้วน ข้อมูลจะนำไปแสดงในหน้ารายละเอียดผลงาน
+            </p>
+        </div>
+
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            
+
+            <!-- ── ข้อมูลพื้นฐานและทีมวิจัย ── -->
             <div class="form-section-title">
                 <i class="fas fa-user-friends"></i> ข้อมูลพื้นฐานและทีมวิจัย
             </div>
@@ -124,11 +335,12 @@
                 </div>
             </div>
 
+            <!-- ── ความเป็นมาและวัตถุประสงค์ ── -->
             <div class="form-section-title">
                 <i class="fas fa-lightbulb"></i> ความเป็นมาและวัตถุประสงค์
             </div>
             <div class="form-group">
-                <label>ความเป็นมา/หลักการและเหตุผล</label>
+                <label>ความเป็นมา / หลักการและเหตุผล</label>
                 {{ form.background }}
             </div>
             <div class="form-group">
@@ -148,6 +360,7 @@
                 {{ form.keywords }}
             </div>
 
+            <!-- ── ระเบียบวิธีวิจัยและผลการศึกษา ── -->
             <div class="form-section-title">
                 <i class="fas fa-microscope"></i> ระเบียบวิธีวิจัยและผลการศึกษา
             </div>
@@ -164,10 +377,11 @@
                 {{ form.results }}
             </div>
             <div class="form-group">
-                <label>รางวัลที่เคยได้รับ/เกียรติประวัติ (ถ้ามี)</label>
+                <label>รางวัลที่เคยได้รับ / เกียรติประวัติ (ถ้ามี)</label>
                 {{ form.awards }}
             </div>
 
+            <!-- ── บทสรุปและข้อเสนอแนะ ── -->
             <div class="form-section-title">
                 <i class="fas fa-comment-dots"></i> บทสรุปและข้อเสนอแนะ
             </div>
@@ -184,19 +398,23 @@
                 {{ form.suggestions_next }}
             </div>
 
+            <!-- ── ไฟล์เอกสารแนบ ── -->
             <div class="form-section-title">
                 <i class="fas fa-file-pdf"></i> ไฟล์เอกสารแนบ
             </div>
             <div class="form-group">
                 <label>อัปโหลดไฟล์ PDF ฉบับเต็ม <span class="text-danger">*</span></label>
                 {{ form.pdf_file }}
-                <small style="color: #888; display: block; margin-top: 8px;">รองรับเฉพาะไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 10MB)</small>
+                <p class="field-hint">
+                    <i class="fas fa-info-circle" style="color:var(--gold);"></i>
+                    รองรับเฉพาะไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 10MB)
+                </p>
             </div>
 
             <button type="submit" class="btn-submit">
                 <i class="fas fa-save"></i> บันทึกข้อมูลและส่งตรวจสอบ
             </button>
-            
+
             <a href="{% url 'project_list' %}" class="btn-back">
                 <i class="fas fa-times"></i> ยกเลิกและกลับหน้าหลัก
             </a>
@@ -204,14 +422,15 @@
     </div>
 
     <script>
-        setTimeout(() => {
-            const msg = document.querySelector('.message-container');
-            if (msg) {
-                msg.style.transition = 'opacity 0.5s ease';
-                msg.style.opacity = '0';
-                setTimeout(() => msg.remove(), 500);
-            }
-        }, 3000);
+        const msgBox = document.getElementById('msg-box');
+        if (msgBox) {
+            setTimeout(() => {
+                msgBox.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                msgBox.style.opacity = '0';
+                msgBox.style.transform = 'translateX(-50%) translateY(-20px)';
+                setTimeout(() => msgBox.remove(), 500);
+            }, 3000);
+        }
     </script>
 </body>
 </html>
