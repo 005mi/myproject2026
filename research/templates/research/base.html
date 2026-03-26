@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RTEC Repository{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+
+    <style>
+        /* ════════════════════════════════════════════
+           TOAST NOTIFICATION SYSTEM
+        ════════════════════════════════════════════ */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none; /* ไม่บล็อก click ข้างล่าง */
+        }
+
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            font-family: 'Sarabun', sans-serif;
+            font-size: 0.95em;
+            line-height: 1.5;
+            pointer-events: all;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+
+            /* Animation เข้า */
+            animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* ── สีตามประเภท ── */
+        .toast.success {
+            background: #ffffff;
+            border-left: 5px solid #2d6a4f;
+            color: #1b4332;
+        }
+        .toast.error {
+            background: #ffffff;
+            border-left: 5px solid #c0392b;
+            color: #7b1a1a;
+        }
+        .toast.warning {
+            background: #ffffff;
+            border-left: 5px solid #e67e22;
+            color: #7d4e00;
+        }
+        .toast.info {
+            background: #ffffff;
+            border-left: 5px solid #2980b9;
+            color: #1a4a6b;
+        }
+
+        /* ── ไอคอน ── */
+        .toast-icon {
+            font-size: 1.4em;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .toast.success .toast-icon::before { content: "✅"; }
+        .toast.error   .toast-icon::before { content: "❌"; }
+        .toast.warning .toast-icon::before { content: "⚠️"; }
+        .toast.info    .toast-icon::before { content: "ℹ️"; }
+
+        /* ── เนื้อหา ── */
+        .toast-body { flex: 1; }
+        .toast-title {
+            font-weight: 700;
+            font-size: 0.9em;
+            margin-bottom: 2px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .toast-msg { font-size: 0.95em; }
+
+        /* ── ปุ่มปิด ── */
+        .toast-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            opacity: 0.4;
+            padding: 0 0 0 8px;
+            line-height: 1;
+            color: inherit;
+            flex-shrink: 0;
+            transition: opacity 0.2s;
+        }
+        .toast-close:hover { opacity: 0.8; }
+
+        /* ── Progress bar ── */
+        .toast-progress {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 3px;
+            border-radius: 0 0 0 12px;
+            animation: toastProgress 5s linear forwards;
+        }
+        .toast.success .toast-progress { background: #2d6a4f; }
+        .toast.error   .toast-progress { background: #c0392b; }
+        .toast.warning .toast-progress { background: #e67e22; }
+        .toast.info    .toast-progress { background: #2980b9; }
+
+        /* ── Animations ── */
+        @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateX(120%) scale(0.9); }
+            to   { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes toastSlideOut {
+            from { opacity: 1; transform: translateX(0) scale(1); max-height: 100px; margin: 0; padding: 14px 16px; }
+            to   { opacity: 0; transform: translateX(120%) scale(0.85); max-height: 0; margin: 0; padding: 0; }
+        }
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+        .toast.removing {
+            animation: toastSlideOut 0.35s ease-in forwards;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    {% block content %}{% endblock %}
+
+    <!-- ════════ TOAST CONTAINER ════════ -->
+    <div id="toast-container"></div>
+
+    <script>
+    // ══════════════════════════════════════════════════
+    //  Toast Notification Engine
+    // ══════════════════════════════════════════════════
+
+    const TOAST_DURATION = 5000; // 5 วินาที
+
+    // Map Django message tags → toast type
+    const TAG_MAP = {
+        'success' : { type: 'success', title: 'สำเร็จ' },
+        'error'   : { type: 'error',   title: 'เกิดข้อผิดพลาด' },
+        'warning' : { type: 'warning', title: 'แจ้งเตือน' },
+        'info'    : { type: 'info',    title: 'ข้อมูล' },
+        // Django default tags
+        'debug'   : { type: 'info',    title: 'Debug' },
+    };
+
+    function showToast(message, tag = 'info') {
+        const container = document.getElementById('toast-container');
+        const config = TAG_MAP[tag] || TAG_MAP['info'];
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${config.type}`;
+        toast.innerHTML = `
+            <span class="toast-icon"></span>
+            <div class="toast-body">
+                <div class="toast-title">${config.title}</div>
+                <div class="toast-msg">${message}</div>
+            </div>
+            <button class="toast-close" title="ปิด">✕</button>
+            <div class="toast-progress"></div>
+        `;
+
+        container.appendChild(toast);
+
+        // ── ปิดเมื่อคลิก ──
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.addEventListener('click', () => removeToast(toast));
+        toast.addEventListener('click', (e) => {
+            if (e.target !== closeBtn) removeToast(toast);
+        });
+
+        // ── Auto remove หลัง 5 วิ ──
+        const timer = setTimeout(() => removeToast(toast), TOAST_DURATION);
+
+        // ── หยุด progress เมื่อ hover ──
+        toast.addEventListener('mouseenter', () => {
+            clearTimeout(timer);
+            toast.querySelector('.toast-progress').style.animationPlayState = 'paused';
+        });
+        toast.addEventListener('mouseleave', () => {
+            toast.querySelector('.toast-progress').style.animationPlayState = 'running';
+            setTimeout(() => removeToast(toast), 1500); // เพิ่มเวลา 1.5 วิ หลัง hover
+        });
+    }
+
+    function removeToast(toast) {
+        if (toast.classList.contains('removing')) return;
+        toast.classList.add('removing');
+        toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    }
+
+    // ══════════════════════════════════════════════════
+    //  อ่าน Django Messages จาก data attribute
+    // ══════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function () {
+        const dataEl = document.getElementById('django-messages-data');
+        if (!dataEl) return;
+        try {
+            const msgs = JSON.parse(dataEl.textContent);
+            msgs.forEach((m, i) => {
+                // หน่วง toast แต่ละอัน 150ms เพื่อไม่ให้ซ้อนกัน
+                setTimeout(() => showToast(m.message, m.tags), i * 150);
+            });
+        } catch(e) {}
+    });
+
+    // ── Expose สำหรับเรียกใช้เองได้จาก JS ──
+    window.showToast = showToast;
+    </script>
+
+    <!-- ════════ ส่งข้อมูล Django Messages ไป JS ════════ -->
+    {% if messages %}
+    <script id="django-messages-data" type="application/json">
+    [{% for message in messages %}{"message": "{{ message|escapejs }}", "tags": "{{ message.tags }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+    </script>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

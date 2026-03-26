@@ -1,140 +1,730 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>จัดการผลงาน - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | วิทยาลัยเทคนิคร้อยเอ็ด</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        h1 { color: #800000; text-align: center; }
+        :root {
+            --crimson:    #7a0c22;
+            --crimson-dk: #4e0715;
+            --crimson-lt: #a01030;
+            --gold:       #c9972b;
+            --gold-lt:    #f0c060;
+            --cream:      #fdf8f2;
+            --ink:        #1a1210;
+            --muted:      #7a6e6a;
+            --border:     rgba(122,12,34,0.1);
+            --card:       #ffffff;
+            --green:      #1a7a3c;
+            --green-lt:   #d4edda;
+            --amber:      #b8860b;
+            --amber-lt:   #fff3cd;
+
+            /* Sidebar widths — change only here */
+            --sw-full:   230px;   /* Desktop: full labels */
+            --sw-slim:    60px;   /* Laptop:  icons only  */
+            --topbar-h:   56px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: -1;
+            background:
+                radial-gradient(ellipse 70% 50% at 0% 0%, rgba(122,12,34,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 100% 100%, rgba(201,151,43,0.05) 0%, transparent 60%),
+                var(--cream);
+        }
+
+        /* ═══════════════════════════════════════════════
+           SIDEBAR
+        ═══════════════════════════════════════════════ */
+        .sidebar {
+            width: var(--sw-full);
+            background: linear-gradient(170deg, var(--crimson-dk) 0%, var(--crimson) 60%, #8b1a30 100%);
+            height: 100vh;
+            position: fixed; top: 0; left: 0;
+            display: flex; flex-direction: column;
+            z-index: 200;
+            box-shadow: 3px 0 20px rgba(74,7,21,0.22);
+            transition: width .25s ease, transform .25s ease;
+            overflow: hidden;          /* clip text when collapsing */
+        }
+
+        /* ── Logo ── */
+        .sidebar-logo {
+    padding: 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+        /* 🔥 ตัวโลโก้ */
+        .logo-img {
+            width: 42px;
+            height: 42px;
+            object-fit: cover;
+            border-radius: 50%; /* ทำให้เป็นวงกลม */
+            background: white;  /* เผื่อโลโก้โปร่ง */
+            padding: 3px;
         
-        /* สไตล์สำหรับกล่องข้อความแจ้งเตือน */
-        .alert-messages {
-            padding: 15px; 
-            margin-bottom: 20px; 
-            border-radius: 10px; 
-            background-color: #d4edda; 
-            color: #155724; 
-            border: 1px solid #c3e6cb; 
-            text-align: center;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: opacity 0.5s ease; /* สำหรับตอนหายไป */
+
+        /* เอฟเฟกต์ให้ดูเด่น */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .sidebar-logo-sub {
+                font-size: 0.7em;
+                color: white;   /* 🔥 ทำให้เป็นสีขาว */
+                opacity: 0.8;   /* (เลือกได้) ทำให้ดูนุ่มขึ้น */
+        }
+        /* ข้อความ */
+            .sidebar-logo-name {
+                font-size: 0.85em;
+                font-weight: 800;
+                line-height: 1.2;
+                color: white;
+                
         }
 
-        .card { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin-bottom: 15px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-left: 8px solid #ffc107; 
+        /* ── Section labels ── */
+        .sidebar-section-label {
+            padding: 14px 18px 6px;
+            font-size: 0.62em; font-weight: 800;
+            color: rgba(255,255,255,0.38);
+            text-transform: uppercase; letter-spacing: .12em;
+            white-space: nowrap; overflow: hidden;
         }
-        .info h3 { margin: 0 0 5px 0; color: #333; }
-        .info p { margin: 0; color: #666; font-size: 0.9em; }
-        
-        /* ปุ่มจัดการต่างๆ */
-        .btn-edit { 
-            background: #ffc107; 
-            color: #000; 
-            text-decoration: none; 
-            padding: 10px 18px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            margin-right: 8px;
-            transition: 0.3s;
-        }
-        .btn-edit:hover { background: #e0a800; }
 
-        .btn-approve { 
-            background: #2e7d32; 
-            color: white; 
-            text-decoration: none; 
-            padding: 10px 18px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            transition: 0.3s; 
-        }
-        .btn-approve:hover { background: #1b5e20; }
+        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 10px; } 
 
-        .btn-delete { 
-            background: #d32f2f; 
-            color: white; 
-            text-decoration: none; 
-            padding: 10px 18px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            margin-left: 8px; 
-            transition: 0.3s;
+        /* ── Nav items ── */
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 18px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.85em; font-weight: 600;
+            transition: background .2s, color .2s, border-color .2s;
+            border-left: 3px solid transparent;
+            white-space: nowrap; overflow: hidden;
+            cursor: pointer;
         }
-        .btn-delete:hover { background: #b71c1c; }
+        .nav-item i { width: 18px; text-align: center; font-size: 0.95em; flex-shrink: 0; }
+        .nav-item span { overflow: hidden; text-overflow: ellipsis; }
+        .nav-item:hover  { background: rgba(255,255,255,0.08); color: white; border-left-color: rgba(255,255,255,0.25); }
+        .nav-item.active { background: rgba(255,255,255,0.12); color: white; border-left-color: var(--gold-lt); }
+        .nav-item .nav-badge {
+            margin-left: auto; flex-shrink: 0;
+            background: var(--gold); color: var(--crimson-dk);
+            font-size: 0.7em; font-weight: 800;
+            padding: 2px 7px; border-radius: 20px;
+        }
 
-        .no-data { text-align: center; padding: 50px; color: #888; }
-        .back-link { display: block; text-align: center; margin-top: 20px; color: #800000; text-decoration: none; font-weight: bold; }
-        .actions { display: flex; align-items: center; }
+        /* ── Footer ── */
+        .sidebar-footer {
+            padding: 14px 18px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+        .sidebar-footer a {
+            display: flex; align-items: center; gap: 10px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.82em; font-weight: 600;
+            transition: color .2s; white-space: nowrap; overflow: hidden;
+        }
+        .sidebar-footer a:hover { color: white; }
+        .sidebar-footer a i { flex-shrink: 0; }
+
+        /* Tooltip for slim mode */
+        .nav-item[data-tip] { position: relative; }
+        .sidebar.slim .nav-item[data-tip]:hover::after {
+            content: attr(data-tip);
+            position: absolute; left: calc(var(--sw-slim) + 8px); top: 50%;
+            transform: translateY(-50%);
+            background: rgba(30,10,15,0.9); color: white;
+            font-size: 0.78em; font-weight: 700; padding: 4px 10px;
+            border-radius: 6px; white-space: nowrap; pointer-events: none;
+            z-index: 999;
+        }
+
+        /* ═══════════════════════════════════════════════
+           SLIM MODE  (laptop: 900–1199px)
+        ═══════════════════════════════════════════════ */
+        .sidebar.slim { width: var(--sw-slim); }
+        .sidebar.slim .sidebar-logo-text,
+        .sidebar.slim .sidebar-section-label,
+        .sidebar.slim .nav-item span,
+        .sidebar.slim .nav-item .nav-badge,
+        .sidebar.slim .sidebar-footer a span { display: none; }
+        .sidebar.slim .sidebar-logo { justify-content: center; padding: 18px 0; }
+        .sidebar.slim .nav-item { justify-content: center; padding: 12px 0; border-left: none; border-bottom: 3px solid transparent; }
+        .sidebar.slim .nav-item.active { border-bottom-color: var(--gold-lt); background: rgba(255,255,255,0.12); }
+        .sidebar.slim .nav-item i { font-size: 1.1em; }
+        .sidebar.slim .sidebar-footer { padding: 14px 0; display: flex; justify-content: center; }
+
+        /* ═══════════════════════════════════════════════
+           MOBILE OVERLAY  (< 768px)
+        ═══════════════════════════════════════════════ */
+        .sidebar-overlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 190;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* ═══════════════════════════════════════════════
+           MAIN
+        ═══════════════════════════════════════════════ */
+        .main {
+            margin-left: var(--sw-full);
+            flex: 1; min-height: 100vh;
+            display: flex; flex-direction: column;
+            transition: margin-left .25s ease;
+        }
+        .main.slim-offset { margin-left: var(--sw-slim); }
+        .main.no-offset   { margin-left: 0; }
+
+        /* ═══════════════════════════════════════════════
+           TOPBAR
+        ═══════════════════════════════════════════════ */
+        .topbar {
+            background: rgba(253,248,242,0.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: var(--topbar-h);
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 50;
+            gap: 12px;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em; font-weight: 700;
+            color: var(--crimson-dk);
+            white-space: nowrap;
+        }
+        /* Hamburger — shown on mobile */
+        .btn-hamburger {
+            display: none;
+            width: 36px; height: 36px;
+            background: rgba(122,12,34,0.08); border: none; border-radius: 8px;
+            color: var(--crimson); font-size: 1em; cursor: pointer;
+            align-items: center; justify-content: center;
+            transition: background .2s;
+        }
+        .btn-hamburger:hover { background: rgba(122,12,34,0.14); }
+
+        .topbar-right { display: flex; align-items: center; gap: 10px; }
+        .admin-chip {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(122,12,34,0.07);
+            border: 1px solid rgba(122,12,34,0.15);
+            color: var(--crimson);
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 0.76em; font-weight: 700;
+            white-space: nowrap;
+        }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 40px;
+            font-family: 'Sarabun'; font-size: 0.78em; font-weight: 700;
+            text-decoration: none; transition: all .2s;
+            color: var(--crimson); border: 1.5px solid var(--crimson);
+            white-space: nowrap;
+        }
+        .btn-back:hover { background: var(--crimson); color: white; }
+
+        /* ═══════════════════════════════════════════════
+           PAGE BODY
+        ═══════════════════════════════════════════════ */
+        .page-body {
+            padding: 22px 24px;
+            flex: 1;
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ── Stat Grid ── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 18px;
+            display: flex; align-items: center; gap: 14px;
+            box-shadow: 0 2px 10px rgba(122,12,34,0.04);
+            transition: transform .25s, box-shadow .25s;
+            position: relative; overflow: hidden;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+        }
+        .stat-card:nth-child(1)::after { background: var(--amber); }
+        .stat-card:nth-child(2)::after { background: var(--green); }
+        .stat-card:nth-child(3)::after { background: var(--crimson); }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(122,12,34,0.09); }
+
+        .stat-icon-wrap {
+            width: 42px; height: 42px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.15em; flex-shrink: 0;
+        }
+        .stat-icon-amber  { background: rgba(184,134,11,0.1); color: var(--amber); }
+        .stat-icon-green  { background: rgba(26,122,60,0.1);  color: var(--green); }
+        .stat-icon-crimson{ background: rgba(122,12,34,0.08); color: var(--crimson); }
+
+        .stat-label { font-size: 0.7em; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+        .stat-value { font-size: 1.6em; font-weight: 800; color: var(--ink); line-height: 1; }
+        .stat-value.amber { color: var(--amber); }
+        .stat-value.green { color: var(--green); }
+
+        .btn-export {
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-top: 8px;
+            padding: 5px 12px; border-radius: 8px;
+            font-family: 'Sarabun'; font-size: 0.74em; font-weight: 700;
+            text-decoration: none; transition: all .2s;
+            background: rgba(122,12,34,0.07); color: var(--crimson);
+            border: 1px solid rgba(122,12,34,0.2);
+        }
+        .btn-export:hover { background: var(--crimson); color: white; }
+
+        /* ── Section header ── */
+        .section-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 12px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-icon {
+            width: 30px; height: 30px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.82em;
+        }
+        .section-icon.amber { background: var(--amber-lt); color: var(--amber); }
+        .section-icon.green { background: var(--green-lt); color: var(--green); }
+        .section-title-text { font-size: 0.98em; font-weight: 800; color: var(--ink); }
+        .section-count { margin-left: auto; font-size: 0.74em; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+        .section-count.amber { background: var(--amber-lt); color: var(--amber); }
+        .section-count.green { background: var(--green-lt); color: var(--green); }
+
+        /* ── Project rows ── */
+        .project-row {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 13px 18px;
+            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 14px;
+            box-shadow: 0 1px 6px rgba(122,12,34,0.03);
+            transition: transform .2s, box-shadow .2s;
+            position: relative; overflow: hidden;
+        }
+        .project-row::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+        }
+        .project-row.pending::before  { background: var(--amber); }
+        .project-row.approved::before { background: var(--green); }
+        .project-row:hover { transform: translateX(3px); box-shadow: 0 4px 16px rgba(122,12,34,0.07); }
+
+        .project-info { flex: 1; min-width: 0; }
+        .project-name {
+            font-size: 0.9em; font-weight: 800; color: var(--ink);
+            margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .project-meta {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            font-size: 0.74em; color: var(--muted);
+        }
+        .project-meta span { display: flex; align-items: center; gap: 4px; }
+        .project-meta i { color: var(--crimson); opacity: 0.65; font-size: 0.82em; }
+        .project-meta b { color: var(--ink); }
+
+        .dept-tag {
+            display: inline-flex; align-items: center;
+            background: rgba(122,12,34,0.07); color: var(--crimson);
+            font-size: 0.7em; font-weight: 700;
+            padding: 2px 8px; border-radius: 10px;
+            border: 1px solid rgba(122,12,34,0.15);
+        }
+        .stat-inline { display: flex; align-items: center; gap: 4px; font-size: 0.76em; font-weight: 700; }
+        .stat-inline.views     { color: var(--green); }
+        .stat-inline.downloads { color: var(--crimson); }
+
+        /* ── Action buttons ── */
+        .action-group { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+        .btn-act {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 11px; border-radius: 8px;
+            font-family: 'Sarabun'; font-size: 0.74em; font-weight: 700;
+            text-decoration: none; border: none; cursor: pointer;
+            transition: all .2s; white-space: nowrap;
+        }
+        .btn-act:hover { transform: translateY(-2px); }
+        .btn-pdf      { background: rgba(94,58,170,0.1);  color: #5e3aaa; border: 1px solid rgba(94,58,170,0.2); }
+        .btn-pdf:hover { background: #5e3aaa; color: white; }
+        .btn-preview  { background: rgba(23,162,184,0.1); color: #17a2b8; border: 1px solid rgba(23,162,184,0.2); }
+        .btn-preview:hover { background: #17a2b8; color: white; }
+        .btn-edit     { background: rgba(184,134,11,0.1); color: var(--amber); border: 1px solid rgba(184,134,11,0.2); }
+        .btn-edit:hover { background: var(--amber); color: white; }
+        .btn-approve  { background: rgba(26,122,60,0.1);  color: var(--green); border: 1px solid rgba(26,122,60,0.2); }
+        .btn-approve:hover { background: var(--green); color: white; }
+        .btn-delete   { background: rgba(211,47,47,0.08); color: #c0392b; border: 1px solid rgba(211,47,47,0.2); }
+        .btn-delete:hover { background: #c0392b; color: white; }
+        .btn-icon { width: 30px; height: 30px; padding: 0; justify-content: center; border-radius: 8px; }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center; padding: 32px 20px;
+            background: var(--card);
+            border: 1px dashed rgba(122,12,34,0.2);
+            border-radius: 12px; color: var(--muted); font-size: 0.88em;
+        }
+        .empty-state i { font-size: 1.8em; opacity: 0.22; display: block; margin-bottom: 8px; }
+
+        /* ── Toast ── */
+        #toast-container {
+            position: fixed; top: calc(var(--topbar-h) + 12px); left: 50%;
+            transform: translateX(-50%); z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            pointer-events: none; min-width: 300px; max-width: 90vw;
+        }
+        .toast {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 18px; border-radius: 12px;
+            font-family: 'Sarabun'; font-size: 0.9em; font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.13); pointer-events: all;
+            animation: toastIn .35s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+            border-left: 4px solid transparent; background: white;
+            position: relative; overflow: hidden; min-width: 280px;
+        }
+        .toast.success { border-color: #28a745; color: #155724; }
+        .toast.error   { border-color: #dc3545; color: #721c24; }
+        .toast.info    { border-color: #17a2b8; color: #0c5460; }
+        .toast.warning { border-color: #ffc107; color: #856404; }
+        .toast-icon { font-size: 1.1em; flex-shrink: 0; }
+        .toast.success .toast-icon { color: #28a745; }
+        .toast.error   .toast-icon { color: #dc3545; }
+        .toast.info    .toast-icon { color: #17a2b8; }
+        .toast.warning .toast-icon { color: #ffc107; }
+        .toast-progress {
+            position: absolute; bottom: 0; left: 0; height: 3px; border-radius: 0 0 12px 12px;
+            animation: toastProgress 5s linear forwards;
+        }
+        .toast.success .toast-progress { background: #28a745; }
+        .toast.error   .toast-progress { background: #dc3545; }
+        .toast.info    .toast-progress { background: #17a2b8; }
+        .toast.warning .toast-progress { background: #ffc107; }
+        @keyframes toastIn    { from { opacity:0; transform:translateY(-14px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes toastOut   { from { opacity:1; } to { opacity:0; transform:translateY(-12px) scale(.96); } }
+        @keyframes toastProgress { from { width:100%; } to { width:0%; } }
+
+        /* ═══════════════════════════════════════════════
+           RESPONSIVE BREAKPOINTS
+        ═══════════════════════════════════════════════ */
+
+        /* Laptop: slim sidebar */
+        @media (max-width: 1199px) and (min-width: 768px) {
+            .sidebar { width: var(--sw-slim); }
+            .sidebar .sidebar-logo-text,
+            .sidebar .sidebar-section-label,
+            .sidebar .nav-item span,
+            .sidebar .nav-item .nav-badge,
+            .sidebar .sidebar-footer a span { display: none; }
+            .sidebar .sidebar-logo { justify-content: center; padding: 16px 0; }
+            .sidebar .nav-item { justify-content: center; padding: 12px 0; border-left: none; }
+            .sidebar .nav-item.active { background: rgba(255,255,255,0.12); }
+            .sidebar .nav-item i { font-size: 1.1em; }
+            .sidebar .sidebar-footer { padding: 12px 0; display: flex; justify-content: center; }
+            .main { margin-left: var(--sw-slim); }
+
+            /* Tooltip on hover */
+            .nav-item[data-tip]:hover::after {
+                content: attr(data-tip);
+                position: absolute; left: calc(var(--sw-slim) + 6px); top: 50%;
+                transform: translateY(-50%);
+                background: rgba(30,10,15,0.88); color: white;
+                font-size: 0.78em; font-weight: 700; padding: 4px 10px;
+                border-radius: 6px; white-space: nowrap; pointer-events: none; z-index: 999;
+            }
+
+            .stat-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* Mobile: hidden sidebar + hamburger */
+        @media (max-width: 767px) {
+            .sidebar { transform: translateX(-100%); width: var(--sw-full); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main { margin-left: 0; }
+            .btn-hamburger { display: inline-flex; }
+            .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .project-row { flex-direction: column; align-items: flex-start; }
+            .action-group { flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; width: 100%; }
+            .topbar-title { font-size: 0.95em; }
+            .admin-chip { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .stat-grid { grid-template-columns: 1fr; }
+            .page-body { padding: 16px 14px; }
+            .topbar { padding: 0 14px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>รายการผลงานรออนุมัติ</h1>
 
-        {% if messages %}
-            <div id="message-container">
-                {% for message in messages %}
-                    <div class="alert-messages">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        
-        {% for p in projects %}
-        <div class="card">
-            <div class="info">
-                <h3>{{ p.title_th }}</h3>
-                <p><b>ผู้ส่ง:</b> {{ p.student_name }} | <b>สาขา:</b> {{ p.get_department_display }}</p>
-                
-                {% if p.pdf_file %}
-                    <a href="{{ p.pdf_file.url }}" target="_blank" 
-                       style="display: inline-block; margin-top: 10px; color: #007bff; text-decoration: none; font-size: 0.9em;">
-                       คลิกเพื่อตรวจดูไฟล์ PDF
-                    </a>
-                {% else %}
-                    <p style="color: #d9534f; font-size: 0.8em; margin-top: 5px;">ไม่มีไฟล์แนบ</p>
-                {% endif %}
-            </div>
+<!-- ── SIDEBAR ─────────────────────────────────────────────── -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-            <div class="actions">
-                <a href="{% url 'edit_project' p.id %}" class="btn-edit">แก้ไข</a>
-
-                <a href="{% url 'approve_project' p.id %}" class="btn-approve" 
-                   onclick="return confirm('ยืนยันการอนุมัติเพื่อให้แสดงที่หน้าหลัก')">อนุมัติ</a>
-                
-                <a href="{% url 'delete_project' p.id %}" class="btn-delete"
-                   onclick="return confirm('คุณแน่ใจนะว่าจะลบผลงานนี้ทิ้ง (ไม่สามารถย้อนกลับได้)')">ลบ</a>
-            </div>
-        </div>
-        {% empty %}
-        <div class="no-data">
-            <p>เยี่ยมมาก! ไม่มีผลงานค้างตรวจสอบในขณะนี้</p>
-        </div>
-        {% endfor %}
-
-        <a href="{% url 'project_list' %}" class="back-link">กลับหน้าหลัก</a>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+    <img src="{% static 'logoretc.png' %}" alt="RETC" class="logo-img">
+    <div class="sidebar-logo-text">
+        <span class="sidebar-logo-name">วิทยาลัยเทคนิคร้อยเอ็ด</span>
+        <span class="sidebar-logo-sub">Admin Dashboard</span>
+    </div>
     </div>
 
-    <script>
-        setTimeout(function() {
-            const container = document.getElementById('message-container');
-            if (container) {
-                container.style.opacity = '0';
-                setTimeout(() => container.remove(), 500);
-            }
-        }, 4000);
-    </script>
+    <nav class="sidebar-nav">
+        <div class="sidebar-section-label">ภาพรวม</div>
+        <a class="nav-item active" href="#" data-tip="แดชบอร์ด">
+            <i class="fas fa-th-large"></i> <span>แดชบอร์ด</span>
+            {% if pending_count > 0 %}<span class="nav-badge">{{ pending_count }}</span>{% endif %}
+        </a>
+
+        <div class="sidebar-section-label">จัดการผลงาน</div>
+        <a class="nav-item" href="#pending-section" data-tip="รออนุมัติ">
+            <i class="fas fa-hourglass-half"></i> <span>รออนุมัติ</span>
+            {% if pending_count > 0 %}<span class="nav-badge">{{ pending_count }}</span>{% endif %}
+        </a>
+        <a class="nav-item" href="#approved-section" data-tip="เผยแพร่แล้ว">
+            <i class="fas fa-check-double"></i> <span>เผยแพร่แล้ว</span>
+        </a>
+
+        <div class="sidebar-section-label">รายงาน</div>
+        <a class="nav-item" href="{% url 'export_projects_csv' %}" data-tip="ส่งออก CSV">
+            <i class="fas fa-file-csv"></i> <span>ส่งออก CSV</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="{% url 'project_list' %}" data-tip="หน้าหลัก">
+            <i class="fas fa-arrow-left"></i> <span>กลับหน้าหลัก</span>
+        </a>
+    </div>
+</aside>
+
+<!-- ── MAIN ────────────────────────────────────────────────── -->
+<div class="main" id="mainContent">
+
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="btn-hamburger" id="hamburgerBtn" aria-label="เปิดเมนู">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="topbar-title">ผลงานวิชาการเทคโนโลยีบัณฑิต</div>
+        </div>
+        <div class="topbar-right">
+            <div class="admin-chip">
+                <i class="fas fa-user-shield"></i> ผู้ดูแลระบบ
+            </div>
+            <a href="{% url 'project_list' %}" class="btn-back">
+                <i class="fas fa-home"></i> หน้าหลัก
+            </a>
+        </div>
+    </header>
+
+    <!-- Toast -->
+    <div id="toast-container"></div>
+    <div id="django-messages" style="display:none;">
+        {% if messages %}
+            {% for message in messages %}
+                <span data-tags="{{ message.tags }}">{{ message }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="page-body">
+
+        <!-- ── STAT CARDS ── -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-icon-amber"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">รอการตรวจสอบ</div>
+                    <div class="stat-value amber">{{ pending_count }}</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-icon-green"><i class="fas fa-check-double"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">อนุมัติแล้ว</div>
+                    <div class="stat-value green">{{ approved_count }}</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-icon-crimson"><i class="fas fa-file-csv"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">รายงานสรุปผล</div>
+                    <a href="{% url 'export_projects_csv' %}" class="btn-export">
+                        <i class="fas fa-download"></i> ดาวน์โหลดรายงาน
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── PENDING ── -->
+        <div id="pending-section" style="margin-bottom: 32px;">
+            <div class="section-header">
+                <div class="section-icon amber"><i class="fas fa-clock"></i></div>
+                <span class="section-title-text">ผลงานรออนุมัติ</span>
+                <span class="section-count amber">{{ pending_count }} รายการ</span>
+            </div>
+
+            {% for p in pending_projects %}
+            <div class="project-row pending">
+                <div class="project-info">
+                    <div class="project-name">{{ p.title_th }}</div>
+                    <div class="project-meta">
+                        <span><i class="fas fa-user-edit"></i> <b>{{ p.student_name }}</b></span>
+                        <span><i class="fas fa-calendar"></i> {{ p.academic_year }}</span>
+                        <span class="dept-tag">{{ p.get_department_display }}</span>
+                        <span><i class="fas fa-building"></i> {{ p.organization|default:"วิทยาลัยเทคนิคร้อยเอ็ด" }}</span>
+                    </div>
+                </div>
+                <div class="action-group">
+                    {% if p.pdf_file %}
+                    <a href="{{ p.pdf_file.url }}" target="_blank" class="btn-act btn-pdf btn-icon"><i class="fas fa-file-pdf"></i></a>
+                    {% endif %}
+                    <a href="{% url 'project_detail' p.id %}" target="_blank" class="btn-act btn-preview">
+                        <i class="fas fa-eye"></i> ตรวจสอบ
+                    </a>
+                    <a href="{% url 'edit_project' p.id %}" class="btn-act btn-edit btn-icon"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'approve_project' p.id %}" class="btn-act btn-approve"
+                       onclick="return confirm('ยืนยันการอนุมัติผลงานนี้?')">
+                        <i class="fas fa-check"></i> อนุมัติ
+                    </a>
+                    <a href="{% url 'delete_project' p.id %}" class="btn-act btn-delete btn-icon"
+                       onclick="return confirm('ลบข้อมูลนี้ถาวร?')"><i class="fas fa-trash"></i></a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                ไม่มีผลงานค้างตรวจสอบ
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ── APPROVED ── -->
+        <div id="approved-section">
+            <div class="section-header">
+                <div class="section-icon green"><i class="fas fa-check-circle"></i></div>
+                <span class="section-title-text">ผลงานที่เผยแพร่แล้ว</span>
+                <span class="section-count green">{{ approved_count }} รายการ</span>
+            </div>
+
+            {% for p in approved_projects %}
+            <div class="project-row approved">
+                <div class="project-info">
+                    <div class="project-name">{{ p.title_th }}</div>
+                    <div class="project-meta">
+                        <span><i class="fas fa-user-edit"></i> <b>{{ p.student_name }}</b></span>
+                        <span class="dept-tag">{{ p.get_department_display }}</span>
+                        <span class="stat-inline views"><i class="fas fa-eye"></i> {{ p.views_count }} วิว</span>
+                        <span class="stat-inline downloads"><i class="fas fa-download"></i> {{ p.download_count }} โหลด</span>
+                    </div>
+                </div>
+                <div class="action-group">
+                    {% if p.pdf_file %}
+                    <a href="{{ p.pdf_file.url }}" target="_blank" class="btn-act btn-pdf btn-icon"><i class="fas fa-file-pdf"></i></a>
+                    {% endif %}
+                    <a href="{% url 'project_detail' p.id %}" target="_blank" class="btn-act btn-preview">
+                        <i class="fas fa-external-link-alt"></i> ดูหน้าเว็บ
+                    </a>
+                    <a href="{% url 'edit_project' p.id %}" class="btn-act btn-edit btn-icon"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'delete_project' p.id %}" class="btn-act btn-delete btn-icon"
+                       onclick="return confirm('ต้องการลบผลงานชิ้นนี้ใช่หรือไม่?')"><i class="fas fa-trash"></i></a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                ยังไม่มีผลงานที่ผ่านการอนุมัติ
+            </div>
+            {% endfor %}
+        </div>
+
+    </div><!-- /page-body -->
+</div><!-- /main -->
+
+<script>
+// ── Toast ──────────────────────────────────────────────────
+const tagMap  = { success:'success', error:'error', warning:'warning', info:'info' };
+const iconMap = { success:'fa-circle-check', error:'fa-circle-xmark', warning:'fa-triangle-exclamation', info:'fa-circle-info' };
+
+function showToast(msg, type) {
+    type = tagMap[type] || 'info';
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<i class="fas ${iconMap[type]} toast-icon"></i><span>${msg}</span><div class="toast-progress"></div>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => { t.style.animation = 'toastOut .35s ease forwards'; setTimeout(() => t.remove(), 350); }, 5000);
+}
+
+// ── Mobile sidebar toggle ──────────────────────────────────
+const sidebar  = document.getElementById('sidebar');
+const overlay  = document.getElementById('sidebarOverlay');
+const hamburger = document.getElementById('hamburgerBtn');
+
+function openSidebar()  { sidebar.classList.add('mobile-open');  overlay.classList.add('active'); }
+function closeSidebar() { sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); }
+
+hamburger.addEventListener('click', () => sidebar.classList.contains('mobile-open') ? closeSidebar() : openSidebar());
+overlay.addEventListener('click', closeSidebar);
+
+// Close sidebar when a nav link is clicked on mobile
+sidebar.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => { if (window.innerWidth < 768) closeSidebar(); });
+});
+
+// ── Active nav highlight by hash ──────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#django-messages span').forEach(span => {
+        const type = span.dataset.tags.split(' ').find(t => tagMap[t]) || 'info';
+        showToast(span.textContent.trim(), type);
+    });
+
+    const hash = window.location.hash;
+    if (hash) {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.toggle('active', item.getAttribute('href') === hash);
+        });
+    }
+});
+</script>
 </body>
 </html>

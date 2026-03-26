@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>สมัครสมาชิก - RTEC Repository</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { 
             font-family: 'Sarabun', sans-serif; 
@@ -16,162 +17,171 @@
             margin: 0; 
         }
         .register-card { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 15px; 
+            background: white; padding: 40px; border-radius: 15px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-            width: 100%; 
-            max-width: 450px; 
-            margin: 20px; 
+            width: 100%; max-width: 450px; margin: 20px; 
         }
-        .register-card h2 { 
-            color: #800000; 
-            text-align: center; 
-            margin-bottom: 5px; 
-        }
-        .subtitle { 
-            text-align: center; 
-            color: #000000; 
-            font-size: 0.9em; 
-            margin-bottom: 25px; 
-        }
+        .register-card h2 { color: #800000; text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; font-size: 0.9em; margin-bottom: 25px; }
+
+        form p { margin-bottom: 18px; position: relative; }
+        form label { display: block; margin-bottom: 5px; font-weight: bold; color: #000; font-size: 0.9em; }
         
-        /* สไตล์ Form */
-        form p { 
-            margin-bottom: 18px; 
-            position: relative; /* เพื่อให้ปุ่มเกาะกับ input */
-        } 
-        form label { 
-            display: block; 
-            margin-bottom: 5px; 
-            font-weight: bold; 
-            color: #000000; 
-            font-size: 0.9em;
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="password"],
+        form input[type="tel"],
+        form select {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
+            box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 1em;
+            transition: border-color 0.2s;
         }
-        form input { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            font-family: 'Sarabun', sans-serif;
-        }
-        
-        /* ปุ่มสลับการมองเห็นรหัสผ่าน (Text แทน Emoji) */
+        form input:focus { border-color: #800000; outline: none; background: #fffcfc; }
+
+        /* ปรับช่องรหัสผ่านให้มีที่ว่างสำหรับปุ่ม */
+        form input[type="password"] { padding-right: 50px; }
+
+        /* สไตล์ปุ่ม SHOW/HIDE ใหม่ */
         .toggle-pass-btn {
             position: absolute;
-            right: 10px;
-            top: 34px; /* ปรับระดับให้ตรงกลางช่อง input */
-            background: #eeeeee;
-            border: 1px solid #cccccc;
-            border-radius: 4px;
+            right: 12px;
+            bottom: 10px; /* ปรับให้พอดีกับช่อง input */
+            background: none;
+            border: none;
             cursor: pointer;
-            font-size: 10px;
-            font-weight: bold;
-            padding: 3px 6px;
-            color: #000000;
+            color: #888;
+            font-size: 14px;
+            padding: 5px;
             z-index: 10;
-            text-transform: uppercase;
-            transition: 0.2s;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
         }
-        .toggle-pass-btn:hover {
-            background: #e0e0e0;
-            color: #000;
+        .toggle-pass-btn:hover { color: #800000; }
+
+        .checkbox-label {
+            display: flex !important; align-items: center; gap: 8px;
+            font-weight: normal !important; cursor: pointer;
         }
 
-        .errorlist_msg { 
-            color: #d9534f; 
-            background: #fdf7f7; 
-            padding: 15px; 
-            border-radius: 8px; 
-            border-left: 5px solid #d9534f; 
-            margin-bottom: 20px; 
-            font-size: 0.85em; 
+        .messages-box {
+            padding: 12px 15px; border-radius: 8px; margin-bottom: 20px;
+            font-size: 0.9em; border-left: 5px solid;
         }
-        .helptext { 
-            display: block; 
-            color: #000000; 
-            font-size: 0.8em; 
-            margin-top: 5px; 
-            line-height: 1.4; 
-        }
+        .messages-box.error   { background: #fdf7f7; color: #d9534f; border-color: #d9534f; }
+        .messages-box.success { background: #f0fff4; color: #2d6a4f; border-color: #2d6a4f; }
 
         button[type="submit"] { 
-            width: 100%; 
-            padding: 14px; 
-            background: #800000; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 1.1em; 
-            font-weight: bold; 
-            transition: 0.3s; 
-            margin-top: 10px; 
+            width: 100%; padding: 14px; background: #800000; color: white; 
+            border: none; border-radius: 8px; cursor: pointer; 
+            font-size: 1.1em; font-weight: bold; transition: 0.3s; margin-top: 10px; 
         }
-        button[type="submit"]:hover { 
-            background: #a00000; 
-            transform: translateY(-1px); 
-        }
-        .footer-link { 
-            text-align: center; 
-            margin-top: 25px; 
-            font-size: 0.9em; 
-            color: #000000; 
-        }
-        .footer-link a { 
-            color: #800000; 
-            text-decoration: none; 
-            font-weight: bold; 
-        }
+        button[type="submit"]:hover { background: #a00000; transform: translateY(-1px); }
+
+        .footer-link { text-align: center; margin-top: 25px; font-size: 0.9em; color: #666; }
+        .footer-link a { color: #800000; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="register-card">
         <h2>สมัครสมาชิกใหม่</h2>
-        <p class="subtitle">ระบบรวบรวมผลงานวิชาการ เทคนิคร้อยเอ็ด</p>
-        
+        <p class="subtitle">แหล่งรวมงานวิจัยและผลงานวิชาการ วิทยาลัยเทคนิคร้อยเอ็ด</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="messages-box {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
         <form method="post">
             {% csrf_token %}
-            {% if form.errors %}
-                <div class="errorlist_msg">
-                    <b>ไม่สามารถสมัครสมาชิกได้:</b><br>
-                    โปรดตรวจสอบข้อกำหนดรหัสผ่าน (เช่น ความยาว หรือการพิมพ์ไม่ตรงกัน)
-                </div>
-            {% endif %}
 
-            {{ form.as_p }}
-            
+            <p>
+                <label for="user_type">ประเภทผู้ใช้งาน</label>
+                <select name="user_type" id="user_type">
+                    <option value="student">นักศึกษา (ใช้รหัสนักศึกษาเป็นชื่อผู้ใช้)</option>
+                    <option value="guest">บุคคลภายนอก (General Guest)</option>
+                </select>
+            </p>
+
+            <p>
+                <label for="username" id="username-label">ชื่อผู้ใช้งาน / รหัสนักศึกษา (11 หลัก)</label>
+                <input type="text" name="username" id="username" placeholder="กรอกรหัสนักศึกษาหรือชื่อผู้ใช้" required>
+            </p>
+
+            <p id="email-field" style="display:none;">
+                <label for="email">อีเมล <span style="color:#d9534f;">*</span></label>
+                <input type="email" name="email" id="email" placeholder="example@email.com">
+            </p>
+
+            <p>
+                <label for="phone">เบอร์โทรศัพท์ (สำหรับกู้คืนรหัสผ่าน)</label>
+                <input type="tel" name="phone" id="phone" maxlength="10" placeholder="08xxxxxxxx">
+                <small style="color:#888; font-size:0.82em; display:block; margin-top:4px;">* สำคัญมากสำหรับนักศึกษาในการลืมรหัสผ่าน</small>
+            </p>
+
+            <p>
+                <label for="password">รหัสผ่าน</label>
+                <input type="password" name="password" id="password" required placeholder="ตั้งรหัสผ่านของคุณ">
+                </p>
+
+            <p id="notify-field" style="display:none;">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="notify_new_project" value="1">
+                    รับการแจ้งเตือนเมื่อมีผลงานวิจัยใหม่ทางอีเมล
+                </label>
+            </p>
+
             <button type="submit">ยืนยันการสมัครสมาชิก</button>
         </form>
 
         <div class="footer-link">
-            มีบัญชีอยู่แล้ว? <a href="{% url 'login' %}">เข้าสู่ระบบที่นี่</a>
+            มีบัญชีอยู่แล้ว <a href="{% url 'login' %}">เข้าสู่ระบบที่นี่</a>
         </div>
     </div>
 
     <script>
-        // ใช้คำว่า SHOW/HIDE แทนการใช้อิโมจิ
+        // ── ปุ่มมองเห็นรหัสผ่าน (เวอร์ชันใช้ไอคอนดวงตา) ────────────────────────
         document.querySelectorAll('input[type="password"]').forEach(function(inputField) {
+            // สร้างปุ่ม
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.textContent = 'SHOW';
             btn.className = 'toggle-pass-btn';
+            btn.innerHTML = '<i class="fas fa-eye"></i>'; // ใช้ไอคอนดวงตา
             
-            // ตรวจสอบว่า parent (แท็ก p) มีการกำหนดตำแหน่งไว้
-            inputField.parentNode.style.position = 'relative';
+            // ใส่ปุ่มเข้าไปข้างๆ input
             inputField.parentNode.appendChild(btn);
 
             btn.addEventListener('click', function() {
                 if (inputField.type === 'password') {
                     inputField.type = 'text';
-                    btn.textContent = 'HIDE';
+                    btn.innerHTML = '<i class="fas fa-eye-slash"></i>'; // เปลี่ยนเป็นรูปดวงตาขีดฆ่า
                 } else {
                     inputField.type = 'password';
-                    btn.textContent = 'SHOW';
+                    btn.innerHTML = '<i class="fas fa-eye"></i>';
                 }
             });
         });
+
+        // ── กรองเบอร์โทรศัพท์ ──────────────────────────────────────────
+        document.getElementById('phone').addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+
+        // ── สลับฟิลด์ตามประเภทผู้ใช้ ─────────────────────────────────────────
+        function updateFormByType() {
+            const isGuest = document.getElementById('user_type').value === 'guest';
+            document.getElementById('email-field').style.display  = isGuest ? 'block' : 'none';
+            document.getElementById('notify-field').style.display = isGuest ? 'block' : 'none';
+            document.getElementById('email').required = isGuest;
+
+            document.getElementById('username-label').textContent = isGuest
+                ? 'ชื่อผู้ใช้งาน'
+                : 'ชื่อผู้ใช้งาน / รหัสนักศึกษา (11 หลัก)';
+        }
+
+        document.getElementById('user_type').addEventListener('change', updateFormByType);
+        updateFormByType();
     </script>
 </body>
 </html>

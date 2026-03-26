@@ -4,78 +4,214 @@
 <head>
     <meta charset="UTF-8">
     <title>เพิ่มผลงานวิชาการ | RTEC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; padding: 20px; }
-        .form-container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .logo-img { max-height: 80px; display: block; margin: 0 auto 15px; }
-        h2 { color: #800000; text-align: center; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8f9fa; padding: 40px 20px; color: #333; }
+        .form-container { max-width: 1000px; margin: auto; background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
+        .logo-img { max-height: 80px; display: block; margin: 0 auto 20px; }
+        h2 { color: #800000; text-align: center; margin-bottom: 5px; font-weight: 700; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 0.95em; }
         
-        /* สไตล์สำหรับปุ่มบันทึก */
-        .btn-submit { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; transition: 0.3s; }
-        .btn-submit:hover { background: #218838; }
-        
-        .btn-back { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; }
-        
-        /* สไตล์สำหรับกล่องแจ้งเตือน */
-        .alert-messages {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-            text-align: center;
+        .text-danger { color: #ff0000 !important; font-weight: bold; }
+
+        /* Section Styling */
+        .form-section-title { 
+            background: #800000; color: white; padding: 14px 22px; border-radius: 12px; 
+            margin: 35px 0 20px 0; font-weight: bold; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 4px 10px rgba(128,0,0,0.2);
         }
+
+        /* Layout Grid */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: span 2; }
+
+        /* Field Styling */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 0.95em; }
+        
+        .form-control { 
+            width: 100%; padding: 12px 15px; border: 1.5px solid #e1e1e1; border-radius: 10px; 
+            box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 1em;
+            transition: all 0.3s ease; background-color: #fdfdfd;
+        }
+        .form-control:focus { border-color: #800000; outline: none; box-shadow: 0 0 0 4px rgba(128,0,0,0.1); background-color: #fff; }
+
+        /* 🔘 ปุ่มบันทึก (ปรับใหม่ให้เข้าธีม) */
+        .btn-submit { 
+            width: 100%; padding: 18px; 
+            background: #800000; /* เปลี่ยนเป็นสีเลือดหมู */
+            color: white; border: none; 
+            border-radius: 15px; cursor: pointer; font-size: 1.15em; font-weight: bold; 
+            transition: all 0.3s ease; margin-top: 20px; 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 4px 15px rgba(128, 0, 0, 0.2);
+        }
+        .btn-submit:hover { 
+            background: #a00000; /* สีสว่างขึ้นนิดนึงเวลาวางเมาส์ */
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 25px rgba(128, 0, 0, 0.3); 
+        }
+        .btn-submit:active { transform: translateY(0); }
+        
+        .btn-back { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; font-weight: 600; transition: 0.2s; }
+        .btn-back:hover { color: #800000; }
+
+        /* Floating Message */
+        .message-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; width: auto; }
+        .alert-custom { background: white; padding: 15px 25px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 5px solid #800000; display: flex; align-items: center; gap: 10px; font-weight: bold; color: #800000; }
     </style>
 </head>
 <body>
+
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+        <div class="alert-custom">
+            <i class="fas fa-check-circle"></i> {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="form-container">
         <img src="{% static 'logoretc.png' %}" alt="Logo" class="logo-img">
+        <h2>เพิ่มผลงานวิชาการ</h2>
+        <p class="subtitle"><span class="text-danger">*</span> กรุณากรอกข้อมูลให้ครบถ้วน ข้อมูลที่กรอกจะถูกนำไปแสดงในหน้ารายละเอียดผลงาน</p>
         
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert-messages">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        <h2>ส่งผลงานวิจัยใหม่</h2>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="form-group">
-                <label>ชื่อโครงการ (ภาษาไทย)</label>
-                <input type="text" name="title_th" required>
+            
+            <div class="form-section-title">
+                <i class="fas fa-user-friends"></i> ข้อมูลพื้นฐานและทีมวิจัย
+            </div>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label>ชื่อผลงานวิจัย (ภาษาไทย) <span class="text-danger">*</span></label>
+                    {{ form.title_th }}
+                </div>
+                <div class="form-group full-width">
+                    <label>ชื่อผลงานวิจัย (ภาษาอังกฤษ)</label>
+                    {{ form.title_en }}
+                </div>
+                <div class="form-group">
+                    <label>ชื่อนักวิจัยหลัก <span class="text-danger">*</span></label>
+                    {{ form.student_name }}
+                </div>
+                <div class="form-group">
+                    <label>สาขาวิชา <span class="text-danger">*</span></label>
+                    {{ form.department }}
+                </div>
+                <div class="form-group">
+                    <label>นักวิจัยร่วมคนที่ 1</label>
+                    {{ form.researcher_co1 }}
+                </div>
+                <div class="form-group">
+                    <label>นักวิจัยร่วมคนที่ 2</label>
+                    {{ form.researcher_co2 }}
+                </div>
+                <div class="form-group">
+                    <label>ปีที่เสร็จสิ้น (พ.ศ.) <span class="text-danger">*</span></label>
+                    {{ form.academic_year }}
+                </div>
+                <div class="form-group">
+                    <label>ประเภทงานวิจัย <span class="text-danger">*</span></label>
+                    {{ form.research_type }}
+                </div>
+                <div class="form-group full-width">
+                    <label>หน่วยงาน/วิทยาลัย <span class="text-danger">*</span></label>
+                    {{ form.organization }}
+                </div>
+            </div>
+
+            <div class="form-section-title">
+                <i class="fas fa-lightbulb"></i> ความเป็นมาและวัตถุประสงค์
             </div>
             <div class="form-group">
-                <label>สาขาวิชา</label>
-                <select name="department">
-                    <option value="EE">สาขาเทคโนโลยีไฟฟ้า</option>
-                    <option value="ET">สาขาเทคโนโลยีอิเล็กทรอนิกส์</option>
-                    <option value="PT">สาขาเทคโนโลยีการผลิต</option>
-                    <option value="MT">สาขาเทคโนโลยีเครื่องกล</option>
-                    <option value="CT" selected>สาขาเทคโนโลยีคอมพิวเตอร์</option>
-                </select>
+                <label>ความเป็นมา/หลักการและเหตุผล</label>
+                {{ form.background }}
             </div>
             <div class="form-group">
-                <label>ชื่อผู้จัดทำ</label>
-                <input type="text" name="student_name" placeholder="เช่น นายสมชาย ใจดี, นายสมพงษ์ เรียนดี" required>
+                <label>วัตถุประสงค์การวิจัย</label>
+                {{ form.objectives }}
             </div>
             <div class="form-group">
-                <label>ปีการศึกษา (พ.ศ.)</label>
-                <input type="number" name="academic_year" value="2569" required>
+                <label>ขอบเขตการวิจัย</label>
+                {{ form.scope }}
             </div>
             <div class="form-group">
-                <label>ไฟล์ PDF ผลงาน (รับเฉพาะ .pdf เท่านั้น)</label>
-                <input type="file" name="pdf_file" accept=".pdf,application/pdf" required>
+                <label>บทคัดย่อ (Abstract) <span class="text-danger">*</span></label>
+                {{ form.abstract }}
             </div>
-            <button type="submit" class="btn-submit">บันทึกข้อมูลและส่งตรวจสอบ</button>
-            <a href="{% url 'project_list' %}" class="btn-back">กลับหน้าหลัก</a>
+            <div class="form-group">
+                <label>คำสำคัญ (Keywords)</label>
+                {{ form.keywords }}
+            </div>
+
+            <div class="form-section-title">
+                <i class="fas fa-microscope"></i> ระเบียบวิธีวิจัยและผลการศึกษา
+            </div>
+            <div class="form-group">
+                <label>ทฤษฎีที่เกี่ยวข้อง</label>
+                {{ form.theory }}
+            </div>
+            <div class="form-group">
+                <label>วิธีการวิจัย</label>
+                {{ form.methodology }}
+            </div>
+            <div class="form-group">
+                <label>ผลการวิจัย</label>
+                {{ form.results }}
+            </div>
+            <div class="form-group">
+                <label>รางวัลที่เคยได้รับ/เกียรติประวัติ (ถ้ามี)</label>
+                {{ form.awards }}
+            </div>
+
+            <div class="form-section-title">
+                <i class="fas fa-comment-dots"></i> บทสรุปและข้อเสนอแนะ
+            </div>
+            <div class="form-group">
+                <label>อภิปรายผล</label>
+                {{ form.discussion }}
+            </div>
+            <div class="form-group">
+                <label>การนำไปใช้ประโยชน์</label>
+                {{ form.suggestions_use }}
+            </div>
+            <div class="form-group">
+                <label>ข้อเสนอแนะในอนาคต</label>
+                {{ form.suggestions_next }}
+            </div>
+
+            <div class="form-section-title">
+                <i class="fas fa-file-pdf"></i> ไฟล์เอกสารแนบ
+            </div>
+            <div class="form-group">
+                <label>อัปโหลดไฟล์ PDF ฉบับเต็ม <span class="text-danger">*</span></label>
+                {{ form.pdf_file }}
+                <small style="color: #888; display: block; margin-top: 8px;">รองรับเฉพาะไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 10MB)</small>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-save"></i> บันทึกข้อมูลและส่งตรวจสอบ
+            </button>
+            
+            <a href="{% url 'project_list' %}" class="btn-back">
+                <i class="fas fa-times"></i> ยกเลิกและกลับหน้าหลัก
+            </a>
         </form>
     </div>
+
+    <script>
+        setTimeout(() => {
+            const msg = document.querySelector('.message-container');
+            if (msg) {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+            }
+        }, 3000);
+    </script>
 </body>
 </html>
