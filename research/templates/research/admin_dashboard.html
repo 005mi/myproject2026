@@ -25,9 +25,8 @@
             --amber:      #b8860b;
             --amber-lt:   #fff3cd;
 
-            /* Sidebar widths — change only here */
-            --sw-full:   230px;   /* Desktop: full labels */
-            --sw-slim:    60px;   /* Laptop:  icons only  */
+            --sw-full:   230px;
+            --sw-slim:    60px;
             --topbar-h:   56px;
         }
 
@@ -63,56 +62,62 @@
             z-index: 200;
             box-shadow: 3px 0 20px rgba(74,7,21,0.22);
             transition: width .25s ease, transform .25s ease;
-            overflow: hidden;          /* clip text when collapsing */
+            overflow: hidden;
         }
 
-        /* ── Logo ── */
         .sidebar-logo {
-    padding: 16px 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+            padding: 16px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
 
-        /* 🔥 ตัวโลโก้ */
         .logo-img {
             width: 42px;
             height: 42px;
+            min-width: 42px;
             object-fit: cover;
-            border-radius: 50%; /* ทำให้เป็นวงกลม */
-            background: white;  /* เผื่อโลโก้โปร่ง */
+            border-radius: 50%;
+            background: white;
             padding: 3px;
-        
-
-        /* เอฟเฟกต์ให้ดูเด่น */
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
         }
+
         .sidebar-logo-sub {
-                font-size: 0.7em;
-                color: white;   /* 🔥 ทำให้เป็นสีขาว */
-                opacity: 0.8;   /* (เลือกได้) ทำให้ดูนุ่มขึ้น */
-        }
-        /* ข้อความ */
-            .sidebar-logo-name {
-                font-size: 0.85em;
-                font-weight: 800;
-                line-height: 1.2;
-                color: white;
-                
+            font-size: 0.7em;
+            color: white;
+            opacity: 0.8;
         }
 
-        /* ── Section labels ── */
+        .sidebar-logo-name {
+            font-size: 0.85em;
+            font-weight: 800;
+            line-height: 1.2;
+            color: white;
+        }
+
+        .sidebar-logo-text {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
         .sidebar-section-label {
             padding: 14px 18px 6px;
             font-size: 0.62em; font-weight: 800;
             color: rgba(255,255,255,0.38);
             text-transform: uppercase; letter-spacing: .12em;
             white-space: nowrap; overflow: hidden;
+            flex-shrink: 0;
         }
 
-        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 10px; } 
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 10px;
+        }
 
-        /* ── Nav items ── */
         .nav-item {
             display: flex; align-items: center; gap: 10px;
             padding: 10px 18px;
@@ -123,6 +128,7 @@
             border-left: 3px solid transparent;
             white-space: nowrap; overflow: hidden;
             cursor: pointer;
+            position: relative;
         }
         .nav-item i { width: 18px; text-align: center; font-size: 0.95em; flex-shrink: 0; }
         .nav-item span { overflow: hidden; text-overflow: ellipsis; }
@@ -135,7 +141,6 @@
             padding: 2px 7px; border-radius: 20px;
         }
 
-        /* ── Footer ── */
         .sidebar-footer {
             padding: 14px 18px;
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -152,7 +157,6 @@
         .sidebar-footer a i { flex-shrink: 0; }
 
         /* Tooltip for slim mode */
-        .nav-item[data-tip] { position: relative; }
         .sidebar.slim .nav-item[data-tip]:hover::after {
             content: attr(data-tip);
             position: absolute; left: calc(var(--sw-slim) + 8px); top: 50%;
@@ -164,7 +168,7 @@
         }
 
         /* ═══════════════════════════════════════════════
-           SLIM MODE  (laptop: 900–1199px)
+           SLIM MODE  (Tablet landscape / small laptop)
         ═══════════════════════════════════════════════ */
         .sidebar.slim { width: var(--sw-slim); }
         .sidebar.slim .sidebar-logo-text,
@@ -179,27 +183,26 @@
         .sidebar.slim .sidebar-footer { padding: 14px 0; display: flex; justify-content: center; }
 
         /* ═══════════════════════════════════════════════
-           MOBILE OVERLAY  (< 768px)
+           MOBILE OVERLAY
         ═══════════════════════════════════════════════ */
         .sidebar-overlay {
             display: none;
             position: fixed; inset: 0; z-index: 190;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.45);
             backdrop-filter: blur(2px);
         }
         .sidebar-overlay.active { display: block; }
 
         /* ═══════════════════════════════════════════════
-           MAIN
+           MAIN CONTENT
         ═══════════════════════════════════════════════ */
         .main {
             margin-left: var(--sw-full);
             flex: 1; min-height: 100vh;
             display: flex; flex-direction: column;
             transition: margin-left .25s ease;
+            min-width: 0;
         }
-        .main.slim-offset { margin-left: var(--sw-slim); }
-        .main.no-offset   { margin-left: 0; }
 
         /* ═══════════════════════════════════════════════
            TOPBAR
@@ -214,25 +217,42 @@
             position: sticky; top: 0; z-index: 50;
             gap: 12px;
         }
-        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
         .topbar-title {
             font-family: 'Playfair Display', serif;
             font-size: 1.1em; font-weight: 700;
             color: var(--crimson-dk);
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        /* Hamburger — shown on mobile */
+
         .btn-hamburger {
             display: none;
-            width: 36px; height: 36px;
+            width: 40px; height: 40px;
             background: rgba(122,12,34,0.08); border: none; border-radius: 8px;
             color: var(--crimson); font-size: 1em; cursor: pointer;
             align-items: center; justify-content: center;
             transition: background .2s;
+            flex-shrink: 0;
+            /* Touch-friendly tap target */
+            touch-action: manipulation;
         }
         .btn-hamburger:hover { background: rgba(122,12,34,0.14); }
+        .btn-hamburger:active { background: rgba(122,12,34,0.2); transform: scale(0.95); }
 
-        .topbar-right { display: flex; align-items: center; gap: 10px; }
+        /* Slim toggle button (laptop) */
+        .btn-slim-toggle {
+            width: 36px; height: 36px;
+            background: rgba(122,12,34,0.06); border: none; border-radius: 8px;
+            color: var(--crimson); font-size: 0.85em; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: background .2s;
+            flex-shrink: 0;
+        }
+        .btn-slim-toggle:hover { background: rgba(122,12,34,0.12); }
+
+        .topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .admin-chip {
             display: flex; align-items: center; gap: 6px;
             background: rgba(122,12,34,0.07);
@@ -249,6 +269,7 @@
             text-decoration: none; transition: all .2s;
             color: var(--crimson); border: 1.5px solid var(--crimson);
             white-space: nowrap;
+            touch-action: manipulation;
         }
         .btn-back:hover { background: var(--crimson); color: white; }
 
@@ -258,7 +279,7 @@
         .page-body {
             padding: 22px 24px;
             flex: 1;
-            max-width: 1300px;
+            max-width: 1400px;
             width: 100%;
             margin: 0 auto;
         }
@@ -310,6 +331,7 @@
             text-decoration: none; transition: all .2s;
             background: rgba(122,12,34,0.07); color: var(--crimson);
             border: 1px solid rgba(122,12,34,0.2);
+            touch-action: manipulation;
         }
         .btn-export:hover { background: var(--crimson); color: white; }
 
@@ -378,10 +400,12 @@
         .action-group { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
         .btn-act {
             display: inline-flex; align-items: center; gap: 4px;
-            padding: 6px 11px; border-radius: 8px;
+            padding: 7px 11px; border-radius: 8px;
             font-family: 'Sarabun'; font-size: 0.74em; font-weight: 700;
             text-decoration: none; border: none; cursor: pointer;
             transition: all .2s; white-space: nowrap;
+            touch-action: manipulation;
+            min-height: 34px; /* touch-friendly */
         }
         .btn-act:hover { transform: translateY(-2px); }
         .btn-pdf      { background: rgba(94,58,170,0.1);  color: #5e3aaa; border: 1px solid rgba(94,58,170,0.2); }
@@ -394,7 +418,7 @@
         .btn-approve:hover { background: var(--green); color: white; }
         .btn-delete   { background: rgba(211,47,47,0.08); color: #c0392b; border: 1px solid rgba(211,47,47,0.2); }
         .btn-delete:hover { background: #c0392b; color: white; }
-        .btn-icon { width: 30px; height: 30px; padding: 0; justify-content: center; border-radius: 8px; }
+        .btn-icon { width: 34px; height: 34px; padding: 0; justify-content: center; border-radius: 8px; }
 
         /* ── Empty state ── */
         .empty-state {
@@ -446,8 +470,19 @@
            RESPONSIVE BREAKPOINTS
         ═══════════════════════════════════════════════ */
 
-        /* Laptop: slim sidebar */
-        @media (max-width: 1199px) and (min-width: 768px) {
+        /* ── Large Desktop (1400px+): wider content ── */
+        @media (min-width: 1400px) {
+            .page-body { padding: 28px 40px; }
+            .stat-grid { gap: 18px; margin-bottom: 28px; }
+        }
+
+        /* ── Desktop (1200–1399px): default full sidebar ── */
+        @media (min-width: 1200px) {
+            .btn-slim-toggle { display: none; }
+        }
+
+        /* ── Laptop (900–1199px): slim sidebar auto ── */
+        @media (max-width: 1199px) and (min-width: 900px) {
             .sidebar { width: var(--sw-slim); }
             .sidebar .sidebar-logo-text,
             .sidebar .sidebar-section-label,
@@ -471,26 +506,93 @@
                 border-radius: 6px; white-space: nowrap; pointer-events: none; z-index: 999;
             }
 
+            .btn-slim-toggle { display: none; }
             .stat-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
-        /* Mobile: hidden sidebar + hamburger */
+        /* ── Tablet Landscape (768–899px) ── */
+        @media (max-width: 899px) and (min-width: 768px) {
+            .sidebar { width: var(--sw-slim); }
+            .sidebar .sidebar-logo-text,
+            .sidebar .sidebar-section-label,
+            .sidebar .nav-item span,
+            .sidebar .nav-item .nav-badge,
+            .sidebar .sidebar-footer a span { display: none; }
+            .sidebar .sidebar-logo { justify-content: center; padding: 16px 0; }
+            .sidebar .nav-item { justify-content: center; padding: 12px 0; border-left: none; }
+            .sidebar .nav-item.active { background: rgba(255,255,255,0.12); }
+            .sidebar .nav-item i { font-size: 1.1em; }
+            .sidebar .sidebar-footer { padding: 12px 0; display: flex; justify-content: center; }
+            .main { margin-left: var(--sw-slim); }
+
+            .nav-item[data-tip]:hover::after {
+                content: attr(data-tip);
+                position: absolute; left: calc(var(--sw-slim) + 6px); top: 50%;
+                transform: translateY(-50%);
+                background: rgba(30,10,15,0.88); color: white;
+                font-size: 0.78em; font-weight: 700; padding: 4px 10px;
+                border-radius: 6px; white-space: nowrap; pointer-events: none; z-index: 999;
+            }
+
+            .btn-slim-toggle { display: none; }
+            .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .topbar-title { font-size: 1em; }
+            .admin-chip { display: none; }
+        }
+
+        /* ── Mobile (< 768px) ── */
         @media (max-width: 767px) {
             .sidebar { transform: translateX(-100%); width: var(--sw-full); }
             .sidebar.mobile-open { transform: translateX(0); }
             .main { margin-left: 0; }
             .btn-hamburger { display: inline-flex; }
+            .btn-slim-toggle { display: none; }
             .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .project-row { flex-direction: column; align-items: flex-start; }
-            .action-group { flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; width: 100%; }
-            .topbar-title { font-size: 0.95em; }
+            .page-body { padding: 16px 16px; }
+            .topbar { padding: 0 16px; }
+            .topbar-title { font-size: 0.92em; }
             .admin-chip { display: none; }
+            .btn-back span { display: none; }
+            .btn-back { padding: 6px 10px; border-radius: 8px; }
+
+            .project-row {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 12px 14px 12px 18px;
+            }
+            .project-name { font-size: 0.88em; }
+            .action-group {
+                flex-wrap: wrap;
+                border-top: 1px solid var(--border);
+                padding-top: 10px;
+                margin-top: 4px;
+                width: 100%;
+                gap: 6px;
+            }
+            .btn-act {
+                min-height: 38px; /* larger touch target */
+                font-size: 0.78em;
+            }
+            .project-meta { gap: 6px; }
         }
 
+        /* ── Small Mobile (< 480px) ── */
         @media (max-width: 480px) {
-            .stat-grid { grid-template-columns: 1fr; }
-            .page-body { padding: 16px 14px; }
-            .topbar { padding: 0 14px; }
+            .stat-grid { grid-template-columns: 1fr; gap: 8px; }
+            .page-body { padding: 12px 12px; }
+            .topbar { padding: 0 12px; }
+            .topbar-title { font-size: 0.85em; }
+            .stat-card { padding: 12px 14px; }
+            .section-title-text { font-size: 0.9em; }
+            .btn-act { font-size: 0.76em; padding: 7px 9px; }
+        }
+
+        /* ── Print ── */
+        @media print {
+            .sidebar, .topbar, .btn-act, .action-group, .btn-back, .btn-export { display: none !important; }
+            .main { margin-left: 0; }
+            .page-body { padding: 0; }
+            .project-row { break-inside: avoid; }
         }
     </style>
 </head>
@@ -501,11 +603,11 @@
 
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-    <img src="{% static 'logoretc.png' %}" alt="RETC" class="logo-img">
-    <div class="sidebar-logo-text">
-        <span class="sidebar-logo-name">วิทยาลัยเทคนิคร้อยเอ็ด</span>
-        <span class="sidebar-logo-sub">Admin Dashboard</span>
-    </div>
+        <img src="{% static 'logoretc.png' %}" alt="RETC" class="logo-img">
+        <div class="sidebar-logo-text">
+            <span class="sidebar-logo-name">วิทยาลัยเทคนิคร้อยเอ็ด</span>
+            <span class="sidebar-logo-sub">Admin Dashboard</span>
+        </div>
     </div>
 
     <nav class="sidebar-nav">
@@ -552,7 +654,7 @@
                 <i class="fas fa-user-shield"></i> ผู้ดูแลระบบ
             </div>
             <a href="{% url 'project_list' %}" class="btn-back">
-                <i class="fas fa-home"></i> หน้าหลัก
+                <i class="fas fa-home"></i> <span>หน้าหลัก</span>
             </a>
         </div>
     </header>
@@ -617,17 +719,17 @@
                 </div>
                 <div class="action-group">
                     {% if p.pdf_file %}
-                    <a href="{{ p.pdf_file.url }}" target="_blank" class="btn-act btn-pdf btn-icon"><i class="fas fa-file-pdf"></i></a>
+                    <a href="{{ p.pdf_file.url }}" target="_blank" class="btn-act btn-pdf btn-icon" title="ดู PDF"><i class="fas fa-file-pdf"></i></a>
                     {% endif %}
                     <a href="{% url 'project_detail' p.id %}" target="_blank" class="btn-act btn-preview">
                         <i class="fas fa-eye"></i> ตรวจสอบ
                     </a>
-                    <a href="{% url 'edit_project' p.id %}" class="btn-act btn-edit btn-icon"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'edit_project' p.id %}" class="btn-act btn-edit btn-icon" title="แก้ไข"><i class="fas fa-edit"></i></a>
                     <a href="{% url 'approve_project' p.id %}" class="btn-act btn-approve"
                        onclick="return confirm('ยืนยันการอนุมัติผลงานนี้?')">
                         <i class="fas fa-check"></i> อนุมัติ
                     </a>
-                    <a href="{% url 'delete_project' p.id %}" class="btn-act btn-delete btn-icon"
+                    <a href="{% url 'delete_project' p.id %}" class="btn-act btn-delete btn-icon" title="ลบ"
                        onclick="return confirm('ลบข้อมูลนี้ถาวร?')"><i class="fas fa-trash"></i></a>
                 </div>
             </div>
@@ -660,13 +762,13 @@
                 </div>
                 <div class="action-group">
                     {% if p.pdf_file %}
-                    <a href="{{ p.pdf_file.url }}" target="_blank" class="btn-act btn-pdf btn-icon"><i class="fas fa-file-pdf"></i></a>
+                    <a href="{{ p.pdf_file.url }}" target="_blank" class="btn-act btn-pdf btn-icon" title="ดู PDF"><i class="fas fa-file-pdf"></i></a>
                     {% endif %}
                     <a href="{% url 'project_detail' p.id %}" target="_blank" class="btn-act btn-preview">
                         <i class="fas fa-external-link-alt"></i> ดูหน้าเว็บ
                     </a>
-                    <a href="{% url 'edit_project' p.id %}" class="btn-act btn-edit btn-icon"><i class="fas fa-edit"></i></a>
-                    <a href="{% url 'delete_project' p.id %}" class="btn-act btn-delete btn-icon"
+                    <a href="{% url 'edit_project' p.id %}" class="btn-act btn-edit btn-icon" title="แก้ไข"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'delete_project' p.id %}" class="btn-act btn-delete btn-icon" title="ลบ"
                        onclick="return confirm('ต้องการลบผลงานชิ้นนี้ใช่หรือไม่?')"><i class="fas fa-trash"></i></a>
                 </div>
             </div>
@@ -696,12 +798,12 @@ function showToast(msg, type) {
 }
 
 // ── Mobile sidebar toggle ──────────────────────────────────
-const sidebar  = document.getElementById('sidebar');
-const overlay  = document.getElementById('sidebarOverlay');
+const sidebar   = document.getElementById('sidebar');
+const overlay   = document.getElementById('sidebarOverlay');
 const hamburger = document.getElementById('hamburgerBtn');
 
-function openSidebar()  { sidebar.classList.add('mobile-open');  overlay.classList.add('active'); }
-function closeSidebar() { sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); }
+function openSidebar()  { sidebar.classList.add('mobile-open');  overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeSidebar() { sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
 
 hamburger.addEventListener('click', () => sidebar.classList.contains('mobile-open') ? closeSidebar() : openSidebar());
 overlay.addEventListener('click', closeSidebar);
@@ -709,6 +811,11 @@ overlay.addEventListener('click', closeSidebar);
 // Close sidebar when a nav link is clicked on mobile
 sidebar.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => { if (window.innerWidth < 768) closeSidebar(); });
+});
+
+// Close sidebar on resize to desktop
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) closeSidebar();
 });
 
 // ── Active nav highlight by hash ──────────────────────────
@@ -724,6 +831,20 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.toggle('active', item.getAttribute('href') === hash);
         });
     }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Update active nav
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            }
+        });
+    });
 });
 </script>
 </body>
