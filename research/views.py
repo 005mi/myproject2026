@@ -180,24 +180,30 @@ def edit_project(request, project_id):
     else:
         form = ProjectForm(instance=project)
     # BUG FIX: ส่ง project ไปด้วยเพื่อแสดงชื่อในหัวฟอร์ม edit
-    return render(request, 'research/upload.html', {
+    return render(request, 'research/edit.html', {
         'form':      form,
-        'edit_mode': True,
         'project':   project,
     })
 
 
 def project_detail(request, project_id):
     # BUG FIX: ใช้ is_approved=True เพื่อกันคนพิมพ์ URL ตรงเข้าผลงานที่ยังไม่อนุมัติ
-    project  = get_object_or_404(Project, id=project_id, is_approved=True)
-    Project.objects.filter(id=project_id).update(views_count=F('views_count') + 1)
+    project = get_object_or_404(Project, id=project_id, is_approved=True)
+    
+    # --- 🟢 ส่วนที่แก้ไข: เพิ่มระบบ Session ป้องกันการปั๊มวิว 🟢 ---
+    session_key = f'viewed_project_{project.id}'
+    if not request.session.get(session_key, False):
+        Project.objects.filter(id=project_id).update(views_count=F('views_count') + 1)
+        request.session[session_key] = True
+        request.session.modified = True  # บังคับให้ Django บันทึก Session ทันที
+    # -------------------------------------------------------------
+        
     project.refresh_from_db()
     comments = project.comments.select_related('user').all()
     return render(request, 'research/detail.html', {
         'project':  project,
         'comments': comments,
     })
-
 
 def download_pdf(request, project_id):
     project = get_object_or_404(Project, id=project_id)

@@ -43,7 +43,6 @@
             pointer-events: none;
         }
 
-        /* ── CONTAINER ── */
         .form-container {
             position: relative; z-index: 1;
             max-width: 980px;
@@ -56,7 +55,6 @@
             animation: fadeUp .5s ease both;
         }
 
-        /* ── HEADER ── */
         .page-header {
             text-align: center;
             margin-bottom: clamp(20px, 4vw, 36px);
@@ -81,25 +79,6 @@
         }
         .text-danger { color: #c0392b; font-weight: 700; }
 
-        /* ── FLOATING MESSAGE ── */
-        .message-container {
-            position: fixed; top: 20px; left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999; width: auto;
-            min-width: min(320px, 90vw);
-        }
-        .alert-custom {
-            background: white; padding: 14px 24px;
-            border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-            border-left: 5px solid var(--crimson);
-            display: flex; align-items: center; gap: 10px;
-            font-weight: 700; color: var(--crimson);
-            font-size: clamp(0.85em, 2.5vw, 0.95em);
-            white-space: nowrap;
-        }
-
-        /* ── SECTION TITLE ── */
         .form-section-title {
             background: linear-gradient(135deg, var(--crimson-dk) 0%, var(--crimson) 100%);
             color: white;
@@ -113,7 +92,6 @@
         }
         .form-section-title i { font-size: 1.1em; opacity: 0.9; }
 
-        /* ── GRID ── */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -126,8 +104,7 @@
             .full-width { grid-column: span 1; }
         }
 
-        /* ── FORM GROUP ── */
-        .form-group { margin-bottom: clamp(14px, 3vw, 20px); }
+        .form-group { margin-bottom: clamp(14px, 3vw, 20px); position: relative; }
 
         label {
             display: block;
@@ -137,7 +114,6 @@
             font-size: clamp(0.8em, 2.5vw, 0.9em);
         }
 
-        /* Django form widgets override */
         .form-group input[type="text"],
         .form-group input[type="number"],
         .form-group input[type="email"],
@@ -153,7 +129,7 @@
             border: 1.5px solid var(--border);
             border-radius: 12px;
             font-family: 'Sarabun', sans-serif;
-            font-size: max(16px, 0.95em); /* กัน iOS zoom */
+            font-size: max(16px, 0.95em);
             color: var(--ink);
             background: #faf7f4;
             transition: border-color .2s, box-shadow .2s;
@@ -174,8 +150,6 @@
             min-height: clamp(90px, 15vw, 120px);
             line-height: 1.6;
         }
-
-        /* select arrow */
         .form-group { position: relative; }
         select {
             padding-right: 36px;
@@ -183,8 +157,6 @@
             background-repeat: no-repeat;
             background-position: right 14px center;
         }
-
-        /* file input */
         input[type="file"] {
             padding: clamp(10px, 2.5vw, 13px) 14px;
             cursor: pointer;
@@ -208,20 +180,18 @@
             color: var(--muted);
             display: flex; align-items: center; gap: 5px;
         }
+        .errorlist { list-style: none; margin-top: 5px; }
+        .errorlist li { color: #c0392b; font-size: 0.82em; font-weight: 600; }
 
-        /* ── SUBMIT ── */
         .btn-submit {
             width: 100%;
             padding: clamp(14px, 3.5vw, 18px);
             background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-lt) 100%);
-            color: white; border: none;
-            border-radius: 14px;
-            font-family: 'Sarabun', sans-serif;
-            font-size: clamp(1em, 3vw, 1.12em);
-            font-weight: 700;
-            cursor: pointer;
+            color: white; border: none; border-radius: 14px;
+            font-family: 'Sarabun'; font-size: clamp(1em, 3vw, 1.1em);
+            font-weight: 700; cursor: pointer;
             transition: box-shadow .2s, transform .2s;
-            box-shadow: 0 4px 18px rgba(122,12,34,0.28);
+            box-shadow: 0 6px 20px rgba(122,12,34,0.30);
             margin-top: clamp(16px, 3vw, 24px);
             display: flex; align-items: center; justify-content: center; gap: 10px;
             touch-action: manipulation;
@@ -231,7 +201,6 @@
             transform: translateY(-2px);
         }
         .btn-submit:active { transform: translateY(0); }
-
         .btn-back {
             display: block; text-align: center;
             margin-top: clamp(14px, 3vw, 20px);
@@ -242,42 +211,68 @@
         }
         .btn-back:hover { color: var(--crimson); }
 
-        /* ── ANIMATION ── */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(28px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── LANDSCAPE MOBILE ── */
+        /* ── Toast ── */
+        #toast-container {
+            position: fixed; top: 20px; right: 20px;
+            z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            display: flex; align-items: flex-start; gap: 12px;
+            min-width: 280px; max-width: 380px;
+            padding: 13px 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            pointer-events: all;
+            animation: toastIn .35s cubic-bezier(0.34,1.56,0.64,1) both;
+            position: relative; overflow: hidden;
+        }
+        .toast.success { border-left: 4px solid #2d6a4f; }
+        .toast.error   { border-left: 4px solid #c0392b; }
+        .toast.warning { border-left: 4px solid var(--gold); }
+        .toast.info    { border-left: 4px solid #2980b9; }
+        .toast-msg { flex: 1; font-size: 0.9em; line-height: 1.4; padding-top: 1px; }
+        .toast-icon { font-size: 1em; margin-top: 2px; }
+        .toast.success .toast-icon { color: #2d6a4f; }
+        .toast.error   .toast-icon { color: #c0392b; }
+        .toast.warning .toast-icon { color: var(--gold); }
+        .toast.info    .toast-icon { color: #2980b9; }
+        .toast-progress {
+            position: absolute; bottom: 0; left: 0; height: 3px;
+            animation: toastProg 4s linear forwards;
+        }
+        .toast.success .toast-progress { background: #2d6a4f; }
+        .toast.error   .toast-progress { background: #c0392b; }
+        .toast.warning .toast-progress { background: var(--gold); }
+        .toast.info    .toast-progress { background: #2980b9; }
+        @keyframes toastIn {
+            from { opacity:0; transform: translateX(60px) scale(.9); }
+            to   { opacity:1; transform: translateX(0) scale(1); }
+        }
+        @keyframes toastProg { from { width:100%; } to { width:0%; } }
+
         @media (max-height: 600px) and (orientation: landscape) {
             body { padding: 12px; }
             .form-container { padding: 20px 24px; }
             .page-header { padding-bottom: 14px; margin-bottom: 14px; }
         }
-
-        /* ── SMALL PHONES ── */
         @media (max-width: 359px) {
             .form-container { padding: 18px 14px; border-radius: 18px; }
             .form-section-title { border-radius: 10px; }
         }
-
-        /* ── TABLET & UP ── */
         @media (min-width: 768px) {
             body { padding: 40px 20px; }
         }
     </style>
 </head>
 <body>
-
-    {% if messages %}
-    <div class="message-container" id="msg-box">
-        {% for message in messages %}
-        <div class="alert-custom">
-            <i class="fas fa-check-circle"></i> {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <div class="form-container">
         <div class="page-header">
@@ -300,18 +295,18 @@
                 <div class="form-group full-width">
                     <label>ชื่อผลงานวิจัย (ภาษาไทย) <span class="text-danger">*</span></label>
                     {{ form.title_th }}
+                    {{ form.title_th.errors }}
                 </div>
                 <div class="form-group full-width">
                     <label>ชื่อผลงานวิจัย (ภาษาอังกฤษ)</label>
                     {{ form.title_en }}
                 </div>
-                <div class="form-group">
-                    <label>ชื่อนักวิจัยหลัก <span class="text-danger">*</span></label>
-                    {{ form.student_name }}
-                </div>
+                {# student_name ถูก set อัตโนมัติใน view จาก request.user.username
+                   ไม่แสดง field นี้เพื่อไม่ให้ผู้ใช้แก้ไขได้ #}
                 <div class="form-group">
                     <label>สาขาวิชา <span class="text-danger">*</span></label>
                     {{ form.department }}
+                    {{ form.department.errors }}
                 </div>
                 <div class="form-group">
                     <label>นักวิจัยร่วมคนที่ 1</label>
@@ -324,6 +319,7 @@
                 <div class="form-group">
                     <label>ปีที่เสร็จสิ้น (พ.ศ.) <span class="text-danger">*</span></label>
                     {{ form.academic_year }}
+                    {{ form.academic_year.errors }}
                 </div>
                 <div class="form-group">
                     <label>ประเภทงานวิจัย <span class="text-danger">*</span></label>
@@ -405,6 +401,7 @@
             <div class="form-group">
                 <label>อัปโหลดไฟล์ PDF ฉบับเต็ม <span class="text-danger">*</span></label>
                 {{ form.pdf_file }}
+                {{ form.pdf_file.errors }}
                 <p class="field-hint">
                     <i class="fas fa-info-circle" style="color:var(--gold);"></i>
                     รองรับเฉพาะไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 10MB)
@@ -414,23 +411,52 @@
             <button type="submit" class="btn-submit">
                 <i class="fas fa-save"></i> บันทึกข้อมูลและส่งตรวจสอบ
             </button>
-
             <a href="{% url 'project_list' %}" class="btn-back">
                 <i class="fas fa-times"></i> ยกเลิกและกลับหน้าหลัก
             </a>
         </form>
     </div>
 
+    <!-- ── Toast ── -->
+    <div id="toast-container"></div>
+    <div id="django-messages" style="display:none;">
+        {% if messages %}
+            {% for message in messages %}
+                <span data-tags="{{ message.tags }}">{{ message }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+
     <script>
-        const msgBox = document.getElementById('msg-box');
-        if (msgBox) {
-            setTimeout(() => {
-                msgBox.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                msgBox.style.opacity = '0';
-                msgBox.style.transform = 'translateX(-50%) translateY(-20px)';
-                setTimeout(() => msgBox.remove(), 500);
-            }, 3000);
-        }
+    const TAG_MAP = {
+        success: { cls:'success', icon:'fa-circle-check' },
+        error:   { cls:'error',   icon:'fa-circle-xmark' },
+        warning: { cls:'warning', icon:'fa-triangle-exclamation' },
+        info:    { cls:'info',    icon:'fa-circle-info' },
+    };
+    function showToast(msg, tag) {
+        const cfg = TAG_MAP[tag] || TAG_MAP.info;
+        const t = document.createElement('div');
+        t.className = `toast ${cfg.cls}`;
+        t.innerHTML = `<i class="fas ${cfg.icon} toast-icon"></i>
+                       <span class="toast-msg">${msg}</span>
+                       <div class="toast-progress"></div>`;
+        document.getElementById('toast-container').appendChild(t);
+        setTimeout(() => {
+            t.style.animation = 'none';
+            t.style.transition = 'opacity .35s';
+            t.style.opacity = '0';
+            setTimeout(() => t.remove(), 350);
+        }, 4000);
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#django-messages span').forEach((el, i) => {
+            const tags = el.dataset.tags || 'info';
+            const tag  = tags.split(' ').find(t => TAG_MAP[t]) || 'info';
+            setTimeout(() => showToast(el.textContent.trim(), tag), i * 150);
+        });
+    });
+    window.showToast = showToast;
     </script>
 </body>
 </html>

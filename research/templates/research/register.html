@@ -36,7 +36,6 @@
             position: relative;
             overflow-x: hidden;
         }
-
         body::before {
             content: '';
             position: fixed; inset: 0; z-index: 0;
@@ -46,7 +45,6 @@
             pointer-events: none;
         }
 
-        /* ── CARD ── */
         .register-card {
             position: relative; z-index: 1;
             background: white;
@@ -59,10 +57,15 @@
             animation: fadeUp .5s ease both;
         }
 
-        /* ── HEADER ── */
+        /* ── HEADER (match login.html) ── */
         .card-header {
             text-align: center;
             margin-bottom: clamp(20px, 4vw, 28px);
+        }
+        .logo-img {
+            height: clamp(52px, 12vw, 72px);
+            margin-bottom: 12px;
+            filter: drop-shadow(0 3px 8px rgba(122,12,34,0.15));
         }
         .card-title {
             font-family: 'Playfair Display', serif;
@@ -71,26 +74,15 @@
             color: var(--crimson-dk);
             margin-bottom: 4px;
         }
+        .card-title span {
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         .card-sub {
             color: var(--muted);
             font-size: clamp(0.78em, 2.5vw, 0.85em);
             line-height: 1.5;
-        }
-
-        /* ── MESSAGES ── */
-        .messages-box {
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 18px;
-            font-size: 0.85em;
-            border-left: 4px solid;
-            display: flex; align-items: flex-start; gap: 8px;
-        }
-        .messages-box.error {
-            background: #fdf0f0; color: #7b1a1a; border-color: #c0392b;
-        }
-        .messages-box.success {
-            background: #f0fff4; color: var(--green); border-color: var(--green);
         }
 
         /* ── TYPE SELECTOR ── */
@@ -127,10 +119,7 @@
         }
 
         /* ── FORM ── */
-        .form-group {
-            margin-bottom: clamp(14px, 3vw, 18px);
-            position: relative;
-        }
+        .form-group { margin-bottom: clamp(14px, 3vw, 18px); position: relative; }
         label {
             display: block;
             margin-bottom: 7px;
@@ -150,7 +139,7 @@
             border: 1.5px solid var(--border);
             border-radius: 12px;
             font-family: 'Sarabun', sans-serif;
-            font-size: max(16px, 1em); /* กัน iOS zoom */
+            font-size: max(16px, 1em);
             color: var(--ink);
             background: #faf7f4;
             transition: border-color .2s, box-shadow .2s;
@@ -164,7 +153,6 @@
             background: white;
         }
 
-        /* select arrow */
         .select-wrap { position: relative; }
         .select-wrap::after {
             content: '\f107';
@@ -178,7 +166,6 @@
             font-size: 0.9em;
         }
 
-        /* password toggle */
         .password-wrap { position: relative; }
         .password-wrap input { padding-right: 46px; }
         .toggle-pass-btn {
@@ -194,7 +181,6 @@
         }
         .toggle-pass-btn:hover { color: var(--crimson); }
 
-        /* hint text */
         .field-hint {
             margin-top: 5px;
             font-size: clamp(0.72em, 2vw, 0.78em);
@@ -202,29 +188,22 @@
             display: flex; align-items: center; gap: 5px;
         }
 
-        /* checkbox */
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            font-weight: 600 !important;
-            font-size: clamp(0.82em, 2.5vw, 0.9em);
-            color: var(--ink);
-        }
-        .checkbox-label input[type="checkbox"] {
-            width: 18px; height: 18px;
-            accent-color: var(--crimson);
-            cursor: pointer;
-            flex-shrink: 0;
-            padding: 0;
-            border-radius: 4px;
-        }
-
-        /* hidden fields */
         .hidden-field { display: none; }
 
-        /* ── SUBMIT ── */
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: clamp(14px, 3vw, 20px) 0;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1;
+            height: 1px; background: var(--border);
+        }
+        .divider-text {
+            font-size: 0.72em; font-weight: 700;
+            color: var(--muted); text-transform: uppercase;
+            letter-spacing: 0.06em; white-space: nowrap;
+        }
+
         .btn-register {
             width: 100%;
             padding: clamp(13px, 3.5vw, 16px);
@@ -247,56 +226,82 @@
         }
         .btn-register:active { transform: translateY(0); }
 
-        /* ── FOOTER ── */
         .footer-link {
             text-align: center;
             margin-top: clamp(18px, 4vw, 24px);
             font-size: clamp(0.82em, 2.5vw, 0.9em);
             color: var(--muted);
         }
-        .footer-link a {
-            color: var(--gold);
-            text-decoration: none;
-            font-weight: 700;
-        }
+        .footer-link a { color: var(--gold); text-decoration: none; font-weight: 700; }
         .footer-link a:hover { color: var(--crimson); }
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.88em;
+            color: var(--crimson) !important;
+            font-weight: 400 !important;
+            opacity: 0.7;
+        }
+        .back-link:hover { opacity: 1; }
 
-        /* ── DIVIDER ── */
-        .divider {
-            display: flex; align-items: center; gap: 12px;
-            margin: clamp(14px, 3vw, 20px) 0;
-        }
-        .divider::before, .divider::after {
-            content: ''; flex: 1;
-            height: 1px; background: var(--border);
-        }
-        .divider-text {
-            font-size: 0.72em; font-weight: 700;
-            color: var(--muted); text-transform: uppercase;
-            letter-spacing: 0.06em; white-space: nowrap;
-        }
-
-        /* ── ANIMATION ── */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(28px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── LANDSCAPE MOBILE ── */
+        /* ── Toast ── */
+        #toast-container {
+            position: fixed; top: 20px; right: 20px;
+            z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            display: flex; align-items: flex-start; gap: 12px;
+            min-width: 280px; max-width: 380px;
+            padding: 13px 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            pointer-events: all;
+            animation: toastIn .35s cubic-bezier(0.34,1.56,0.64,1) both;
+            position: relative; overflow: hidden;
+        }
+        .toast.success { border-left: 4px solid var(--green); }
+        .toast.error   { border-left: 4px solid #c0392b; }
+        .toast.warning { border-left: 4px solid var(--gold); }
+        .toast.info    { border-left: 4px solid #2980b9; }
+        .toast-msg { flex: 1; font-size: 0.9em; line-height: 1.4; }
+        .toast-icon { font-size: 1em; margin-top: 2px; }
+        .toast.success .toast-icon { color: var(--green); }
+        .toast.error   .toast-icon { color: #c0392b; }
+        .toast.warning .toast-icon { color: var(--gold); }
+        .toast.info    .toast-icon { color: #2980b9; }
+        .toast-progress {
+            position: absolute; bottom: 0; left: 0; height: 3px;
+            animation: toastProg 4s linear forwards;
+        }
+        .toast.success .toast-progress { background: var(--green); }
+        .toast.error   .toast-progress { background: #c0392b; }
+        .toast.warning .toast-progress { background: var(--gold); }
+        .toast.info    .toast-progress { background: #2980b9; }
+        @keyframes toastIn {
+            from { opacity:0; transform: translateX(60px) scale(.9); }
+            to   { opacity:1; transform: translateX(0) scale(1); }
+        }
+        @keyframes toastProg { from { width:100%; } to { width:0%; } }
+
         @media (max-height: 600px) and (orientation: landscape) {
             body { align-items: flex-start; padding: 12px 16px; }
             .register-card { padding: 20px 28px; border-radius: 20px; }
+            .logo-img { height: 40px; margin-bottom: 6px; }
             .card-header { margin-bottom: 14px; }
             .form-group { margin-bottom: 10px; }
         }
-
-        /* ── SMALL PHONES ── */
         @media (max-width: 359px) {
             .register-card { padding: 20px 16px; border-radius: 20px; }
             .type-btn { font-size: 0.7em; padding: 8px 2px; }
         }
-
-        /* ── TABLET & UP ── */
         @media (min-width: 640px) {
             .register-card { padding: 44px 48px; }
         }
@@ -304,39 +309,38 @@
 </head>
 <body>
 
-<div class="register-card">
-
-    <div class="card-header">
-        <div class="card-title">สมัครสมาชิกใหม่</div>
-        <p class="card-sub">แหล่งรวมงานวิจัยและผลงานวิชาการ<br>วิทยาลัยเทคนิคร้อยเอ็ด</p>
-    </div>
-
+<!-- ── Toast ── -->
+<div id="toast-container"></div>
+<div id="django-messages" style="display:none;">
     {% if messages %}
         {% for message in messages %}
-        <div class="messages-box {{ message.tags }}">
-            <i class="fas {% if 'error' in message.tags %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
-            {{ message }}
-        </div>
+            <span data-tags="{{ message.tags }}">{{ message }}</span>
         {% endfor %}
     {% endif %}
+</div>
+
+<div class="register-card">
+
+    <!-- header ตรงกับ login.html -->
+    <div class="card-header">
+        <img src="{% static 'logoretc.png' %}" alt="Logo RETC" class="logo-img">
+        <div class="card-title">RETC <span>Academic</span></div>
+        <p class="card-sub">สมัครสมาชิกใหม่<br>แหล่งรวมงานวิจัย วิทยาลัยเทคนิคร้อยเอ็ด</p>
+    </div>
 
     <form method="post" autocomplete="on">
         {% csrf_token %}
 
-        <!-- ประเภทผู้ใช้ -->
         <div class="user-type-selector">
-            <button type="button" class="type-btn active"
-                    onclick="setUserType('student', this)">
+            <button type="button" class="type-btn active" onclick="setUserType('student', this)">
                 <i class="fas fa-user-graduate" style="margin-right:4px;"></i>นักศึกษา
             </button>
-            <button type="button" class="type-btn"
-                    onclick="setUserType('guest', this)">
+            <button type="button" class="type-btn" onclick="setUserType('guest', this)">
                 <i class="fas fa-user" style="margin-right:4px;"></i>บุคคลภายนอก
             </button>
         </div>
         <input type="hidden" name="user_type" id="user_type" value="student">
 
-        <!-- ชื่อผู้ใช้ -->
         <div class="form-group">
             <label id="username-label" for="username">
                 ชื่อผู้ใช้งาน / รหัสนักศึกษา (11 หลัก)
@@ -346,17 +350,13 @@
                    autocomplete="username" required>
         </div>
 
-        <!-- อีเมล (guest เท่านั้น) -->
         <div class="form-group hidden-field" id="email-field">
-            <label for="email">
-                อีเมล <span class="required">*</span>
-            </label>
+            <label for="email">อีเมล <span class="required">*</span></label>
             <input type="email" name="email" id="email"
                    placeholder="example@email.com"
                    autocomplete="email">
         </div>
 
-        <!-- เบอร์โทร -->
         <div class="form-group">
             <label for="phone">เบอร์โทรศัพท์</label>
             <input type="tel" name="phone" id="phone"
@@ -372,20 +372,17 @@
             <span class="divider-text"><i class="fas fa-lock"></i> รหัสผ่าน</span>
         </div>
 
-        <!-- รหัสผ่าน -->
         <div class="form-group">
             <label for="password">รหัสผ่าน</label>
             <div class="password-wrap">
                 <input type="password" name="password" id="password"
-                       placeholder= "ตั้งรหัสผ่านของคุณ"
+                       placeholder="ตั้งรหัสผ่านของคุณ (อย่างน้อย 6 ตัว)"
                        autocomplete="new-password" required>
                 <button type="button" class="toggle-pass-btn" onclick="togglePass('password', this)" title="แสดง/ซ่อน">
                     <i class="fas fa-eye"></i>
                 </button>
             </div>
         </div>
-
-        
 
         <button type="submit" class="btn-register">
             <i class="fas fa-user-plus" style="margin-right:8px;"></i>ยืนยันการสมัครสมาชิก
@@ -394,46 +391,72 @@
 
     <div class="footer-link">
         มีบัญชีอยู่แล้ว? <a href="{% url 'login' %}">เข้าสู่ระบบที่นี่</a>
+        <br>
+        <a href="{% url 'project_list' %}" class="back-link">
+            <i class="fas fa-arrow-left" style="margin-right:4px;"></i> กลับหน้าหลัก
+        </a>
     </div>
 
 </div>
 
 <script>
-    // ── สลับประเภทผู้ใช้ ──────────────────────────────────────
-    function setUserType(type, btn) {
-        document.getElementById('user_type').value = type;
-        const isGuest = type === 'guest';
+function setUserType(type, btn) {
+    document.getElementById('user_type').value = type;
+    const isGuest = type === 'guest';
+    document.getElementById('username-label').textContent = isGuest
+        ? 'ชื่อผู้ใช้งาน'
+        : 'ชื่อผู้ใช้งาน / รหัสนักศึกษา (11 หลัก)';
+    document.getElementById('username').placeholder = isGuest
+        ? 'กรอกชื่อผู้ใช้'
+        : 'กรอกรหัสนักศึกษาหรือชื่อผู้ใช้';
+    document.getElementById('email-field').classList.toggle('hidden-field', !isGuest);
+    document.getElementById('email').required = isGuest;
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
 
-        document.getElementById('username-label').textContent = isGuest
-            ? 'ชื่อผู้ใช้งาน'
-            : 'ชื่อผู้ใช้งาน / รหัสนักศึกษา (11 หลัก)';
-        document.getElementById('username').placeholder = isGuest
-            ? 'กรอกชื่อผู้ใช้'
-            : 'กรอกรหัสนักศึกษาหรือชื่อผู้ใช้';
+function togglePass(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon  = btn.querySelector('i');
+    const show  = input.type === 'password';
+    input.type  = show ? 'text' : 'password';
+    icon.classList.toggle('fa-eye',      !show);
+    icon.classList.toggle('fa-eye-slash', show);
+}
 
-        document.getElementById('email-field').classList.toggle('hidden-field', !isGuest);
-        
-        document.getElementById('email').required = isGuest;
+document.getElementById('phone').addEventListener('input', function () {
+    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+});
 
-        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    // ── แสดง/ซ่อนรหัสผ่าน ─────────────────────────────────────
-    function togglePass(inputId, btn) {
-        const input = document.getElementById(inputId);
-        const icon  = btn.querySelector('i');
-        const show  = input.type === 'password';
-        input.type  = show ? 'text' : 'password';
-        icon.classList.toggle('fa-eye',      !show);
-        icon.classList.toggle('fa-eye-slash', show);
-    }
-
-    // ── กรองเบอร์โทรให้เป็นตัวเลขเท่านั้น ────────────────────
-    document.getElementById('phone').addEventListener('input', function () {
-        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+// ── Toast ──────────────────────────────────────────────────────
+const TAG_MAP = {
+    success: { cls:'success', icon:'fa-circle-check' },
+    error:   { cls:'error',   icon:'fa-circle-xmark' },
+    warning: { cls:'warning', icon:'fa-triangle-exclamation' },
+    info:    { cls:'info',    icon:'fa-circle-info' },
+};
+function showToast(msg, tag) {
+    const cfg = TAG_MAP[tag] || TAG_MAP.info;
+    const t = document.createElement('div');
+    t.className = `toast ${cfg.cls}`;
+    t.innerHTML = `<i class="fas ${cfg.icon} toast-icon"></i>
+                   <span class="toast-msg">${msg}</span>
+                   <div class="toast-progress"></div>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => {
+        t.style.transition = 'opacity .35s';
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 350);
+    }, 4000);
+}
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#django-messages span').forEach((el, i) => {
+        const tags = el.dataset.tags || 'info';
+        const tag  = tags.split(' ').find(t => TAG_MAP[t]) || 'info';
+        setTimeout(() => showToast(el.textContent.trim(), tag), i * 150);
     });
+});
+window.showToast = showToast;
 </script>
-
 </body>
 </html>

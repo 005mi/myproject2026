@@ -460,6 +460,11 @@
             <span class="label">หน่วยงาน</span>
             <span class="meta-val">{{ project.organization|default:"วิทยาลัยเทคนิคร้อยเอ็ด" }}</span>
         </div>
+        <div class="meta-item">
+            <i class="fas fa-hand-holding-usd"></i>
+            <span class="label">ผู้สนับสนุนทุนวิจัย</span>
+            <span class="meta-val">{{ project.funding_by|default:"-" }}</span>
+        </div>
     </div>
 
     <!-- ── Award ── -->

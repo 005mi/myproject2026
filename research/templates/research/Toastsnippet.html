@@ -1,91 +1,68 @@
 <!-- =====================================================================
   TOAST NOTIFICATION — วางไว้ก่อนปิด </body> ในทุกหน้า
-  (list.html, login.html, register.html, forgot_password.html)
+  top: 20px  (ใช้กับหน้าที่ไม่มี navbar เช่น login, register, upload)
+  top: 70px  (ใช้กับหน้าที่มี topbar/navbar เช่น edit, admin_dashboard)
   ===================================================================== -->
 
-<!-- ── 1. TOAST STYLES — วางใน <style> หรือก่อน </head> ──────────────── -->
+<!-- ── 1. TOAST STYLES ──────────────────────────────────────────── -->
 <style>
-/* ─── TOAST ────────────────────────────────────────────────── */
 #toast-container {
     position: fixed;
-    top: 80px; /* ใต้ Navbar */
-    left: 50%;
-    transform: translateX(-50%);
+    top: 20px;   /* ← เปลี่ยนเป็น 70px ถ้าหน้านั้นมี topbar */
+    right: 20px;
     z-index: 99999;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 10px;
     pointer-events: none;
-    min-width: 320px;
-    max-width: 90vw;
 }
-
 .toast {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
-    padding: 15px 22px;
-    border-radius: 16px;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 0.95em;
-    font-weight: 700;
-    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
-    pointer-events: all;
-    animation: toastIn .4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    border-left: 5px solid transparent;
+    min-width: 280px;
+    max-width: 380px;
+    padding: 13px 16px;
     background: white;
-    min-width: 300px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    pointer-events: all;
+    animation: toastIn .35s cubic-bezier(0.34,1.56,0.64,1) both;
+    position: relative;
+    overflow: hidden;
 }
+.toast.success { border-left: 4px solid #2d6a4f; }
+.toast.error   { border-left: 4px solid #c0392b; }
+.toast.warning { border-left: 4px solid #c9972b; }
+.toast.info    { border-left: 4px solid #2980b9; }
 
-/* ประเภท toast */
-.toast.success { border-color: #28a745; color: #155724; }
-.toast.success .toast-icon { color: #28a745; }
+.toast-icon { font-size: 1em; margin-top: 2px; }
+.toast.success .toast-icon { color: #2d6a4f; }
+.toast.error   .toast-icon { color: #c0392b; }
+.toast.warning .toast-icon { color: #c9972b; }
+.toast.info    .toast-icon { color: #2980b9; }
 
-.toast.error   { border-color: #dc3545; color: #721c24; }
-.toast.error   .toast-icon { color: #dc3545; }
+.toast-msg { flex: 1; font-size: 0.9em; line-height: 1.4; }
 
-.toast.info    { border-color: #17a2b8; color: #0c5460; }
-.toast.info    .toast-icon { color: #17a2b8; }
-
-.toast.warning { border-color: #ffc107; color: #856404; }
-.toast.warning .toast-icon { color: #ffc107; }
-
-.toast-icon { font-size: 1.2em; flex-shrink: 0; }
-.toast-msg  { flex: 1; }
-
-/* Progress bar */
 .toast-progress {
-    position: absolute;
-    bottom: 0; left: 0;
-    height: 3px;
-    border-radius: 0 0 16px 16px;
-    animation: toastProgress 5s linear forwards;
+    position: absolute; bottom: 0; left: 0; height: 3px;
+    animation: toastProg 4s linear forwards;
 }
-.toast { position: relative; overflow: hidden; }
-.toast.success .toast-progress { background: #28a745; }
-.toast.error   .toast-progress { background: #dc3545; }
-.toast.info    .toast-progress { background: #17a2b8; }
-.toast.warning .toast-progress { background: #ffc107; }
+.toast.success .toast-progress { background: #2d6a4f; }
+.toast.error   .toast-progress { background: #c0392b; }
+.toast.warning .toast-progress { background: #c9972b; }
+.toast.info    .toast-progress { background: #2980b9; }
 
 @keyframes toastIn {
-    from { opacity: 0; transform: translateY(-20px) scale(0.95); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity:0; transform: translateX(60px) scale(.9); }
+    to   { opacity:1; transform: translateX(0) scale(1); }
 }
-@keyframes toastOut {
-    from { opacity: 1; transform: translateY(0) scale(1); }
-    to   { opacity: 0; transform: translateY(-16px) scale(0.95); }
-}
-@keyframes toastProgress {
-    from { width: 100%; }
-    to   { width: 0%; }
-}
+@keyframes toastProg { from { width:100%; } to { width:0%; } }
 </style>
 
-<!-- ── 2. TOAST CONTAINER — วางก่อน </body> ────────────────────────────── -->
+<!-- ── 2. CONTAINERS ── -->
 <div id="toast-container"></div>
 
-<!-- Django messages ซ่อน (เพื่อส่งค่าให้ JS อ่าน) -->
 <div id="django-messages" style="display:none;">
     {% if messages %}
         {% for message in messages %}
@@ -94,59 +71,40 @@
     {% endif %}
 </div>
 
-<!-- ── 3. TOAST SCRIPT — วางก่อน </body> ──────────────────────────────── -->
+<!-- ── 3. SCRIPT ── -->
 <script>
 (function () {
-    // map Django message.tags → toast type
-    const tagMap = {
-        'success': 'success',
-        'error':   'error',
-        'warning': 'warning',
-        'info':    'info',
-        'debug':   'info',
+    const TAG_MAP = {
+        success: { cls:'success', icon:'fa-circle-check' },
+        error:   { cls:'error',   icon:'fa-circle-xmark' },
+        warning: { cls:'warning', icon:'fa-triangle-exclamation' },
+        info:    { cls:'info',    icon:'fa-circle-info' },
+        debug:   { cls:'info',    icon:'fa-circle-info' },
     };
 
-    const iconMap = {
-        'success': 'fa-circle-check',
-        'error':   'fa-circle-xmark',
-        'warning': 'fa-triangle-exclamation',
-        'info':    'fa-circle-info',
-    };
-
-    function showToast(msg, type) {
-        type = tagMap[type] || 'info';
-        const icon = iconMap[type] || 'fa-circle-info';
-
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `
-            <i class="fas ${icon} toast-icon"></i>
-            <span class="toast-msg">${msg}</span>
-            <div class="toast-progress"></div>
-        `;
-
-        const container = document.getElementById('toast-container');
-        container.appendChild(toast);
-
-        // หายใน 5 วิ
+    function showToast(msg, tag) {
+        const cfg = TAG_MAP[tag] || TAG_MAP.info;
+        const t = document.createElement('div');
+        t.className = `toast ${cfg.cls}`;
+        t.innerHTML = `<i class="fas ${cfg.icon} toast-icon"></i>
+                       <span class="toast-msg">${msg}</span>
+                       <div class="toast-progress"></div>`;
+        document.getElementById('toast-container').appendChild(t);
         setTimeout(() => {
-            toast.style.animation = 'toastOut .4s ease forwards';
-            setTimeout(() => toast.remove(), 400);
-        }, 5000);
+            t.style.transition = 'opacity .35s';
+            t.style.opacity = '0';
+            setTimeout(() => t.remove(), 350);
+        }, 4000);
     }
 
-    // อ่าน Django messages แล้วแสดง toast
     document.addEventListener('DOMContentLoaded', function () {
-        const spans = document.querySelectorAll('#django-messages span');
-        spans.forEach(span => {
-            const tags = span.dataset.tags || 'info';
-            // Django อาจส่ง "error" หรือ "messages error" มา
-            const type = tags.split(' ').find(t => tagMap[t]) || 'info';
-            showToast(span.textContent.trim(), type);
+        document.querySelectorAll('#django-messages span').forEach((el, i) => {
+            const tags = el.dataset.tags || 'info';
+            const tag  = tags.split(' ').find(t => TAG_MAP[t]) || 'info';
+            setTimeout(() => showToast(el.textContent.trim(), tag), i * 150);
         });
     });
 
-    // export ให้ใช้งานจาก JS อื่น ๆ ได้
     window.showToast = showToast;
 })();
 </script>
