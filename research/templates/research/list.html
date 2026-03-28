@@ -78,7 +78,6 @@
             letter-spacing: 0.04em;
         }
 
-        /* Hamburger for mobile */
         .btn-hamburger {
             display: none;
             width: 40px; height: 40px;
@@ -128,14 +127,6 @@
         }
         .btn-outline-crimson:hover { background: var(--crimson); color: white; }
 
-        /* Mobile nav drawer */
-        .nav-drawer-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.4); z-index: 190;
-            backdrop-filter: blur(2px);
-        }
-        .nav-drawer-overlay.active { display: block; }
-
         /* ═══════════════════════════════════════════
            MESSAGES
         ═══════════════════════════════════════════ */
@@ -182,9 +173,7 @@
             bottom: -80px; left: 5%;
         }
 
-        .hero-inner {
-            max-width: 1100px; margin: 0 auto;
-        }
+        .hero-inner { max-width: 1100px; margin: 0 auto; }
         .hero-eyebrow {
             display: inline-flex; align-items: center; gap: 8px;
             background: rgba(122,12,34,0.08);
@@ -341,6 +330,7 @@
         .filter-chips {
             display: flex; flex-wrap: wrap; gap: 7px;
             justify-content: center; margin-bottom: 16px;
+            align-items: center;
         }
         .chip {
             padding: 6px 16px; border-radius: 40px;
@@ -348,16 +338,53 @@
             text-decoration: none; transition: .2s;
             border: 1.5px solid transparent;
             background: #f5f0eb; color: var(--muted);
-            touch-action: manipulation;
+            touch-action: manipulation; cursor: pointer;
         }
         .chip:hover { background: rgba(122,12,34,0.08); color: var(--crimson); border-color: rgba(122,12,34,0.2); }
         .chip.active { background: var(--crimson); color: white; box-shadow: 0 3px 10px rgba(122,12,34,0.22); }
+
+        /* ── Year dropdown "ปีอื่นๆ" ─────────────────────── */
+        .year-more-wrap {
+            position: relative; display: inline-block;
+        }
+        .chip-more {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 14px; border-radius: 40px;
+            font-size: 0.8em; font-weight: 600;
+            border: 1.5px solid var(--border);
+            background: #f5f0eb; color: var(--muted);
+            cursor: pointer; user-select: none;
+            transition: .2s;
+        }
+        .chip-more:hover { background: rgba(122,12,34,0.08); color: var(--crimson); border-color: rgba(122,12,34,0.2); }
+        .chip-more.active-parent { background: var(--crimson); color: white; border-color: var(--crimson); }
+        .chip-more i { font-size: 0.75em; transition: transform .2s; }
+        .chip-more.open i { transform: rotate(180deg); }
+
+        .year-dropdown {
+            display: none;
+            position: absolute; top: calc(100% + 6px); left: 0;
+            background: white; border: 1px solid var(--border);
+            border-radius: 14px; padding: 8px;
+            box-shadow: 0 12px 36px rgba(122,12,34,0.13);
+            z-index: 100; min-width: 140px;
+            flex-direction: column; gap: 4px;
+        }
+        .year-dropdown.open { display: flex; }
+        .year-dropdown a {
+            padding: 7px 14px; border-radius: 8px;
+            font-size: 0.82em; font-weight: 600;
+            text-decoration: none; color: var(--muted);
+            transition: .15s; white-space: nowrap;
+        }
+        .year-dropdown a:hover { background: rgba(122,12,34,0.07); color: var(--crimson); }
+        .year-dropdown a.active { background: var(--crimson); color: white; }
 
         /* ═══════════════════════════════════════════
            PROJECT CARDS
         ═══════════════════════════════════════════ */
         .projects-section {
-            max-width: 1100px; margin: 0 auto 60px; padding: 0 5%;
+            max-width: 1100px; margin: 0 auto 32px; padding: 0 5%;
         }
 
         .project-card {
@@ -445,6 +472,62 @@
         }
         .empty-state i { font-size: 2.8em; opacity: 0.18; color: var(--crimson); }
         .empty-state p { color: var(--muted); margin-top: 12px; font-size: 1em; }
+
+        /* ═══════════════════════════════════════════
+           PAGINATION
+        ═══════════════════════════════════════════ */
+        .pagination-section {
+            max-width: 1100px; margin: 0 auto 44px; padding: 0 5%;
+        }
+        .pagination-wrap {
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; flex-wrap: wrap;
+        }
+        .page-info {
+            font-size: 0.82em; color: var(--muted); font-weight: 600;
+            text-align: center; margin-bottom: 14px;
+        }
+        .page-info b { color: var(--crimson); }
+
+        .page-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            min-width: 40px; height: 40px; padding: 0 14px;
+            border-radius: 10px; font-family: 'Sarabun';
+            font-size: 0.85em; font-weight: 700;
+            text-decoration: none; cursor: pointer;
+            transition: all .2s; border: 1.5px solid var(--border);
+            background: var(--card-bg); color: var(--muted);
+            touch-action: manipulation;
+        }
+        .page-btn:hover:not(.disabled) {
+            background: rgba(122,12,34,0.06); color: var(--crimson);
+            border-color: rgba(122,12,34,0.25); transform: translateY(-1px);
+        }
+        .page-btn.current {
+            background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-lt) 100%);
+            color: white; border-color: transparent;
+            box-shadow: 0 3px 10px rgba(122,12,34,0.25);
+        }
+        .page-btn.disabled {
+            opacity: 0.35; cursor: not-allowed; pointer-events: none;
+        }
+        .page-btn.nav-btn {
+            background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-lt) 100%);
+            color: white; border-color: transparent;
+            padding: 0 18px;
+            box-shadow: 0 3px 10px rgba(122,12,34,0.2);
+        }
+        .page-btn.nav-btn:hover:not(.disabled) {
+            box-shadow: 0 6px 18px rgba(122,12,34,0.35);
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-lt) 100%);
+            color: white;
+        }
+        .page-ellipsis {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 40px;
+            font-size: 0.9em; color: var(--muted); font-weight: 700;
+        }
 
         /* ═══════════════════════════════════════════
            RANKING
@@ -538,20 +621,13 @@
         }
 
         /* ═══════════════════════════════════════════
-           RESPONSIVE BREAKPOINTS
+           RESPONSIVE
         ═══════════════════════════════════════════ */
-
-        /* Large desktop (1400px+) */
         @media (min-width: 1400px) {
-            .stats-row, .search-section, .projects-section, .ranking-section { max-width: 1300px; }
+            .stats-row, .search-section, .projects-section,
+            .pagination-section, .ranking-section { max-width: 1300px; }
         }
 
-        /* Laptop (900–1199px) */
-        @media (max-width: 1199px) {
-            .stats-row { grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        }
-
-        /* Tablet landscape (768–899px) */
         @media (max-width: 899px) {
             .stats-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
             .nav-brand-sub { display: none; }
@@ -560,7 +636,6 @@
             .hero { padding: 44px 4% 36px; }
         }
 
-        /* Tablet portrait (600–767px) */
         @media (max-width: 767px) {
             .search-card { padding: 20px 18px; }
             .ranking-body { flex-direction: column; }
@@ -580,26 +655,21 @@
             .project-card { padding: 20px 18px; border-radius: 16px; }
             .meta-row { grid-template-columns: 1fr; gap: 6px; }
             .btn-row { gap: 7px; }
+            .year-dropdown { left: auto; right: 0; }
         }
 
-        /* Mobile (< 600px) */
         @media (max-width: 599px) {
             .navbar { padding: 0 16px; }
             .btn-hamburger { display: inline-flex; }
-
-            /* hide non-essential nav items on small mobile */
             .nav-actions .btn-pill.btn-gold:not(:last-child) { display: none; }
-
             .hero { padding: 36px 16px 28px; }
             .hero-title { font-size: 2em; }
             .hero-sub br { display: none; }
-
             .stats-row { padding: 0 16px; grid-template-columns: 1fr 1fr; gap: 10px; }
             .stat-tile { padding: 16px 12px; border-radius: 14px; }
             .stat-icon { font-size: 1.4em; margin-bottom: 6px; }
             .stat-label { font-size: 0.68em; }
             .stat-value { font-size: 1em; }
-
             .search-section { padding: 0 16px; }
             .search-card { padding: 16px 14px; border-radius: 16px; }
             .search-bar { flex-direction: column; gap: 8px; }
@@ -607,33 +677,32 @@
             .btn-search { width: 100%; justify-content: center; padding: 13px; border-radius: 10px; }
             .filter-chips { gap: 6px; justify-content: flex-start; }
             .chip { font-size: 0.76em; padding: 5px 12px; }
-
+            .chip-more { font-size: 0.76em; padding: 5px 12px; }
             .projects-section { padding: 0 16px; }
+            .pagination-section { padding: 0 16px; }
             .project-card { padding: 16px 14px; border-radius: 14px; }
             .project-title { font-size: 0.95em; margin-bottom: 10px; }
             .meta-row { grid-template-columns: 1fr; gap: 5px; margin-bottom: 14px; }
             .meta-item { font-size: 0.8em; }
             .btn-row { gap: 6px; }
             .btn-card { font-size: 0.78em; padding: 7px 14px; }
-
             .ranking-section { padding: 0 16px; margin-bottom: 50px; }
             .ranking-head { padding: 16px 18px; gap: 10px; }
             .rank-table-wrap { padding: 12px; }
             table { min-width: 280px; }
             thead th, tbody td { padding: 10px 8px; font-size: 0.82em; }
+            .page-btn { min-width: 36px; height: 36px; font-size: 0.8em; }
         }
 
-        /* Small mobile (< 400px) */
         @media (max-width: 400px) {
             .stats-row { grid-template-columns: 1fr; }
             .hero-title { font-size: 1.75em; }
             .btn-card { font-size: 0.75em; padding: 6px 12px; }
         }
 
-        /* Print */
         @media print {
             .navbar, .hero-deco, .search-section, .stats-row, .btn-row,
-            .ranking-section, .message-container { display: none !important; }
+            .ranking-section, .pagination-section, .message-container { display: none !important; }
             body { background: white; }
             .project-card { box-shadow: none; border-radius: 0; border: 1px solid #ddd; page-break-inside: avoid; }
         }
@@ -750,6 +819,7 @@
             <button type="submit" class="btn-search"><i class="fas fa-search"></i> ค้นหา</button>
         </form>
 
+        <!-- Filter สาขาวิชา -->
         <div class="filter-divider">
             <span class="filter-divider-text"><i class="fas fa-filter"></i> เลือกสาขาวิชา</span>
         </div>
@@ -768,16 +838,39 @@
                class="chip {% if request.GET.dept == 'CT' %}active{% endif %}">💻 คอมพิวเตอร์</a>
         </div>
 
+        <!-- Filter ปีการศึกษา — smart version -->
         <div class="filter-divider" style="margin-top:16px;">
             <span class="filter-divider-text"><i class="fas fa-calendar-alt"></i> ปีการศึกษา</span>
         </div>
         <div class="filter-chips">
+            {# ── ปุ่ม "ทุกปี" ── #}
             <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.dept %}dept={{ request.GET.dept }}{% endif %}"
                class="chip {% if not request.GET.year %}active{% endif %}">ทุกปี</a>
-            {% for year in years %}
+
+            {# ── ปุ่ม 4 ปีล่าสุด (ปีปัจจุบัน + ย้อนหลัง 3) ── #}
+            {% for year in recent_years %}
             <a href="?year={{ year }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.dept %}&dept={{ request.GET.dept }}{% endif %}"
                class="chip {% if request.GET.year == year|stringformat:'s' %}active{% endif %}">{{ year }}</a>
             {% endfor %}
+
+            {# ── ปุ่ม "ปีอื่นๆ ▾" — แสดงเฉพาะถ้ามีปีเก่ากว่านั้น ── #}
+            {% if older_years %}
+            <div class="year-more-wrap">
+                <div class="chip-more {% if request.GET.year|add:'0' in older_years %}active-parent{% endif %}"
+                     id="yearMoreBtn" onclick="toggleYearDropdown()">
+                    <i class="fas fa-history"></i> ปีอื่นๆ
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="year-dropdown" id="yearDropdown">
+                    {% for year in older_years %}
+                    <a href="?year={{ year }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.dept %}&dept={{ request.GET.dept }}{% endif %}"
+                       class="{% if request.GET.year == year|stringformat:'s' %}active{% endif %}">
+                        <i class="fas fa-calendar-check" style="margin-right:6px;font-size:0.85em;opacity:0.6;"></i>{{ year }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -824,6 +917,51 @@
     </div>
     {% endfor %}
 </div>
+
+<!-- ── PAGINATION ──────────────────────────────────────────── -->
+{% if projects.paginator.num_pages > 1 %}
+<div class="pagination-section">
+    <p class="page-info">
+        แสดงรายการที่ <b>{{ projects.start_index }}–{{ projects.end_index }}</b>
+        จากทั้งหมด <b>{{ projects.paginator.count }}</b> รายการ
+        (หน้า <b>{{ projects.number }}</b> / {{ projects.paginator.num_pages }})
+    </p>
+    <div class="pagination-wrap">
+
+        {# ── ปุ่ม ก่อนหน้า ── #}
+        {% if projects.has_previous %}
+            <a href="?page={{ projects.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.dept %}&dept={{ request.GET.dept }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}"
+               class="page-btn nav-btn">
+                <i class="fas fa-chevron-left"></i> ก่อนหน้า
+            </a>
+        {% else %}
+            <span class="page-btn nav-btn disabled">
+                <i class="fas fa-chevron-left"></i> ก่อนหน้า
+            </span>
+        {% endif %}
+
+        {# ── เลขหน้า — แสดงหน้าแรก, หน้าสุดท้าย, และ window ±2 รอบปัจจุบัน ── #}
+        {# BUG FIX: Django template ไม่รองรับ add:'-N' (negative) ── ใช้ JS แทน #}
+        <span id="pg-current" data-cur="{{ projects.number }}" data-total="{{ projects.paginator.num_pages }}"
+              data-q="{{ request.GET.q|default:'' }}" data-dept="{{ request.GET.dept|default:'' }}"
+              data-year="{{ request.GET.year|default:'' }}" style="display:none;"></span>
+        <span id="pg-placeholder"></span>
+
+        {# ── ปุ่ม หน้าต่อไป ── #}
+        {% if projects.has_next %}
+            <a href="?page={{ projects.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.dept %}&dept={{ request.GET.dept }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}"
+               class="page-btn nav-btn">
+                หน้าต่อไป <i class="fas fa-chevron-right"></i>
+            </a>
+        {% else %}
+            <span class="page-btn nav-btn disabled">
+                หน้าต่อไป <i class="fas fa-chevron-right"></i>
+            </span>
+        {% endif %}
+
+    </div>
+</div>
+{% endif %}
 
 <!-- ── RANKING ─────────────────────────────────────────────── -->
 <div class="ranking-section">
@@ -898,6 +1036,14 @@ document.addEventListener('DOMContentLoaded', function () {
             card.style.transform = 'translateY(0)';
         }, 60 * i);
     });
+
+    // Close year dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const wrap = document.querySelector('.year-more-wrap');
+        if (wrap && !wrap.contains(e.target)) {
+            closeYearDropdown();
+        }
+    });
 });
 
 function switchTab(id, btn) {
@@ -905,6 +1051,66 @@ function switchTab(id, btn) {
     document.querySelectorAll('.rank-tab').forEach(el => el.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     btn.classList.add('active');
+}
+
+// ── Render เลขหน้า (แก้ bug Django add:'-N') ──────────────────────────────
+(function () {
+    const meta = document.getElementById('pg-current');
+    if (!meta) return;
+    const cur   = parseInt(meta.dataset.cur);
+    const total = parseInt(meta.dataset.total);
+    const q     = meta.dataset.q;
+    const dept  = meta.dataset.dept;
+    const year  = meta.dataset.year;
+
+    function pageUrl(p) {
+        let url = '?page=' + p;
+        if (q)    url += '&q='    + encodeURIComponent(q);
+        if (dept) url += '&dept=' + encodeURIComponent(dept);
+        if (year) url += '&year=' + encodeURIComponent(year);
+        return url;
+    }
+
+    const holder = document.getElementById('pg-placeholder');
+    let html = '';
+    let prevWasEllipsis = false;
+
+    for (let i = 1; i <= total; i++) {
+        const inWindow = (i === 1 || i === total || (i >= cur - 2 && i <= cur + 2));
+        if (inWindow) {
+            prevWasEllipsis = false;
+            if (i === cur) {
+                html += `<span class="page-btn current">${i}</span>`;
+            } else {
+                html += `<a href="${pageUrl(i)}" class="page-btn">${i}</a>`;
+            }
+        } else if (!prevWasEllipsis) {
+            html += `<span class="page-ellipsis">…</span>`;
+            prevWasEllipsis = true;
+        }
+    }
+    holder.innerHTML = html;
+})();
+
+function toggleYearDropdown() {
+    const btn = document.getElementById('yearMoreBtn');
+    const dd  = document.getElementById('yearDropdown');
+    if (!btn || !dd) return;
+    const isOpen = dd.classList.contains('open');
+    if (isOpen) {
+        dd.classList.remove('open');
+        btn.classList.remove('open');
+    } else {
+        dd.classList.add('open');
+        btn.classList.add('open');
+    }
+}
+
+function closeYearDropdown() {
+    const btn = document.getElementById('yearMoreBtn');
+    const dd  = document.getElementById('yearDropdown');
+    if (btn) btn.classList.remove('open');
+    if (dd)  dd.classList.remove('open');
 }
 </script>
 </body>

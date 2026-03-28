@@ -3,138 +3,401 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>แก้ไขข้อมูล - RTEC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>แก้ไขผลงาน | RETC Academic Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; padding: 40px 20px; }
-        .form-card { 
-            max-width: 900px; margin: auto; background: white; 
-            padding: 40px; border-radius: 20px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        :root {
+            --crimson:    #7a0c22;
+            --crimson-dk: #4e0715;
+            --crimson-lt: #a01030;
+            --gold:       #c9972b;
+            --gold-lt:    #f0c060;
+            --cream:      #fdf8f2;
+            --ink:        #1a1210;
+            --muted:      #7a6e6a;
+            --border:     rgba(122,12,34,0.12);
+            --card-bg:    #ffffff;
+            --green:      #2d6a4f;
         }
-        h2 { color: #800000; text-align: center; margin-bottom: 30px; }
-        .section-header { 
-            background: #f8f9fa; padding: 10px 15px; border-left: 5px solid #800000;
-            margin: 25px 0 15px 0; font-weight: bold; color: #555;
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            padding: clamp(16px, 4vw, 40px) clamp(12px, 4vw, 20px);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 70% 50% at 10% 0%, rgba(122,12,34,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 90% 100%, rgba(201,151,43,0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* ── CONTAINER ── */
+        .form-container {
+            position: relative; z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: clamp(20px, 4vw, 28px);
+            box-shadow: 0 20px 60px rgba(122,12,34,0.09), 0 4px 16px rgba(0,0,0,0.04);
+            padding: clamp(24px, 5vw, 48px);
+            animation: fadeUp .5s ease both;
+        }
+
+        /* ── HEADER ── */
+        .page-header {
+            text-align: center;
+            margin-bottom: clamp(20px, 4vw, 36px);
+            padding-bottom: clamp(16px, 3vw, 24px);
+            border-bottom: 2px solid var(--border);
+        }
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.3em, 4vw, 1.75em);
+            font-weight: 900;
+            color: var(--crimson-dk);
+            margin-bottom: 6px;
+        }
+        .page-title span {
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .page-sub {
+            color: var(--muted);
+            font-size: clamp(0.8em, 2.5vw, 0.9em);
+        }
+        .project-name-badge {
+            display: inline-block;
+            margin-top: 10px;
+            background: rgba(122,12,34,0.07);
+            border: 1px solid rgba(122,12,34,0.18);
+            color: var(--crimson);
+            padding: 5px 16px;
+            border-radius: 20px;
+            font-size: 0.82em;
+            font-weight: 700;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── SECTION LABEL ── */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: clamp(18px, 4vw, 30px) 0 clamp(12px, 2vw, 18px);
+            padding: 10px 16px;
+            background: rgba(122,12,34,0.04);
+            border-left: 4px solid var(--crimson);
+            border-radius: 0 10px 10px 0;
+        }
+        .section-label i { color: var(--crimson); font-size: 0.95em; }
+        .section-label span {
+            font-weight: 800;
+            font-size: clamp(0.85em, 2.5vw, 0.95em);
+            color: var(--crimson-dk);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── FORM GRID ── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(12px, 2.5vw, 20px);
+        }
         .full-width { grid-column: span 2; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
-        input, select, textarea { 
-            width: 100%; padding: 12px; border: 1px solid #ddd; 
-            border-radius: 8px; box-sizing: border-box; font-family: 'Sarabun', sans-serif;
+
+        .form-group { margin-bottom: 0; }
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 700;
+            font-size: clamp(0.8em, 2.5vw, 0.88em);
+            color: var(--crimson);
         }
-        textarea { min-height: 120px; resize: vertical; }
-        .btn-save { 
-            width: 100%; padding: 16px; background: #2e7d32; 
-            color: white; border: none; border-radius: 10px; 
-            font-weight: bold; cursor: pointer; font-size: 1.2em; margin-top: 20px;
+        .required-star { color: #c0392b; margin-left: 3px; }
+
+        /* ── INPUTS ── */
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: clamp(10px, 2.5vw, 13px) 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: clamp(0.88em, 2.5vw, 0.95em);
+            color: var(--ink);
+            background: #faf7f4;
+            transition: border-color .2s, box-shadow .2s;
+            line-height: 1.5;
         }
-        .btn-cancel { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--crimson);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(122,12,34,0.07);
+            background: white;
+        }
+        textarea { min-height: 100px; resize: vertical; }
+        select { appearance: none; cursor: pointer; }
+
+        /* Django form error */
+        .errorlist {
+            list-style: none;
+            margin-top: 5px;
+            padding: 0;
+        }
+        .errorlist li {
+            color: #c0392b;
+            font-size: 0.82em;
+            font-weight: 600;
+        }
+
+        /* ── CURRENT FILE ── */
+        .current-file {
+            margin-top: 7px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.82em;
+            color: var(--green);
+            font-weight: 600;
+        }
+        .current-file a {
+            color: var(--green);
+            text-decoration: underline;
+        }
+
+        /* ── SUBMIT ROW ── */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: clamp(20px, 4vw, 36px);
+            padding-top: clamp(16px, 3vw, 24px);
+            border-top: 2px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .btn-save {
+            flex: 1; min-width: 160px;
+            padding: clamp(13px, 3vw, 16px);
+            background: linear-gradient(135deg, var(--green) 0%, #2a9d5c 100%);
+            color: white; border: none; border-radius: 12px;
+            font-family: 'Sarabun'; font-size: clamp(0.95em, 2.5vw, 1.05em);
+            font-weight: 700; cursor: pointer;
+            transition: box-shadow .2s, transform .2s;
+            box-shadow: 0 4px 14px rgba(45,106,79,0.28);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            touch-action: manipulation;
+        }
+        .btn-save:hover {
+            box-shadow: 0 8px 22px rgba(45,106,79,0.38);
+            transform: translateY(-2px);
+        }
+        .btn-cancel {
+            flex: 1; min-width: 130px;
+            padding: clamp(13px, 3vw, 16px);
+            background: transparent; border: 1.5px solid var(--border);
+            border-radius: 12px; text-decoration: none;
+            font-family: 'Sarabun'; font-size: clamp(0.9em, 2.5vw, 1em);
+            font-weight: 700; color: var(--muted); cursor: pointer;
+            transition: all .2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            touch-action: manipulation;
+        }
+        .btn-cancel:hover {
+            background: rgba(122,12,34,0.05);
+            border-color: var(--crimson);
+            color: var(--crimson);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .btn-row { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
-    <div class="form-card">
-        <h2><i class="fas fa-edit"></i> แก้ไขข้อมูลโครงงานวิจัย</h2>
-        
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <div class="section-header">ข้อมูลพื้นฐาน</div>
-            <div class="form-grid">
-                <div class="form-group full-width">
-                    <label>ชื่อโครงงาน (ไทย)</label>
-                    <input type="text" name="title_th" value="{{ project.title_th }}" required>
-                </div>
-                <div class="form-group full-width">
-                    <label>ชื่อโครงงาน (อังกฤษ)</label>
-                    <input type="text" name="title_en" value="{{ project.title_en|default:'' }}">
-                </div>
-                <div class="form-group">
-                    <label>ชื่อผู้จัดทำ/นักวิจัยหลัก</label>
-                    <input type="text" name="student_name" value="{{ project.student_name }}" required>
-                </div>
-                <div class="form-group">
-                    <label>ปีการศึกษา (พ.ศ.)</label>
-                    <input type="number" name="academic_year" value="{{ project.academic_year }}" required>
-                </div>
-            </div>
 
-            <div class="section-header">เนื้อหาทางวิชาการ & บทคัดย่อ</div>
-            <div class="form-group">
-                <label>บทคัดย่อ (Abstract)</label>
-                <textarea name="abstract">{{ project.abstract }}</textarea>
-            </div>
-            <div class="form-group">
-                <label>คำสำคัญ (Keywords)</label>
-                <input type="text" name="keywords" value="{{ project.keywords }}">
-            </div>
-            
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>ความเป็นมาและเหตุผล</label>
-                    <textarea name="background">{{ project.background }}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>วัตถุประสงค์</label>
-                    <textarea name="objectives">{{ project.objectives }}</textarea>
-                </div>
-                <div class="form-group full-width">
-                    <label>ขอบเขตการดำเนินงาน</label>
-                    <textarea name="scope">{{ project.scope }}</textarea>
-                </div>
-            </div>
+<div class="form-container">
 
-            <div class="section-header">ระเบียบวิธีวิจัยและผลการศึกษา</div>
-            <div class="form-group">
-                <label>ทฤษฎีที่เกี่ยวข้อง</label>
-                <textarea name="theory">{{ project.theory }}</textarea>
-            </div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>วิธีการวิจัย</label>
-                    <textarea name="methodology">{{ project.methodology }}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>ผลการวิจัย</label>
-                    <textarea name="results">{{ project.results }}</textarea>
-                </div>
-            </div>
-
-            <div class="section-header">บทสรุปและข้อเสนอแนะ</div>
-            <div class="form-group">
-                <label>อภิปรายผล (Discussion)</label>
-                <textarea name="discussion">{{ project.discussion }}</textarea>
-            </div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>การนำไปใช้ประโยชน์</label>
-                    <textarea name="suggestions_use">{{ project.suggestions_use }}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>ข้อเสนอแนะในอนาคต</label>
-                    <textarea name="suggestions_next">{{ project.suggestions_next }}</textarea>
-                </div>
-            </div>
-
-            <div class="section-header">ข้อมูลเพิ่มเติม & ไฟล์</div>
-            <div class="form-group">
-                <label>รางวัลที่ได้รับ</label>
-                <input type="text" name="awards" value="{{ project.awards|default:'' }}">
-            </div>
-            <div class="form-group">
-                <label>เปลี่ยนไฟล์ PDF (ปล่อยว่างถ้าไม่เปลี่ยน)</label>
-                <input type="file" name="pdf_file" accept=".pdf">
-                {% if project.pdf_file %}
-                    <small style="color: blue;">ไฟล์ปัจจุบัน {{ project.pdf_file.name }}</small>
-                {% endif %}
-            </div>
-
-            <button type="submit" class="btn-save"><i class="fas fa-save"></i> บันทึกการเปลี่ยนแปลง</button>
-            <a href="{% url 'admin_dashboard' %}" class="btn-cancel">ยกเลิกและกลับ</a>
-        </form>
+    <div class="page-header">
+        <div class="page-title"><i class="fas fa-edit" style="color:var(--gold);margin-right:10px;"></i>แก้ไข<span>ผลงาน</span></div>
+        <p class="page-sub">แก้ไขข้อมูลผลงานวิชาการ</p>
+        {% if project %}
+        <div class="project-name-badge">
+            <i class="fas fa-file-alt"></i> {{ project.title_th|truncatechars:60 }}
+        </div>
+        {% endif %}
     </div>
+
+    {# BUG FIX: ใช้ {{ form }} จาก ProjectForm จริงๆ แทน manual fields
+       เพื่อให้ validation ทำงาน และ department/research_type ถูก save #}
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="section-label">
+            <i class="fas fa-info-circle"></i><span>ข้อมูลพื้นฐาน</span>
+        </div>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>{{ form.title_th.label }}<span class="required-star">*</span></label>
+                {{ form.title_th }}
+                {{ form.title_th.errors }}
+            </div>
+            <div class="form-group full-width">
+                <label>{{ form.title_en.label }}</label>
+                {{ form.title_en }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.department.label }}<span class="required-star">*</span></label>
+                {{ form.department }}
+                {{ form.department.errors }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.academic_year.label }}<span class="required-star">*</span></label>
+                {{ form.academic_year }}
+                {{ form.academic_year.errors }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.research_type.label }}</label>
+                {{ form.research_type }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.organization.label }}</label>
+                {{ form.organization }}
+            </div>
+        </div>
+
+        <div class="section-label">
+            <i class="fas fa-users"></i><span>ทีมผู้วิจัย</span>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>{{ form.researcher_co1.label }}</label>
+                {{ form.researcher_co1 }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.researcher_co2.label }}</label>
+                {{ form.researcher_co2 }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.funding_by.label }}</label>
+                {{ form.funding_by }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.awards.label }}</label>
+                {{ form.awards }}
+            </div>
+        </div>
+
+        <div class="section-label">
+            <i class="fas fa-book-open"></i><span>เนื้อหาทางวิชาการ</span>
+        </div>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>{{ form.abstract.label }}</label>
+                {{ form.abstract }}
+            </div>
+            <div class="form-group full-width">
+                <label>{{ form.keywords.label }}</label>
+                {{ form.keywords }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.background.label }}</label>
+                {{ form.background }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.objectives.label }}</label>
+                {{ form.objectives }}
+            </div>
+            <div class="form-group full-width">
+                <label>{{ form.scope.label }}</label>
+                {{ form.scope }}
+            </div>
+        </div>
+
+        <div class="section-label">
+            <i class="fas fa-microscope"></i><span>ระเบียบวิธีวิจัยและผลลัพธ์</span>
+        </div>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>{{ form.theory.label }}</label>
+                {{ form.theory }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.methodology.label }}</label>
+                {{ form.methodology }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.results.label }}</label>
+                {{ form.results }}
+            </div>
+            <div class="form-group full-width">
+                <label>{{ form.discussion.label }}</label>
+                {{ form.discussion }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.suggestions_use.label }}</label>
+                {{ form.suggestions_use }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.suggestions_next.label }}</label>
+                {{ form.suggestions_next }}
+            </div>
+        </div>
+
+        <div class="section-label">
+            <i class="fas fa-file-pdf"></i><span>ไฟล์ PDF</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 8px;">
+            <label>{{ form.pdf_file.label }} <small style="font-weight:400;color:var(--muted);">(ปล่อยว่างถ้าไม่เปลี่ยน)</small></label>
+            {{ form.pdf_file }}
+            {% if project.pdf_file %}
+            <div class="current-file">
+                <i class="fas fa-check-circle"></i>
+                ไฟล์ปัจจุบัน: <a href="{{ project.pdf_file.url }}" target="_blank">{{ project.pdf_file.name|truncatechars:50 }}</a>
+            </div>
+            {% endif %}
+            {{ form.pdf_file.errors }}
+        </div>
+
+        <div class="btn-row">
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> บันทึกการเปลี่ยนแปลง
+            </button>
+            <a href="{% url 'project_list' %}" class="btn-cancel">
+                <i class="fas fa-times"></i> ยกเลิก
+            </a>
+        </div>
+
+    </form>
+</div>
+
 </body>
 </html>
