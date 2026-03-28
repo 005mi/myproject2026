@@ -636,7 +636,7 @@
             .hero { padding: 44px 4% 36px; }
         }
 
-        @media (max-width: 767px) {
+       @media (max-width: 767px) {
             .search-card { padding: 20px 18px; }
             .ranking-body { flex-direction: column; }
             .rank-tabs {
@@ -656,6 +656,26 @@
             .meta-row { grid-template-columns: 1fr; gap: 6px; }
             .btn-row { gap: 7px; }
             .year-dropdown { left: auto; right: 0; }
+            
+            /* 🟢 เพิ่มโค้ดจัดปุ่ม "ปีอื่นๆ" ตรงนี้ครับ 🟢 */
+            .filter-pill {
+                flex: 1 1 auto;
+                text-align: center;
+                justify-content: center;
+            }
+            .dropdown-container {
+                flex: 1 1 100%; 
+                display: flex;
+                justify-content: center;
+            }
+            .dropdown-container .dropdown-btn {
+                width: 100%; 
+                justify-content: center;
+            }
+            .dropdown-menu {
+                width: 100%; 
+                text-align: center;
+            }
         }
 
         @media (max-width: 599px) {
