@@ -371,6 +371,33 @@
             flex-direction: column; gap: 4px;
         }
         .year-dropdown.open { display: flex; }
+
+        /* ── Mobile: แสดง dropdown กึ่งกลางหน้าจอ ── */
+        @media (max-width: 480px) {
+            .year-dropdown {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                min-width: 200px;
+                max-width: 80vw;
+                max-height: 60vh;
+                overflow-y: auto;
+                border-radius: 18px;
+                padding: 12px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+                z-index: 9999;
+            }
+            /* overlay พื้นหลังโปร่งแสง */
+            .year-dropdown.open::before {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.35);
+                z-index: -1;
+                border-radius: 0;
+            }
+        }
         .year-dropdown a {
             padding: 7px 14px; border-radius: 8px;
             font-size: 0.82em; font-weight: 600;
@@ -847,15 +874,15 @@
             <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.year %}year={{ request.GET.year }}{% endif %}"
                class="chip {% if not request.GET.dept %}active{% endif %}">ทั้งหมด</a>
             <a href="?dept=EE{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}"
-               class="chip {% if request.GET.dept == 'EE' %}active{% endif %}">⚡ ไฟฟ้า</a>
+               class="chip {% if request.GET.dept == 'EE' %}active{% endif %}">⚡ เทคโนโลยีไฟฟ้า</a>
             <a href="?dept=ET{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}"
-               class="chip {% if request.GET.dept == 'ET' %}active{% endif %}">📡 อิเล็กทรอนิกส์</a>
+               class="chip {% if request.GET.dept == 'ET' %}active{% endif %}">📡 เทคโนโลยีอิเล็กทรอนิกส์</a>
             <a href="?dept=PT{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}"
-               class="chip {% if request.GET.dept == 'PT' %}active{% endif %}">⚙️ การผลิต</a>
+               class="chip {% if request.GET.dept == 'PT' %}active{% endif %}">⚙️ เทคโนโลยีการผลิต</a>
             <a href="?dept=MT{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}"
-               class="chip {% if request.GET.dept == 'MT' %}active{% endif %}">🔧 เครื่องกล</a>
+               class="chip {% if request.GET.dept == 'MT' %}active{% endif %}">🔧 เทคโนโลยีเครื่องกล</a>
             <a href="?dept=CT{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}"
-               class="chip {% if request.GET.dept == 'CT' %}active{% endif %}">💻 คอมพิวเตอร์</a>
+               class="chip {% if request.GET.dept == 'CT' %}active{% endif %}">💻 เทคโนโลยีคอมพิวเตอร์</a>
         </div>
 
         <!-- Filter ปีการศึกษา — smart version -->

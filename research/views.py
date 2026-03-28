@@ -279,7 +279,9 @@ def login_view(request):
                 messages.success(request, f'ยินดีต้อนรับ "{user.username}" เข้าสู่ระบบสำเร็จ')
             return redirect('project_list')
         else:
-            messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง")
+            # ✅ render หน้า login ซ้ำพร้อม error=True แทนการใช้ messages
+            # เพื่อให้ {% if error %} ใน template แสดง error ในหน้า login โดยตรง
+            return render(request, 'research/login.html', {'form': form, 'error': True})
     else:
         form = AuthenticationForm()
     return render(request, 'research/login.html', {'form': form})
