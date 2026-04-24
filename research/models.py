@@ -100,11 +100,22 @@ class Project(models.Model):
     def __str__(self):
         return f"{self.title_th} ({self.get_department_display()})"
 
+    @property
+    def average_rating(self):
+        from django.db.models import Avg
+        result = self.ratings.aggregate(Avg('score'))['score__avg']
+        return round(result, 1) if result else 0.0
+
+    @property
+    def total_ratings(self):
+        return self.ratings.count()
+
 
 # ─── Comment ✅ เพิ่มใหม่ ──────────────────────────────────────────────────────
 class Comment(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
     body = models.TextField(verbose_name="ความคิดเห็น")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -115,3 +126,36 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.user.username} on {self.project.title_th[:30]}"
+
+
+
+
+# ─── Rating ✅ เพิ่มใหม่ ────────────────────────────────────────────────────────
+class Rating(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='ratings')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    score = models.IntegerField(default=5, choices=[(i, i) for i in range(1, 6)], verbose_name="คะแนน")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'project')
+        verbose_name = "การให้คะแนน"
+        verbose_name_plural = "การให้คะแนน"
+
+    def __str__(self):
+        return f"{self.user.username} rated {self.project.title_th[:20]} as {self.score}"
+
+
+# ─── Favorite ✅ เพิ่มใหม่ ──────────────────────────────────────────────────────
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'project')
+        verbose_name = "รายการโปรด"
+        verbose_name_plural = "รายการโปรด"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.project.title_th[:30]}"

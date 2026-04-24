@@ -4,166 +4,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}RTEC Repository{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>{% block title %}RETC Repository{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% block extra_css %}{% endblock %}
 
     <style>
-        /* ════════════════════════════════════════════
+        /* ══════════════════════════════════════════
+           GLOBAL DESIGN TOKEN SYSTEM
+        ══════════════════════════════════════════ */
+        :root {
+            /* Brand Colors */
+            --crimson:      #7a0c22;
+            --crimson-dk:   #4e0715;
+            --crimson-lt:   #a01030;
+            --crimson-pale: #fdf0f2;
+            --gold:         #c9972b;
+            --gold-lt:      #f0c060;
+            --gold-pale:    #fdf5e6;
+
+            /* Neutral */
+            --cream:    #f8f5f0;
+            --surface:  #ffffff;
+            --surface2: #faf8f6;
+            --ink:      #1a1210;
+            --ink-muted:#4a3f3b;
+            --muted:    #7a6e6a;
+            --border:   rgba(122,12,34,0.10);
+            --border-lt:rgba(122,12,34,0.06);
+
+            /* Shadows */
+            --shadow-xs: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-sm: 0 4px 12px rgba(122,12,34,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 24px rgba(122,12,34,0.08), 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-lg: 0 20px 50px rgba(122,12,34,0.10), 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-xl: 0 32px 80px rgba(122,12,34,0.14), 0 8px 24px rgba(0,0,0,0.08);
+
+            /* Radii */
+            --r-xs: 6px;
+            --r-sm: 10px;
+            --r:    14px;
+            --r-md: 18px;
+            --r-lg: 24px;
+            --r-xl: 32px;
+
+            /* Transitions */
+            --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --t-fast: 0.15s;
+            --t-base: 0.25s;
+            --t-slow: 0.4s;
+
+            /* Layout */
+            --max-w:    1280px;
+            --max-w-md: 960px;
+            --max-w-sm: 640px;
+            --navbar-h: 64px;
+        }
+
+        /* Reset + Base */
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(122,12,34,0.2); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(122,12,34,0.4); }
+
+        /* Selection */
+        ::selection { background: var(--crimson); color: white; }
+        ::-moz-selection { background: var(--crimson); color: white; }
+
+        /* Hero Selection (Contrast for dark backgrounds) */
+        [class*="-hero"] ::selection { background: var(--gold); color: var(--crimson-dk); }
+        [class*="-hero"] ::-moz-selection { background: var(--gold); color: var(--crimson-dk); }
+
+        /* Focus visible */
+        :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+        /* Utility */
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+        /* Page container */
+        main, .page-body { flex: 1; }
+
+        /* ══════════════════════════════════════════
            TOAST NOTIFICATION SYSTEM
-        ════════════════════════════════════════════ */
+        ══════════════════════════════════════════ */
         #toast-container {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: calc(var(--navbar-h) + 16px);
+            right: 24px;
             z-index: 99999;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            pointer-events: none; /* ไม่บล็อก click ข้างล่าง */
+            pointer-events: none;
         }
 
         .toast {
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            min-width: 300px;
-            max-width: 400px;
-            padding: 14px 16px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            min-width: 320px;
+            max-width: 420px;
+            padding: 14px 18px;
+            border-radius: var(--r-md);
+            box-shadow: var(--shadow-xl);
             font-family: 'Sarabun', sans-serif;
-            font-size: 0.95em;
+            font-size: 0.92rem;
             line-height: 1.5;
             pointer-events: all;
             cursor: pointer;
             position: relative;
             overflow: hidden;
-
-            /* Animation เข้า */
-            animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            backdrop-filter: blur(12px);
+            animation: toastSlideIn 0.45s var(--spring) forwards;
         }
 
-        /* ── สีตามประเภท ── */
-        .toast.success {
-            background: #ffffff;
-            border-left: 5px solid #2d6a4f;
-            color: #1b4332;
+        .toast::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.75));
+            z-index: 0;
         }
-        .toast.error {
-            background: #ffffff;
-            border-left: 5px solid #c0392b;
-            color: #7b1a1a;
-        }
-        .toast.warning {
-            background: #ffffff;
-            border-left: 5px solid #e67e22;
-            color: #7d4e00;
-        }
-        .toast.info {
-            background: #ffffff;
-            border-left: 5px solid #2980b9;
-            color: #1a4a6b;
-        }
+        .toast > * { position: relative; z-index: 1; }
 
-        /* ── ไอคอน ── */
-        .toast-icon {
-            font-size: 1.4em;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
+        .toast.success { border-left: 4px solid #1a7a3c; }
+        .toast.error   { border-left: 4px solid var(--crimson); }
+        .toast.warning { border-left: 4px solid var(--gold); }
+        .toast.info    { border-left: 4px solid #2563eb; }
+
+        .toast-icon { font-size: 1.3em; flex-shrink: 0; margin-top: 1px; }
         .toast.success .toast-icon::before { content: "✅"; }
         .toast.error   .toast-icon::before { content: "❌"; }
         .toast.warning .toast-icon::before { content: "⚠️"; }
         .toast.info    .toast-icon::before { content: "ℹ️"; }
 
-        /* ── เนื้อหา ── */
         .toast-body { flex: 1; }
         .toast-title {
-            font-weight: 700;
-            font-size: 0.9em;
+            font-weight: 800;
+            font-size: 0.78rem;
             margin-bottom: 2px;
-            opacity: 0.7;
+            opacity: 0.6;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            color: var(--ink);
         }
-        .toast-msg { font-size: 0.95em; }
+        .toast-msg { font-size: 0.9rem; color: var(--ink-muted); }
 
-        /* ── ปุ่มปิด ── */
         .toast-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.1em;
-            opacity: 0.4;
-            padding: 0 0 0 8px;
+            background: none; border: none;
+            cursor: pointer; font-size: 1rem;
+            opacity: 0.35; padding: 0 0 0 8px;
+            color: var(--ink); flex-shrink: 0;
+            transition: opacity var(--t-fast);
             line-height: 1;
-            color: inherit;
-            flex-shrink: 0;
-            transition: opacity 0.2s;
         }
-        .toast-close:hover { opacity: 0.8; }
+        .toast-close:hover { opacity: 0.75; }
 
-        /* ── Progress bar ── */
         .toast-progress {
-            position: absolute;
-            bottom: 0; left: 0;
-            height: 3px;
-            border-radius: 0 0 0 12px;
+            position: absolute; bottom: 0; left: 0;
+            height: 2px; border-radius: 0 0 0 var(--r-md);
             animation: toastProgress 5s linear forwards;
         }
-        .toast.success .toast-progress { background: #2d6a4f; }
-        .toast.error   .toast-progress { background: #c0392b; }
-        .toast.warning .toast-progress { background: #e67e22; }
-        .toast.info    .toast-progress { background: #2980b9; }
+        .toast.success .toast-progress { background: #1a7a3c; }
+        .toast.error   .toast-progress { background: var(--crimson); }
+        .toast.warning .toast-progress { background: var(--gold); }
+        .toast.info    .toast-progress { background: #2563eb; }
 
-        /* ── Animations ── */
         @keyframes toastSlideIn {
-            from { opacity: 0; transform: translateX(120%) scale(0.9); }
+            from { opacity: 0; transform: translateX(110%) scale(0.92); }
             to   { opacity: 1; transform: translateX(0) scale(1); }
         }
         @keyframes toastSlideOut {
-            from { opacity: 1; transform: translateX(0) scale(1); max-height: 100px; margin: 0; padding: 14px 16px; }
-            to   { opacity: 0; transform: translateX(120%) scale(0.85); max-height: 0; margin: 0; padding: 0; }
+            from { opacity: 1; transform: translateX(0) scale(1); max-height: 120px; }
+            to   { opacity: 0; transform: translateX(110%) scale(0.88); max-height: 0; padding: 0; margin: 0; }
         }
         @keyframes toastProgress {
             from { width: 100%; }
             to   { width: 0%; }
         }
         .toast.removing {
-            animation: toastSlideOut 0.35s ease-in forwards;
+            animation: toastSlideOut 0.3s ease-in forwards;
             pointer-events: none;
         }
+
+        /* ══════════════════════════════════════════
+           GLOBAL SHARED COMPONENTS
+        ══════════════════════════════════════════ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: var(--r-sm);
+            font-family: 'Sarabun', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all var(--t-base) var(--ease);
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--crimson), var(--crimson-lt));
+            color: white;
+            box-shadow: 0 4px 14px rgba(122,12,34,0.28);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(122,12,34,0.38); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), #e6b422);
+            color: var(--crimson-dk);
+            box-shadow: 0 4px 14px rgba(201,151,43,0.3);
+        }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(201,151,43,0.4); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--crimson);
+            border: 1.5px solid var(--border);
+        }
+        .btn-ghost:hover { background: var(--crimson-pale); border-color: var(--crimson); }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 24px;
+            color: var(--muted);
+        }
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            opacity: 0.15;
+            color: var(--crimson);
+            margin-bottom: 16px;
+            display: block;
+        }
+        .empty-state p { font-size: 1rem; margin-top: 8px; }
+
+        /* Badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: 99px;
+            font-size: 0.72rem; font-weight: 700;
+        }
+        .badge-gold { background: var(--gold-pale); color: var(--gold); border: 1px solid rgba(201,151,43,0.25); }
+        .badge-crimson { background: var(--crimson-pale); color: var(--crimson); border: 1px solid var(--border); }
     </style>
 </head>
 <body>
+    {% include "research/navbar.html" %}
 
     {% block content %}{% endblock %}
 
-    <!-- ════════ TOAST CONTAINER ════════ -->
+    <!-- ════ TOAST CONTAINER ════ -->
     <div id="toast-container"></div>
 
     <script>
-    // ══════════════════════════════════════════════════
-    //  Toast Notification Engine
-    // ══════════════════════════════════════════════════
-
-    const TOAST_DURATION = 5000; // 5 วินาที
-
-    // Map Django message tags → toast type
+    const TOAST_DURATION = 5000;
     const TAG_MAP = {
-        'success' : { type: 'success', title: 'สำเร็จ' },
-        'error'   : { type: 'error',   title: 'เกิดข้อผิดพลาด' },
-        'warning' : { type: 'warning', title: 'แจ้งเตือน' },
-        'info'    : { type: 'info',    title: 'ข้อมูล' },
-        // Django default tags
-        'debug'   : { type: 'info',    title: 'Debug' },
+        'success': { type: 'success', title: 'สำเร็จ' },
+        'error':   { type: 'error',   title: 'เกิดข้อผิดพลาด' },
+        'warning': { type: 'warning', title: 'แจ้งเตือน' },
+        'info':    { type: 'info',    title: 'ข้อมูล' },
+        'debug':   { type: 'info',    title: 'Debug' },
     };
 
     function showToast(message, tag = 'info') {
         const container = document.getElementById('toast-container');
         const config = TAG_MAP[tag] || TAG_MAP['info'];
-
         const toast = document.createElement('div');
         toast.className = `toast ${config.type}`;
         toast.innerHTML = `
@@ -175,27 +299,18 @@
             <button class="toast-close" title="ปิด">✕</button>
             <div class="toast-progress"></div>
         `;
-
         container.appendChild(toast);
-
-        // ── ปิดเมื่อคลิก ──
         const closeBtn = toast.querySelector('.toast-close');
         closeBtn.addEventListener('click', () => removeToast(toast));
-        toast.addEventListener('click', (e) => {
-            if (e.target !== closeBtn) removeToast(toast);
-        });
-
-        // ── Auto remove หลัง 5 วิ ──
+        toast.addEventListener('click', (e) => { if (e.target !== closeBtn) removeToast(toast); });
         const timer = setTimeout(() => removeToast(toast), TOAST_DURATION);
-
-        // ── หยุด progress เมื่อ hover ──
         toast.addEventListener('mouseenter', () => {
             clearTimeout(timer);
             toast.querySelector('.toast-progress').style.animationPlayState = 'paused';
         });
         toast.addEventListener('mouseleave', () => {
             toast.querySelector('.toast-progress').style.animationPlayState = 'running';
-            setTimeout(() => removeToast(toast), 1500); // เพิ่มเวลา 1.5 วิ หลัง hover
+            setTimeout(() => removeToast(toast), 1500);
         });
     }
 
@@ -205,26 +320,18 @@
         toast.addEventListener('animationend', () => toast.remove(), { once: true });
     }
 
-    // ══════════════════════════════════════════════════
-    //  อ่าน Django Messages จาก data attribute
-    // ══════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function () {
         const dataEl = document.getElementById('django-messages-data');
         if (!dataEl) return;
         try {
             const msgs = JSON.parse(dataEl.textContent);
-            msgs.forEach((m, i) => {
-                // หน่วง toast แต่ละอัน 150ms เพื่อไม่ให้ซ้อนกัน
-                setTimeout(() => showToast(m.message, m.tags), i * 150);
-            });
+            msgs.forEach((m, i) => setTimeout(() => showToast(m.message, m.tags), i * 150));
         } catch(e) {}
     });
 
-    // ── Expose สำหรับเรียกใช้เองได้จาก JS ──
     window.showToast = showToast;
     </script>
 
-    <!-- ════════ ส่งข้อมูล Django Messages ไป JS ════════ -->
     {% if messages %}
     <script id="django-messages-data" type="application/json">
     [{% for message in messages %}{"message": "{{ message|escapejs }}", "tags": "{{ message.tags }}"}{% if not forloop.last %},{% endif %}{% endfor %}]

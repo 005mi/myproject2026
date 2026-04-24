@@ -1,0 +1,42 @@
+<!-- ── PDF PREVIEW MODAL ── -->
+<div id="pdfModal" class="pdf-modal-overlay">
+    <div class="pdf-modal-container">
+        <div class="pdf-modal-header">
+            <div class="pdf-modal-title">
+                <i class="fas fa-file-pdf" style="color: #ef4444; font-size: 1.4rem;"></i>
+                <span id="modalTitle">ตัวอย่างงานวิจัย</span>
+            </div>
+            <button class="pdf-modal-close" onclick="closePdfPreview()" title="ปิด">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="pdf-modal-body">
+            <iframe id="pdfFrame" src="" frameborder="0"></iframe>
+        </div>
+        <div class="pdf-modal-footer">
+            RETC Academic Portal — วิทยาลัยเทคนิคร้อยเอ็ด
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── PDF Preview Modal ──────────────────────────────────────
+    function openPdfPreview(url, title) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('pdfFrame').src = url;
+        const modal = document.getElementById('pdfModal');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closePdfPreview() {
+        document.getElementById('pdfModal').style.display = 'none';
+        document.getElementById('pdfFrame').src = '';
+        document.body.style.overflow = '';
+    }
+    document.getElementById('pdfModal').addEventListener('click', function (e) {
+        if (e.target === this) closePdfPreview();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closePdfPreview();
+    });
+</script>

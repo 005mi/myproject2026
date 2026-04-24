@@ -11,13 +11,17 @@ urlpatterns = [
 
     # --- Public ---
     path('', views.project_list, name='project_list'),
+    path('search/', views.project_search, name='research_search'),
+    path('stats/', views.project_stats, name='project_stats'),
     path('project/<int:project_id>/', views.project_detail, name='project_detail'),
 
     # --- ดาวน์โหลด PDF ---
     path('download/<int:project_id>/', views.download_pdf, name='download_pdf'),
+    path('pdf-preview/<int:project_id>/', views.serve_pdf_preview, name='pdf_preview'),
 
     # --- Upload ---
     path('upload/', views.project_upload, name='project_upload'),
+    path('my-projects/', views.my_projects, name='my_projects'),
 
     # --- Auth ---
     path('login/', views.login_view, name='login'),
@@ -43,6 +47,17 @@ urlpatterns = [
      path('project/<int:project_id>/comment/', views.add_comment, name='add_comment'),
 
      path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment'),
+
+     # --- Favorites ---
+     path('favorites/', views.favorite_list, name='favorite_list'),
+     path('favorite/toggle/<int:project_id>/', views.toggle_favorite, name='toggle_favorite'),
+     path('project/rate/<int:project_id>/', views.rate_project, name='rate_project'),
+     path('project/cancel_rate/<int:project_id>/', views.cancel_rating, name='cancel_rating'),
+
+     # --- User Management ---
+     path('manage/user/delete/<int:user_id>/', views.delete_user, name='delete_user'),
+     path('manage/user/toggle-staff/<int:user_id>/', views.toggle_user_staff, name='toggle_user_staff'),
+     path('manage/user/reset-password/<int:user_id>/', views.reset_user_password, name='reset_user_password'),
 ]
 
 if settings.DEBUG:

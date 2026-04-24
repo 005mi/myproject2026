@@ -1,772 +1,421 @@
+{% extends 'research/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>แก้ไขผลงาน | RETC Academic Portal</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+{% load research_extras %}
+
+{% block title %}{% if edit_mode %}แก้ไขผลงาน{% else %}เพิ่มผลงานวิจัยใหม่{% endif %} | RETC Academic Portal{% endblock %}
+
+{% block extra_css %}
     <style>
+        /* ══════════════════════════════════════════
+           UPLOAD PAGE PREVIEW REDESIGN
+           ══════════════════════════════════════════ */
         :root {
             --crimson:    #7a0c22;
-            --crimson-dk: #4e0715;
+            --crimson-dk: #4a0715;
             --crimson-lt: #a01030;
             --gold:       #c9972b;
             --gold-lt:    #f0c060;
-            --cream:      #fdf8f2;
-            --ink:        #1a1210;
-            --muted:      #7a6e6a;
-            --border:     rgba(122,12,34,0.12);
-            --card-bg:    #ffffff;
-            --green:      #2d6a4f;
-            --green-lt:   #e8f5ee;
+            --navy:       #0f172a;
+            --bg-color:   #f8f5f0;
+            --gray-100:   #f1f5f9;
+            --gray-200:   #e2e8f0;
+            --gray-300:   #cbd5e1;
+            --gray-400:   #94a3b8;
+            --red:        #ef4444;
         }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Sarabun', sans-serif;
-            background: var(--cream);
-            color: var(--ink);
-            min-height: 100vh;
+        /* ── Header ── */
+        .upload-hero {
+            background: linear-gradient(150deg, #1a0208 0%, #5a0918 30%, #8a0c24 60%, #3e0510 100%);
+            padding: 80px 20px 140px;
+            text-align: left;
+            color: white;
             position: relative;
-            overflow-x: hidden;
-        }
-
-        /* ── AMBIENT BG ── */
-        body::before {
-            content: '';
-            position: fixed; inset: 0; z-index: 0;
-            background:
-                radial-gradient(ellipse 60% 50% at 5% 0%,   rgba(122,12,34,0.06)  0%, transparent 55%),
-                radial-gradient(ellipse 50% 40% at 95% 100%, rgba(201,151,43,0.05) 0%, transparent 55%);
-            pointer-events: none;
-        }
-
-        /* ════════════════════════════════════
-           TOP NAV BAR
-        ════════════════════════════════════ */
-        .topbar {
-            position: sticky; top: 0; z-index: 100;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 clamp(16px, 4vw, 40px);
-            height: 58px;
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 12px;
-        }
-        .topbar-left {
-            display: flex; align-items: center; gap: 14px;
-        }
-        .topbar-logo {
-            height: 34px;
-            filter: drop-shadow(0 2px 6px rgba(122,12,34,0.15));
-        }
-        .topbar-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1em;
-            font-weight: 900;
-            color: var(--crimson-dk);
-            line-height: 1.2;
-        }
-        .topbar-title small {
-            display: block;
-            font-family: 'Sarabun', sans-serif;
-            font-size: 0.7em;
-            font-weight: 400;
-            color: var(--muted);
-        }
-        .topbar-sep {
-            width: 1px; height: 28px;
-            background: var(--border);
-        }
-        .topbar-badge {
-            display: flex; align-items: center; gap: 7px;
-            background: rgba(122,12,34,0.06);
-            border: 1px solid rgba(122,12,34,0.15);
-            color: var(--crimson);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.78em;
-            font-weight: 700;
-            max-width: 300px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
-        .topbar-right {
-            display: flex; align-items: center; gap: 10px;
-        }
-        .btn-cancel-top {
-            display: flex; align-items: center; gap: 6px;
-            padding: 8px 18px;
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            background: transparent;
-            color: var(--muted);
-            font-family: 'Sarabun'; font-size: 0.85em; font-weight: 700;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all .2s;
-            white-space: nowrap;
-        }
-        .btn-cancel-top:hover {
-            border-color: var(--crimson);
-            color: var(--crimson);
-            background: rgba(122,12,34,0.04);
-        }
-        .btn-save-top {
-            display: flex; align-items: center; gap: 6px;
-            padding: 8px 20px;
-            background: linear-gradient(135deg, var(--green), #2a9d5c);
-            color: white; border: none; border-radius: 10px;
-            font-family: 'Sarabun'; font-size: 0.85em; font-weight: 700;
-            cursor: pointer;
-            transition: box-shadow .2s, transform .2s;
-            box-shadow: 0 3px 12px rgba(45,106,79,0.28);
-            white-space: nowrap;
-            touch-action: manipulation;
-        }
-        .btn-save-top:hover {
-            box-shadow: 0 6px 18px rgba(45,106,79,0.38);
-            transform: translateY(-1px);
-        }
-
-        /* ════════════════════════════════════
-           MAIN LAYOUT — sidebar + content
-        ════════════════════════════════════ */
-        .page-wrap {
-            position: relative; z-index: 1;
-            display: grid;
-            grid-template-columns: 220px 1fr;
-            min-height: calc(100vh - 58px);
-            max-width: 1200px;
+        .hero-inner {
+            max-width: 960px;
             margin: 0 auto;
-            gap: 0;
+            padding: 0 4%;
         }
-
-        /* ── SIDEBAR ── */
-        .sidebar {
-            padding: clamp(20px, 3vw, 32px) 16px;
-            border-right: 1px solid var(--border);
-            position: sticky;
-            top: 58px;
-            height: calc(100vh - 58px);
-            overflow-y: auto;
-        }
-        .sidebar-label {
-            font-size: 0.68em;
+        .upload-hero h1 {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
             font-weight: 800;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            padding: 0 8px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: flex-start; gap: 15px;
         }
-        .nav-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 600;
-            color: var(--muted);
-            transition: all .2s;
-            margin-bottom: 3px;
-            border: none; background: none; width: 100%; text-align: left;
-            text-decoration: none;
-        }
-        .nav-item i { width: 16px; text-align: center; font-size: 0.9em; }
-        .nav-item:hover {
-            background: rgba(122,12,34,0.05);
-            color: var(--crimson);
-        }
-        .nav-item.active {
-            background: rgba(122,12,34,0.08);
-            color: var(--crimson);
-            font-weight: 700;
-        }
-        .nav-item .nav-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: var(--border);
-            margin-left: auto;
-            flex-shrink: 0;
-        }
-        .nav-item.done .nav-dot { background: var(--green); }
-        .nav-item.active .nav-dot { background: var(--crimson); }
+        .upload-hero p { font-size: 1.1rem; opacity: 0.85; }
 
-        /* ── CONTENT ── */
-        .content {
-            padding: clamp(24px, 4vw, 44px) clamp(20px, 4vw, 48px);
-            min-width: 0;
+        .hero-wave {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+            fill: var(--bg-color);
         }
 
-        /* ── SECTION ── */
-        .section {
-            margin-bottom: clamp(32px, 5vw, 52px);
-            scroll-margin-top: 80px;
-        }
-        .section-head {
-            display: flex; align-items: center; gap: 14px;
-            margin-bottom: clamp(18px, 3vw, 26px);
-        }
-        .section-icon {
-            width: 38px; height: 38px; flex-shrink: 0;
-            background: linear-gradient(135deg, var(--crimson-dk), var(--crimson-lt));
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 0.9em;
-            box-shadow: 0 3px 10px rgba(122,12,34,0.25);
-        }
-        .section-info {}
-        .section-title {
-            font-size: clamp(0.95em, 2.5vw, 1.05em);
-            font-weight: 800;
-            color: var(--crimson-dk);
-        }
-        .section-desc {
-            font-size: 0.75em;
-            color: var(--muted);
-            margin-top: 1px;
-        }
-        .section-divider {
-            height: 1px;
-            background: var(--border);
-            margin-bottom: clamp(18px, 3vw, 26px);
-        }
-
-        /* ── FORM GRID ── */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: clamp(14px, 2.5vw, 22px);
-        }
-        .col-full  { grid-column: span 2; }
-        .col-third { grid-column: span 1; }
-
-        /* ── FIELD ── */
-        .field { display: flex; flex-direction: column; gap: 7px; }
-        .field-label {
-            font-size: clamp(0.78em, 2vw, 0.85em);
-            font-weight: 700;
-            color: var(--crimson);
-            display: flex; align-items: center; gap: 5px;
-        }
-        .field-label .req { color: #c0392b; }
-        .field-label .opt {
-            font-weight: 400; font-size: 0.85em; color: var(--muted);
-        }
-
-        /* ── INPUTS ── */
-        input[type="text"],
-        input[type="number"],
-        input[type="email"],
-        input[type="file"],
-        select,
-        textarea {
-            width: 100%;
-            padding: clamp(10px, 2vw, 13px) 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            font-family: 'Sarabun', sans-serif;
-            font-size: max(16px, 0.93em);
-            color: var(--ink);
-            background: #faf7f4;
-            transition: border-color .2s, box-shadow .2s, background .2s;
-            line-height: 1.5;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--crimson);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(122,12,34,0.07);
-            background: #fff;
-        }
-        textarea { min-height: 100px; resize: vertical; }
-        select {
-            appearance: none;
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6e6a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 36px;
-        }
-
-        /* Django error */
-        .errorlist { list-style: none; }
-        .errorlist li {
-            margin-top: 5px;
-            color: #c0392b;
-            font-size: 0.8em; font-weight: 600;
-            display: flex; align-items: center; gap: 5px;
-        }
-        .errorlist li::before { content: "⚠"; }
-
-        /* ── FILE SECTION ── */
-        .file-card {
-            border: 1.5px dashed var(--border);
-            border-radius: 14px;
-            padding: clamp(18px, 3vw, 26px);
-            background: rgba(122,12,34,0.02);
-            transition: border-color .2s;
-        }
-        .file-card:hover { border-color: rgba(122,12,34,0.3); }
-        .current-file {
-            display: inline-flex; align-items: center; gap: 8px;
-            margin-top: 10px;
-            padding: 8px 14px;
-            background: var(--green-lt);
-            border-radius: 8px;
-            font-size: 0.82em; color: var(--green); font-weight: 600;
-        }
-        .current-file a { color: var(--green); text-decoration: underline; }
-
-        /* ── BOTTOM ACTIONS ── */
-        .bottom-actions {
-            display: flex; gap: 12px; align-items: center;
-            padding: clamp(20px, 3vw, 28px) clamp(20px, 4vw, 48px);
-            border-top: 1px solid var(--border);
-            background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(8px);
-            position: sticky; bottom: 0; z-index: 50;
-        }
-        .btn-save-bottom {
-            flex: 1; max-width: 280px;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            padding: clamp(13px, 2.5vw, 16px) 24px;
-            background: linear-gradient(135deg, var(--green), #2a9d5c);
-            color: white; border: none; border-radius: 12px;
-            font-family: 'Sarabun'; font-size: clamp(0.95em, 2.5vw, 1.05em); font-weight: 700;
-            cursor: pointer;
-            transition: box-shadow .2s, transform .2s;
-            box-shadow: 0 4px 16px rgba(45,106,79,0.3);
-            touch-action: manipulation;
-        }
-        .btn-save-bottom:hover {
-            box-shadow: 0 8px 24px rgba(45,106,79,0.4);
-            transform: translateY(-2px);
-        }
-        .btn-cancel-bottom {
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            padding: clamp(13px, 2.5vw, 16px) 24px;
-            border: 1.5px solid var(--border);
-            border-radius: 12px; text-decoration: none;
-            font-family: 'Sarabun'; font-size: clamp(0.9em, 2.5vw, 1em); font-weight: 700;
-            color: var(--muted); background: transparent;
-            transition: all .2s; cursor: pointer;
-            touch-action: manipulation;
-        }
-        .btn-cancel-bottom:hover {
-            border-color: var(--crimson);
-            color: var(--crimson);
-            background: rgba(122,12,34,0.04);
-        }
-        .save-note {
-            font-size: 0.78em; color: var(--muted);
-            display: flex; align-items: center; gap: 5px;
-        }
-
-        /* ── TOAST ── */
-        #toast-container {
-            position: fixed; top: 70px; right: 20px;
-            z-index: 9999;
-            display: flex; flex-direction: column; gap: 10px;
-            pointer-events: none;
-        }
-        .toast {
-            display: flex; align-items: flex-start; gap: 12px;
-            min-width: 280px; max-width: 380px;
-            padding: 13px 16px;
+        /* ── Form Card ── */
+        .upload-card {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            pointer-events: all;
-            animation: toastIn .35s cubic-bezier(0.34,1.56,0.64,1) both;
-            position: relative; overflow: hidden;
-        }
-        .toast.success { border-left: 4px solid var(--green); }
-        .toast.error   { border-left: 4px solid #c0392b; }
-        .toast.warning { border-left: 4px solid var(--gold); }
-        .toast.info    { border-left: 4px solid #2980b9; }
-        .toast-msg { flex: 1; font-size: 0.9em; line-height: 1.4; padding-top: 1px; }
-        .toast-icon { font-size: 1em; margin-top: 2px; }
-        .toast.success .toast-icon { color: var(--green); }
-        .toast.error   .toast-icon { color: #c0392b; }
-        .toast.warning .toast-icon { color: var(--gold); }
-        .toast.info    .toast-icon { color: #2980b9; }
-        .toast-progress {
-            position: absolute; bottom: 0; left: 0; height: 3px;
-            animation: toastProg 4s linear forwards;
-        }
-        .toast.success .toast-progress { background: var(--green); }
-        .toast.error   .toast-progress { background: #c0392b; }
-        .toast.warning .toast-progress { background: var(--gold); }
-        .toast.info    .toast-progress { background: #2980b9; }
-        @keyframes toastIn {
-            from { opacity:0; transform: translateX(60px) scale(.9); }
-            to   { opacity:1; transform: translateX(0) scale(1); }
-        }
-        @keyframes toastOut {
-            from { opacity:1; max-height:100px; }
-            to   { opacity:0; max-height:0; padding:0; margin:0; }
-        }
-        @keyframes toastProg {
-            from { width:100%; } to { width:0%; }
+            border-radius: 24px;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 20px 50px rgba(74,7,21,0.08);
+            max-width: 960px;
+            margin: -70px auto 80px;
+            padding: 50px 6%;
+            position: relative;
+            z-index: 10;
         }
 
-        /* ── ANIMATION ── */
-        @keyframes fadeUp {
-            from { opacity:0; transform: translateY(16px); }
-            to   { opacity:1; transform: translateY(0); }
+        .section-head {
+            font-size: 1.4rem; font-weight: 800; color: var(--navy);
+            margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+            border-bottom: 2px solid var(--gray-100); padding-bottom: 15px;
+            margin-top: 40px;
         }
-        .section { animation: fadeUp .4s ease both; }
-        .section:nth-child(2) { animation-delay: .05s; }
-        .section:nth-child(3) { animation-delay: .10s; }
-        .section:nth-child(4) { animation-delay: .15s; }
-        .section:nth-child(5) { animation-delay: .20s; }
+        .section-head i { color: var(--gold); }
 
-        /* ── RESPONSIVE ── */
-        @media (max-width: 768px) {
-            .page-wrap { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
-            .topbar-badge { display: none; }
-            .topbar-sep { display: none; }
+        /* ── Grid & Controls ── */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .full-width { grid-column: span 2; }
+        @media (max-width: 650px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+
+        .form-group { margin-bottom: 24px; }
+        .label-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .form-group label { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+        .req { color: var(--red); }
+
+        .form-control, .django-widget, input[type="text"], input[type="number"], select, textarea {
+            width: 100%; padding: 12px 16px; border: 1.5px solid var(--gray-200);
+            border-radius: 10px; font-family: 'Sarabun', sans-serif; font-size: 1rem;
+            transition: all 0.2s;
+            color: var(--navy);
+            background: white;
         }
-        @media (max-width: 580px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .col-full { grid-column: span 1; }
-            .save-note { display: none; }
+        
+        textarea {
+            line-height: 1.8;
+            min-height: 180px;
+            resize: none;
+            overflow-y: hidden;
         }
+
+        .form-control:focus, input:focus, select:focus, textarea:focus { 
+            border-color: var(--gold); outline: none; box-shadow: 0 0 0 4px rgba(201,151,43,0.1); 
+        }
+        
+        /* ── Smart Formatting Tool ── */
+        .smart-wrapper { position: relative; }
+        .smart-actions { display: flex; gap: 8px; }
+        .btn-magic {
+            font-size: 0.75rem; background: var(--gray-100); border: 1.2px solid var(--gray-300);
+            padding: 3px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+            font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 5px;
+        }
+        .btn-magic:hover { background: white; border-color: var(--gold); color: var(--gold); }
+        
+        /* ── File Zone ── */
+        .file-zone {
+            display: block;
+            background: linear-gradient(to bottom, #fcfaf8, #f8f5f0);
+            padding: 25px 20px; border-radius: 12px; border: 1.5px dashed var(--gray-300);
+            text-align: center; transition: all 0.3s;
+            max-width: 100%; margin: 0 auto;
+            cursor: pointer;
+        }
+        .file-zone:hover { border-color: var(--gold); background: #fdfdfd; }
+        .file-icon { font-size: 1.8rem; color: var(--gold); opacity: 0.5; margin-bottom: 8px; display: block; }
+        .file-zone input[type="file"] { display: none; }
+
+        /* ── Buttons ── */
+        .btn-submit {
+            background: linear-gradient(135deg, var(--crimson-lt) 0%, var(--crimson) 100%);
+            color: white; border: none; padding: 16px 32px; border-radius: 14px;
+            font-size: 1.1rem; font-weight: 800; cursor: pointer; width: 100%;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 10px 25px rgba(122,12,34,0.25);
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            font-family: 'Sarabun', sans-serif;
+        }
+        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(122,12,34,0.35); }
+
+        .btn-outline {
+            background: white; color: var(--gray-400); border: 1.5px solid var(--gray-200);
+            padding: 14px 24px; border-radius: 14px; text-decoration: none; font-weight: 700;
+            transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;
+            font-family: 'Sarabun', sans-serif; font-size: 1.05rem; min-width: 140px;
+        }
+        .btn-outline:hover { background: var(--gray-100); color: var(--navy); border-color: var(--gray-300); }
+
+        /* ── Guide Modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            display: none; align-items: center; justify-content: center; z-index: 9999;
+            backdrop-filter: blur(6px);
+        }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: modalFade 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalFade { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
-</head>
-<body>
+{% endblock %}
 
-<div class="topbar">
-    <div class="topbar-left">
-        <img src="{% static 'logoretc.png' %}" alt="RETC" class="topbar-logo">
-        <div class="topbar-title">
-            RETC Academic
-            <small>แก้ไขผลงานวิชาการ</small>
-        </div>
-        {% if project %}
-        <div class="topbar-sep"></div>
-        <div class="topbar-badge">
-            <i class="fas fa-file-alt"></i>
-            {{ project.title_th|truncatechars:45 }}
-        </div>
-        {% endif %}
+{% block content %}
+<div class="upload-hero">
+    <div class="hero-inner">
+        <h1>
+            <i class="fas fa-file-export" style="color: var(--gold-lt);"></i>
+            <span>{% if edit_mode %}แก้ไขผลงานวิชาการ{% else %}เพิ่มผลงานวิจัยใหม่{% endif %}</span>
+        </h1>
+        <p>กรอกข้อมูลผลงานวิจัยของคุณเพื่อเผยแพร่ในระบบ</p>
     </div>
-    <div class="topbar-right">
-        <a href="{% url 'project_list' %}" class="btn-cancel-top">
-            <i class="fas fa-times"></i> ยกเลิก
-        </a>
-        <button type="submit" form="edit-form" class="btn-save-top">
-            <i class="fas fa-save"></i> บันทึก
-        </button>
-    </div>
+    <svg class="hero-wave" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C320,60 480,0 720,30 C960,60 1120,0 1440,30 L1440,60 L0,60 Z"/></svg>
 </div>
 
-<form id="edit-form" method="POST" enctype="multipart/form-data">
-{% csrf_token %}
+<div class="upload-card">
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        {% csrf_token %}
 
-<div class="page-wrap">
-
-    <aside class="sidebar">
-        <div class="sidebar-label">หมวดหมู่</div>
-
-        <a href="#sec-basic" class="nav-item active" onclick="setActive(this)">
-            <i class="fas fa-info-circle"></i> ข้อมูลพื้นฐาน
-            <span class="nav-dot done"></span>
-        </a>
-        <a href="#sec-team" class="nav-item" onclick="setActive(this)">
-            <i class="fas fa-users"></i> ทีมผู้วิจัย
-            <span class="nav-dot"></span>
-        </a>
-        <a href="#sec-academic" class="nav-item" onclick="setActive(this)">
-            <i class="fas fa-book-open"></i> เนื้อหาวิชาการ
-            <span class="nav-dot"></span>
-        </a>
-        <a href="#sec-method" class="nav-item" onclick="setActive(this)">
-            <i class="fas fa-microscope"></i> ระเบียบวิธีวิจัย
-            <span class="nav-dot"></span>
-        </a>
-        <a href="#sec-pdf" class="nav-item" onclick="setActive(this)">
-            <i class="fas fa-file-pdf"></i> ไฟล์ PDF
-            <span class="nav-dot"></span>
-        </a>
-    </aside>
-
-    <main class="content">
-
-        <section class="section" id="sec-basic">
-            <div class="section-head">
-                <div class="section-icon"><i class="fas fa-info-circle"></i></div>
-                <div class="section-info">
-                    <div class="section-title">ข้อมูลพื้นฐาน</div>
-                    <div class="section-desc">ชื่อเรื่อง สาขาวิชา ปีการศึกษา และประเภทงานวิจัย</div>
-                </div>
+        <!-- Section 1 -->
+        <div class="section-head"><i class="fas fa-info-circle"></i> 1. ข้อมูลพื้นฐานผลงาน</div>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>ชื่อผลงานวิจัย (ไทย) <span class="req">*</span></label>
+                {{ form.title_th }}
             </div>
-            <div class="section-divider"></div>
-
-            <div class="form-grid">
-                <div class="field col-full">
-                    <label class="field-label">{{ form.title_th.label }} <span class="req">*</span></label>
-                    {{ form.title_th }}
-                    {{ form.title_th.errors }}
-                </div>
-                <div class="field col-full">
-                    <label class="field-label">{{ form.title_en.label }} <span class="opt">(ถ้ามี)</span></label>
-                    {{ form.title_en }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.department.label }} <span class="req">*</span></label>
-                    {{ form.department }}
-                    {{ form.department.errors }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.academic_year.label }} <span class="req">*</span></label>
-                    {{ form.academic_year }}
-                    {{ form.academic_year.errors }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.research_type.label }}</label>
-                    {{ form.research_type }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.organization.label }}</label>
-                    {{ form.organization }}
-                </div>
+            <div class="form-group full-width">
+                <label>ชื่อผลงานวิจัย (อังกฤษ)</label>
+                {{ form.title_en }}
             </div>
-        </section>
-
-        <section class="section" id="sec-team">
-            <div class="section-head">
-                <div class="section-icon"><i class="fas fa-users"></i></div>
-                <div class="section-info">
-                    <div class="section-title">ทีมผู้วิจัย</div>
-                    <div class="section-desc">นักวิจัยหลัก นักวิจัยร่วม แหล่งทุน และรางวัลที่ได้รับ</div>
-                </div>
+            <div class="form-group">
+                <label>สาขาวิชา/หน่วยงาน <span class="req">*</span></label>
+                {{ form.department }}
             </div>
-            <div class="section-divider"></div>
-
-            <div class="form-grid">
-                <div class="field col-full">
-                    <label class="field-label">{{ form.student_name.label }} <span class="req">*</span></label>
-                    {{ form.student_name }}
-                    {{ form.student_name.errors }}
-                </div>
-                
-                <div class="field">
-                    <label class="field-label">{{ form.researcher_co1.label }} <span class="opt">(ถ้ามี)</span></label>
-                    {{ form.researcher_co1 }}
-                    {{ form.researcher_co1.errors }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.researcher_co2.label }} <span class="opt">(ถ้ามี)</span></label>
-                    {{ form.researcher_co2 }}
-                    {{ form.researcher_co2.errors }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.funding_by.label }}</label>
-                    {{ form.funding_by }}
-                    {{ form.funding_by.errors }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.awards.label }}</label>
-                    {{ form.awards }}
-                    {{ form.awards.errors }}
-                </div>
+            <div class="form-group">
+                <label>ประเภทงานวิจัย <span class="req">*</span></label>
+                {{ form.research_type }}
             </div>
-        </section>
-
-        <section class="section" id="sec-academic">
-            <div class="section-head">
-                <div class="section-icon"><i class="fas fa-book-open"></i></div>
-                <div class="section-info">
-                    <div class="section-title">เนื้อหาทางวิชาการ</div>
-                    <div class="section-desc">บทคัดย่อ คำสำคัญ และขอบเขตการวิจัย</div>
-                </div>
+            <div class="form-group">
+                <label>ปีที่เสร็จสิ้น (พ.ศ.) <span class="req">*</span></label>
+                {{ form.academic_year }}
             </div>
-            <div class="section-divider"></div>
-
-            <div class="form-grid">
-                <div class="field col-full">
-                    <label class="field-label">{{ form.abstract.label }}</label>
-                    {{ form.abstract }}
-                </div>
-                <div class="field col-full">
-                    <label class="field-label">{{ form.keywords.label }}</label>
-                    {{ form.keywords }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.background.label }}</label>
-                    {{ form.background }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.objectives.label }}</label>
-                    {{ form.objectives }}
-                </div>
-                <div class="field col-full">
-                    <label class="field-label">{{ form.scope.label }}</label>
-                    {{ form.scope }}
-                </div>
+            <div class="form-group">
+                <label>หน่วยงาน/วิทยาลัย <span class="req">*</span></label>
+                {{ form.organization }}
             </div>
-        </section>
+        </div>
 
-        <section class="section" id="sec-method">
-            <div class="section-head">
-                <div class="section-icon"><i class="fas fa-microscope"></i></div>
-                <div class="section-info">
-                    <div class="section-title">ระเบียบวิธีวิจัยและผลลัพธ์</div>
-                    <div class="section-desc">ทฤษฎี วิธีดำเนินการ ผลการวิจัย และข้อเสนอแนะ</div>
-                </div>
+        <!-- Section 2 -->
+        <div class="section-head"><i class="fas fa-users-cog"></i> 2. ทีมผู้วิจัยและผู้สนับสนุน</div>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>ชื่อนักวิจัยหลัก <span class="req">*</span></label>
+                {{ form.student_name }}
             </div>
-            <div class="section-divider"></div>
-
-            <div class="form-grid">
-                <div class="field col-full">
-                    <label class="field-label">{{ form.theory.label }}</label>
-                    {{ form.theory }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.methodology.label }}</label>
-                    {{ form.methodology }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.results.label }}</label>
-                    {{ form.results }}
-                </div>
-                <div class="field col-full">
-                    <label class="field-label">{{ form.discussion.label }}</label>
-                    {{ form.discussion }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.suggestions_use.label }}</label>
-                    {{ form.suggestions_use }}
-                </div>
-                <div class="field">
-                    <label class="field-label">{{ form.suggestions_next.label }}</label>
-                    {{ form.suggestions_next }}
-                </div>
+            <div class="form-group">
+                <label>นักวิจัยร่วมคนที่ 1</label>
+                {{ form.researcher_co1 }}
             </div>
-        </section>
-
-        <section class="section" id="sec-pdf">
-            <div class="section-head">
-                <div class="section-icon"><i class="fas fa-file-pdf"></i></div>
-                <div class="section-info">
-                    <div class="section-title">ไฟล์ PDF</div>
-                    <div class="section-desc">อัปโหลดไฟล์ใหม่เพื่อแทนที่ หรือปล่อยว่างเพื่อคงไฟล์เดิม</div>
-                </div>
+            <div class="form-group">
+                <label>นักวิจัยร่วมคนที่ 2</label>
+                {{ form.researcher_co2 }}
             </div>
-            <div class="section-divider"></div>
-
-            <div class="file-card">
-                <div class="field">
-                    <label class="field-label">
-                        {{ form.pdf_file.label }}
-                        <span class="opt">— ปล่อยว่างถ้าไม่เปลี่ยน</span>
-                    </label>
-                    {{ form.pdf_file }}
-                    {{ form.pdf_file.errors }}
-                </div>
-                {% if project.pdf_file %}
-                <div class="current-file">
-                    <i class="fas fa-check-circle"></i>
-                    ไฟล์ปัจจุบัน:&nbsp;
-                    <a href="{{ project.pdf_file.url }}" target="_blank">
-                        {{ project.pdf_file.name|truncatechars:50 }}
-                    </a>
-                </div>
-                {% endif %}
+            <div class="form-group full-width">
+                <label>ผู้สนับสนุนทุนวิจัย (Funding By)</label>
+                {{ form.funding_by }}
             </div>
-        </section>
+            <div class="form-group full-width">
+                <div class="label-wrap">
+                    <label>รางวัลที่เคยได้รับ/เกียรติประวัติ</label>
+                </div>
+                {{ form.awards }}
+            </div>
+        </div>
 
-    </main>
+        <!-- Section 3 -->
+        <div class="section-head"><i class="fas fa-align-left"></i> 3. เนื้อหาทางวิชาการ</div>
+        
+        <div class="form-group">
+            <div class="label-wrap">
+                <label>บทคัดย่อ (Abstract) <span class="req">*</span></label>
+            </div>
+            {{ form.abstract }}
+        </div>
+
+        <div class="form-group">
+            <label>คำสำคัญ (Keywords)</label>
+            {{ form.keywords }}
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>ความเป็นมา/หลักการและเหตุผล</label></div>
+                {{ form.background }}
+            </div>
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>วัตถุประสงค์การวิจัย</label></div>
+                {{ form.objectives }}
+            </div>
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>ขอบเขตการวิจัย</label></div>
+                {{ form.scope }}
+            </div>
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>ประโยชน์ที่คาดว่าจะได้รับ</label></div>
+                {{ form.suggestions_use }}
+            </div>
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>ทฤษฎีที่เกี่ยวข้อง</label></div>
+                {{ form.theory }}
+            </div>
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>วิธีการดำเนินการวิจัย</label></div>
+                {{ form.methodology }}
+            </div>
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>ผลการวิจัย</label></div>
+                {{ form.results }}
+            </div>
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>อภิปรายผล</label></div>
+                {{ form.discussion }}
+            </div>
+            <div class="form-group full-width">
+                <div class="label-wrap"><label>ข้อเสนอแนะในการวิจัยครั้งต่อไป</label></div>
+                {{ form.suggestions_next }}
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="section-head"><i class="fas fa-file-pdf"></i> 4. ไฟล์แนบต้นฉบับ</div>
+        <div class="form-group full-width">
+            <label>เลือกไฟล์ PDF ฉบับเต็ม (จำกัด 10MB) {% if not edit_mode %}<span class="req">*</span>{% endif %}</label>
+            {% if edit_mode and project.pdf_file %}
+                <p style="font-size:0.85rem;color:var(--gray-400);margin-bottom:12px;">
+                    <i class="fas fa-file-pdf" style="color:var(--red);"></i>
+                    ไฟล์ปัจจุบัน: {{ project.pdf_file.name|filename }}
+                </p>
+            {% endif %}
+            <label class="file-zone" for="{{ form.pdf_file.id_for_label }}">
+                <i class="fas fa-cloud-upload-alt file-icon"></i>
+                <p id="file-label">คลิกเพื่อเลือกไฟล์ หรือลากมาวาง</p>
+                {{ form.pdf_file }}
+                <p style="font-size: 0.85rem; color: var(--gray-400); margin-top: 8px;">รองรับเฉพาะไฟล์ .pdf เท่านั้น</p>
+            </label>
+        </div>
+
+        <div style="margin-top: 50px; display: flex; justify-content: center; gap: 20px;">
+            <a href="{% url 'my_projects' %}" class="btn-outline">ยกเลิก</a>
+            <button type="submit" class="btn-submit" id="submitBtn" style="max-width: 300px;">
+                <i class="fas fa-save"></i> 
+                <span>{% if edit_mode %}บันทึกการแก้ไข{% else %}ส่งผลงานเข้าคลังระบบ{% endif %}</span>
+            </button>
+        </div>
+    </form>
 </div>
 
-<div class="bottom-actions">
-    <button type="submit" class="btn-save-bottom">
-        <i class="fas fa-save"></i> บันทึกการเปลี่ยนแปลง
-    </button>
-    <a href="{% url 'project_list' %}" class="btn-cancel-bottom">
-        <i class="fas fa-times"></i> ยกเลิก
-    </a>
-    <span class="save-note">
-        <i class="fas fa-shield-alt" style="color:var(--green);"></i>
-        ข้อมูลจะถูกบันทึกทันที
-    </span>
-</div>
+<!-- Shared Format Guide Component -->
+{% include 'research/components/smart_format.html' %}
 
-</form>
+{% endblock %}
 
-<div id="toast-container"></div>
-<div id="django-messages" style="display:none;">
-    {% if messages %}
-        {% for message in messages %}
-            <span data-tags="{{ message.tags }}">{{ message }}</span>
-        {% endfor %}
-    {% endif %}
-</div>
-
+{% block extra_js %}
 <script>
-// ── Sidebar active state ──────────────────────────────────────
-function setActive(el) {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-}
-
-// ── Scroll spy ───────────────────────────────────────────────
-const sections = document.querySelectorAll('.section[id]');
-const navItems = document.querySelectorAll('.nav-item[href]');
-
-const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const id = '#' + entry.target.id;
-            navItems.forEach(n => {
-                n.classList.toggle('active', n.getAttribute('href') === id);
-            });
-        }
-    });
-}, { rootMargin: '-30% 0px -60% 0px' });
-
-sections.forEach(s => observer.observe(s));
-
-// ── Toast system ──────────────────────────────────────────────
-const TAG_MAP = {
-    success: { cls: 'success', icon: 'fa-circle-check' },
-    error:   { cls: 'error',   icon: 'fa-circle-xmark' },
-    warning: { cls: 'warning', icon: 'fa-triangle-exclamation' },
-    info:    { cls: 'info',    icon: 'fa-circle-info' },
-};
-
-function showToast(msg, tag) {
-    const cfg = TAG_MAP[tag] || TAG_MAP.info;
-    const t = document.createElement('div');
-    t.className = `toast ${cfg.cls}`;
-    t.innerHTML = `
-        <i class="fas ${cfg.icon} toast-icon"></i>
-        <span class="toast-msg">${msg}</span>
-        <div class="toast-progress"></div>`;
-    document.getElementById('toast-container').appendChild(t);
-    setTimeout(() => {
-        t.style.animation = 'toastOut .35s ease forwards';
-        setTimeout(() => t.remove(), 350);
-    }, 4000);
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('#django-messages span').forEach((el, i) => {
-        const tags = el.dataset.tags || 'info';
-        const tag  = tags.split(' ').find(t => TAG_MAP[t]) || 'info';
-        setTimeout(() => showToast(el.textContent.trim(), tag), i * 150);
+    const isEditMode = "{{ edit_mode }}" === "True";
+    const form = document.getElementById('uploadForm');
+    const textareas = document.querySelectorAll('textarea');
+    const inputs = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
+
+    // 1. Initial Draft Loading (Only if not in Edit mode)
+    if (!isEditMode) {
+        const savedDraft = localStorage.getItem('research_upload_draft');
+        if (savedDraft) {
+            try {
+                const draft = JSON.parse(savedDraft);
+                Object.keys(draft).forEach(key => {
+                    const el = document.getElementsByName(key)[0];
+                    if (el && el.type !== 'file') el.value = draft[key];
+                });
+            } catch (e) { console.error("Draft error", e); }
+        }
+    }
+
+    // 2. Draft Persistence: Save on change (Throttle)
+    let saveTimeout;
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            if (isEditMode) return;
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const data = {};
+                new FormData(form).forEach((value, key) => {
+                    if (key !== 'pdf_file' && key !== 'csrfmiddlewaretoken') data[key] = value;
+                });
+                localStorage.setItem('research_upload_draft', JSON.stringify(data));
+            }, 1000);
+        });
+    });
+
+    // 3. Clear draft on successful submit
+    form.addEventListener('submit', () => {
+        if (!isEditMode) localStorage.removeItem('research_upload_draft');
+    });
+
+    // 4. Inject Smart Toolbars and Tab Key Support
+    textareas.forEach(textarea => {
+        // Enable Tab key for indentation
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                // Insert 4 spaces (standard indent)
+                const spaces = "    ";
+                this.value = this.value.substring(0, start) + spaces + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + spaces.length;
+                
+                // Trigger input event to save draft
+                this.dispatchEvent(new Event('input'));
+            }
+        });
+
+        const parent = textarea.parentElement;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'smart-wrapper';
+        
+        const toolbar = document.createElement('div');
+        toolbar.className = 'smart-actions';
+        toolbar.style = "position:absolute; right:0; top:-35px;";
+        toolbar.innerHTML = `
+            <button type="button" class="btn-magic" style="background:none; border:none; color:var(--gray-400);" onclick="document.getElementById('formatGuideModal').style.display='flex'">
+                <i class="fas fa-question-circle"></i>
+            </button>
+            <button type="button" class="btn-magic">
+                <i class="fas fa-magic"></i> จัดระเบียบ
+            </button>
+        `;
+        
+        parent.insertBefore(wrapper, textarea);
+        wrapper.appendChild(toolbar);
+        wrapper.appendChild(textarea);
+        
+        const btnMagic = toolbar.querySelector('.btn-magic:last-child');
+        btnMagic.addEventListener('click', () => {
+            textarea.value = formatAcademicText(textarea.value);
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+            btnMagic.innerHTML = `<i class="fas fa-check" style="color:#10b981;"></i> เรียบร้อย`;
+            setTimeout(() => { btnMagic.innerHTML = `<i class="fas fa-magic"></i> จัดระเบียบ`; }, 2000);
+        });
+
+        // Auto Resize
+        textarea.style.overflow = 'hidden';
+        textarea.style.resize = 'none';
+        const autoResize = () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        };
+        textarea.addEventListener('input', autoResize);
+        setTimeout(autoResize, 100);
     });
 });
-window.showToast = showToast;
 </script>
-</body>
-</html>
+{% endblock %}

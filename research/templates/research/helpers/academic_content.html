@@ -1,0 +1,33 @@
+{# helper เพื่อจัดการข้อความทางวิชาการให้รองรับ List และการจัดย่อหน้าที่สวยงาม #}
+<div class="academic-text-flow" style="display: flex; flex-direction: column; gap: 10px;">
+    {% for line in text.splitlines %}
+        {% if line %}
+            {# ตรรกะตรวจสอบว่าเป็นรายการ (List) หรือไม่ (ตัวเลข 1. หรือ - หรือ *) #}
+            {# ใช้ slice เพื่อดูอักขระตัวแรกๆ #}
+            {% if line|slice:":2" == "1." or line|slice:":2" == "2." or line|slice:":2" == "3." or line|slice:":1" == "-" or line|slice:":1" == "•" or line|slice:":1" == "*" %}
+                <div class="academic-list-item" style="display: flex; gap: 12px; padding-left: 12px; text-align: justify;">
+                    <span class="academic-marker" style="font-weight: 800; color: #334155; min-width: max-content;">
+                        {% if line|slice:":1" == "-" or line|slice:":1" == "•" or line|slice:":1" == "*" %}
+                            •
+                        {% else %}
+                            {# สำหรับตัวเลขใน Django Template เราจะแสดงทั้งบรรทัดส่วนหน้า #}
+                            {{ line.split.0 }}
+                        {% endif %}
+                    </span>
+                    <span class="academic-line-content" style="flex: 1;">
+                        {% if line|slice:":1" == "-" or line|slice:":1" == "•" or line|slice:":1" == "*" %}
+                            {{ line|slice:"1:" }}
+                        {% else %}
+                            {# แสดงเนื้อหาหลังจากตัวเลข #}
+                            {% with words=line.split %}
+                                {% for word in words|slice:"1:" %}{{ word }} {% endfor %}
+                            {% endwith %}
+                        {% endif %}
+                    </span>
+                </div>
+            {% else %}
+                <p class="academic-p" style="margin: 0; text-align: justify;">{{ line }}</p>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</div>

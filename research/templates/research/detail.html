@@ -1,593 +1,1553 @@
+{% extends 'research/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ project.title_th }} | RTEC Repository</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --crimson:    #800000;
-            --crimson-dk: #5a0000;
-            --crimson-lt: #fff9f9;
-            --gold:       #d4af37;
-            --gold-lt:    #fffdf0;
-            --ink:        #222;
-            --muted:      #666;
-            --border:     #eee;
-            --bg:         #f4f7f6;
-            --card:       #ffffff;
-            --radius:     14px;
+{% load research_extras %}
+
+{% block title %}{{ project.title_th }} | RETC Academic Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ══════════════════════════════════════
+       PROJECT DETAIL PAGE
+       ══════════════════════════════════════ */
+
+    /* ── HERO ── */
+    .detail-hero {
+        background: linear-gradient(150deg, #2a0308 0%, #6a0a1e 40%, #8a1028 70%, #3a0510 100%);
+        padding: 40px clamp(24px, 5%, 64px) 90px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .detail-hero::before {
+        content: '';
+        position: absolute;
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(201, 151, 43, 0.14) 0%, transparent 70%);
+        top: -180px;
+        right: -80px;
+        pointer-events: none;
+    }
+
+    .detail-hero-inner {
+        max-width: var(--max-w);
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    .detail-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 13px;
+        border-radius: 99px;
+        margin-bottom: 14px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .badge-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+    }
+
+    .badge-dot.approved {
+        background: #22c55e;
+    }
+
+    .badge-dot.pending {
+        background: #f59e0b;
+    }
+
+    .detail-hero-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.3rem, 3.5vw, 1.95rem);
+        font-weight: 800;
+        line-height: 1.45;
+        margin-bottom: 8px;
+        max-width: 700px;
+    }
+
+    .detail-hero-title-en {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 0.55);
+        font-style: italic;
+        margin-bottom: 22px;
+        max-width: 620px;
+        line-height: 1.55;
+    }
+
+    .detail-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    .detail-hero-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .detail-hero-meta i {
+        color: var(--gold-lt);
+        font-size: 0.72rem;
+    }
+
+    /* ── STICKY ACTION BAR ── */
+    .detail-action-bar {
+        background: white;
+        border-bottom: 1px solid var(--border-lt);
+        padding: 11px clamp(24px, 5%, 64px);
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .action-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .breadcrumb-text {
+        font-size: 0.78rem;
+        color: var(--muted);
+    }
+
+    .breadcrumb-text a {
+        color: var(--muted);
+        text-decoration: none;
+    }
+
+    .breadcrumb-text a:hover {
+        color: var(--crimson);
+    }
+
+    .breadcrumb-sep {
+        margin: 0 5px;
+    }
+
+    .action-bar-right {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-bar {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 16px;
+        border-radius: var(--r-sm);
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all var(--t-fast);
+        border: none;
+        white-space: nowrap;
+    }
+
+    .btn-bar-outline {
+        background: white;
+        color: var(--muted);
+        border: 1px solid var(--border);
+    }
+
+    .btn-bar-outline:hover {
+        background: var(--cream);
+        color: var(--ink);
+    }
+
+    .btn-bar-gold {
+        background: var(--gold-pale);
+        color: #92400e;
+        border: 1px solid #f0c060;
+    }
+
+    .btn-bar-gold:hover {
+        background: var(--gold);
+        color: white;
+    }
+
+    .btn-bar-crimson {
+        background: var(--crimson);
+        color: white;
+    }
+
+    .btn-bar-crimson:hover {
+        background: var(--crimson-lt);
+    }
+
+    .btn-bar-danger {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .btn-bar-danger:hover {
+        background: #dc2626;
+        color: white;
+    }
+
+    /* ── MAIN CONTENT LAYOUT ── */
+    .detail-content {
+        max-width: var(--max-w);
+        margin: 10px auto 60px;
+        padding: 0 clamp(24px, 5%, 64px);
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 20px;
+        position: relative;
+        z-index: 10;
+    }
+
+    @media (max-width: 860px) {
+        .detail-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── CARD BASE ── */
+    .d-card {
+        background: white;
+        border-radius: var(--r-md);
+        border: 1px solid var(--border-lt);
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .d-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .d-card-head {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 14px 22px;
+        border-bottom: 1px solid var(--border-lt);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--crimson-dk);
+    }
+
+    .d-card-head i {
+        color: var(--gold);
+        font-size: 0.78rem;
+    }
+
+    .d-card-body {
+        padding: 22px;
+    }
+
+    /* ── ABSTRACT ── */
+    .abstract-text {
+        font-size: 1rem;
+        line-height: 1.95;
+        color: var(--ink);
+        text-align: justify;
+        word-break: break-word;
+    }
+
+    .abstract-text p {
+        text-indent: 2.5em;
+        margin-bottom: 14px;
+    }
+
+    /* ── KEYWORDS ── */
+    .kw-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 18px;
+    }
+
+    .kw-chip {
+        background: var(--crimson-pale);
+        color: var(--crimson);
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 13px;
+        border-radius: 99px;
+        border: 1px solid rgba(122, 12, 34, 0.15);
+    }
+
+    /* ── TABS (Full content) ── */
+    .tab-nav {
+        display: flex;
+        overflow-x: auto;
+        scrollbar-width: none;
+        border-bottom: 1px solid var(--border-lt);
+        padding: 0 22px;
+    }
+
+    /* ── YOUTUBE STYLE COMMENTS ── */
+    .yt-comment-section {
+        margin-top: 32px;
+        background: white;
+        border-radius: var(--r-md);
+        padding: clamp(20px, 4vw, 32px);
+        border: 1px solid var(--border-lt);
+    }
+
+    .yt-reply-list {
+        margin-top: 16px;
+        margin-left: 56px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .yt-reply-item {
+        display: flex;
+        gap: 12px;
+    }
+
+    .yt-reply-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--crimson-pale);
+        color: var(--crimson);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .yt-reply-form-container {
+        display: none;
+        margin-top: 12px;
+    }
+
+    .yt-reply-form-container.active {
+        display: block;
+    }
+
+    .yt-comment-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--ink);
+    }
+
+    .yt-comment-header .count {
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    .yt-comment-form {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .yt-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--crimson-pale);
+        color: var(--crimson);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .yt-input-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .yt-textarea {
+        width: 100%;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.95rem;
+        padding: 4px 0 8px;
+        margin-bottom: 8px;
+        outline: none;
+        resize: none;
+        min-height: 24px;
+        transition: border-color 0.2s;
+    }
+
+    .yt-textarea:focus {
+        border-bottom: 2px solid var(--crimson);
+    }
+
+    .yt-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+    }
+
+    .yt-textarea:focus ~ .yt-form-actions,
+    .yt-form-actions:active,
+    .yt-form-actions:focus-within {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .btn-yt {
+        padding: 8px 16px;
+        border-radius: 99px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: background 0.2s;
+    }
+
+    .btn-yt-cancel {
+        background: transparent;
+        color: var(--ink);
+    }
+
+    .btn-yt-cancel:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-yt-submit {
+        background: var(--crimson);
+        color: white;
+    }
+
+    .btn-yt-submit:hover {
+        background: var(--crimson-lt);
+    }
+
+    .btn-yt-submit:disabled {
+        background: #f2f2f2;
+        color: #909090;
+        cursor: default;
+    }
+
+    .yt-comment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .yt-comment-item {
+        display: flex;
+        gap: 16px;
+    }
+
+    .yt-comment-content {
+        flex: 1;
+    }
+
+    .yt-comment-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .yt-comment-user {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .yt-comment-time {
+        font-size: 0.75rem;
+        color: var(--muted);
+    }
+
+    .yt-comment-text {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: var(--ink);
+        white-space: pre-wrap;
+    }
+
+    .yt-comment-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-top: 8px;
+    }
+
+    .yt-action-link {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--muted);
+        text-decoration: none;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+    }
+
+    .yt-action-link:hover {
+        color: var(--ink);
+    }
+
+    .yt-action-link.delete {
+        color: #dc2626;
+    }
+
+    .tab-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-btn {
+        padding: 12px 18px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--muted);
+        background: none;
+        border: none;
+        border-bottom: 2.5px solid transparent;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all var(--t-fast);
+        margin-bottom: -1px;
+        font-family: 'Sarabun', sans-serif;
+    }
+
+    .tab-btn.active {
+        color: var(--crimson);
+        border-bottom-color: var(--crimson);
+    }
+
+    .tab-btn:hover:not(.active) {
+        color: var(--ink);
+    }
+
+    /* ── TAB CONTENT ── */
+    .tab-pane {
+        display: none;
+        padding: 24px;
+        animation: fadeIn 0.4s var(--ease);
+    }
+
+    .tab-pane.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
         }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-        body {
-            font-family: 'Sarabun', sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            line-height: 1.7;
-            padding: 28px 16px;
+    /* ── PDF PREVIEW MODAL ── */
+    .pdf-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(8px);
+        padding: 20px;
+    }
+
+    .pdf-modal-container {
+        width: 100%;
+        max-width: 1200px;
+        height: 95vh;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+        animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .pdf-modal-header {
+        padding: 18px 24px;
+        background: rgba(255, 255, 255, 0.6);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .pdf-modal-title {
+        color: var(--navy-dark);
+        font-family: 'Sarabun', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pdf-modal-close {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-600);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .pdf-modal-close:hover {
+        background: #ef4444;
+        color: white;
+        transform: rotate(90deg);
+    }
+
+    .pdf-modal-body {
+        flex: 1;
+        position: relative;
+    }
+
+    .pdf-modal-body iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    .pdf-modal-footer {
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.6);
+        color: var(--gray-500);
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.85rem;
+        text-align: center;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    @keyframes modalScaleUp {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
         }
 
-        /* ── Container ── */
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            background: var(--card);
-            padding: 40px 44px;
-            border-radius: 20px;
-            box-shadow: 0 10px 36px rgba(0,0,0,0.09);
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    /* ── SECTION BLOCK inside tabs ── */
+    .sec-block {
+        margin-bottom: 32px;
+    }
+
+    .sec-block:last-child {
+        margin-bottom: 0;
+    }
+
+    .sec-label {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--crimson);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-lt);
+    }
+
+    .sec-text {
+        font-size: 1rem;
+        line-height: 1.9;
+        color: var(--ink);
+        word-break: break-word;
+        text-align: justify;
+    }
+
+    .sec-text p {
+        text-indent: 2.5em;
+        margin-bottom: 14px;
+    }
+
+    .sec-empty {
+        font-size: 0.85rem;
+        color: var(--muted);
+        font-style: italic;
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    /* ── SIDEBAR ── */
+    .detail-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .researcher-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .researcher-grid .researcher-item {
+        border-bottom: 1px solid var(--border-lt);
+        padding: 9px 0;
+    }
+
+    .researcher-grid .researcher-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .r-name {
+        font-size: 0.87rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    /* Stats grid */
+    .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .stat-item {
+        background: var(--cream);
+        border-radius: var(--r-sm);
+        padding: 12px;
+        text-align: center;
+    }
+
+    .stat-num {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--crimson);
+        line-height: 1;
+    }
+
+    .stat-lbl {
+        font-size: 0.65rem;
+        color: var(--muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-top: 3px;
+    }
+
+    /* Info rows */
+    .info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-lt);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 4px;
+    }
+
+    .info-key {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-val {
+        font-size: 0.87rem;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.45;
+    }
+
+    /* Researchers */
+    .researcher-item {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--border-lt);
+    }
+
+    .researcher-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .r-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--crimson-pale);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: var(--crimson);
+        flex-shrink: 0;
+    }
+
+    .r-role {
+        font-size: 0.7rem;
+        color: var(--muted);
+    }
+
+    /* Award badge */
+    .award-badge {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: linear-gradient(135deg, #fdf6e3, #fef9ee);
+        border: 1px solid #f0c060;
+        border-radius: var(--r-sm);
+        padding: 12px 14px;
+    }
+
+    .award-icon {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .award-text {
+        font-size: 0.82rem;
+        line-height: 1.55;
+        color: #5a3e00;
+        font-weight: 600;
+    }
+
+    /* PDF zone */
+    .pdf-zone {
+        border: 1.5px dashed var(--border);
+        border-radius: var(--r-sm);
+        padding: 22px 16px;
+        text-align: center;
+        background: var(--cream);
+    }
+
+    .pdf-icon-big {
+        font-size: 2rem;
+        color: #ef4444;
+        opacity: 0.4;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .pdf-filename {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-bottom: 4px;
+    }
+
+    .pdf-size {
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-bottom: 14px;
+    }
+
+    /* Status chip */
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 13px;
+        border-radius: 99px;
+        font-size: 0.72rem;
+        font-weight: 800;
+    }
+
+    .chip-approved {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .chip-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .detail-hero {
+            padding-bottom: 70px;
         }
 
-        /* ── Header ── */
-        .header {
-            border-bottom: 3px solid var(--crimson);
-            margin-bottom: 18px;
-            padding-bottom: 20px;
-            text-align: center;
-            position: relative;
+        .detail-content {
+            margin-top: -40px;
         }
 
-        .admin-controls-top {
-            position: absolute;
-            top: 0; right: 0;
-            display: flex; gap: 8px;
-        }
-
-        .btn-edit-icon {
-            width: 36px; height: 36px;
-            display: inline-flex; align-items: center; justify-content: center;
-            color: var(--gold);
-            font-size: 1.15em;
-            border-radius: 8px;
-            transition: background .2s, color .2s, transform .2s;
-            text-decoration: none;
-        }
-        .btn-edit-icon:hover { color: #b8960c; background: rgba(212,175,55,0.1); transform: scale(1.1); }
-
-        h1 {
-            color: var(--crimson);
-            font-size: clamp(1.25em, 3.5vw, 1.75em);
-            line-height: 1.4;
-            padding: 0 44px; /* space for admin button */
-        }
-
-        .subtitle {
-            color: var(--muted);
-            font-style: italic;
-            font-size: clamp(0.9em, 2vw, 1.05em);
-            margin-top: 8px;
-        }
-
-        /* ── Stats bar ── */
-        .stats-bar {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 18px;
-            margin: 14px 0 24px;
-            color: var(--muted);
-            font-size: 0.92em;
-        }
-        .stats-bar span { display: flex; align-items: center; gap: 6px; }
-        .stats-bar i { color: var(--crimson); opacity: 0.7; }
-
-        /* ── Meta grid ── */
-        .meta-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px 24px;
-            margin-bottom: 28px;
-            background: var(--crimson-lt);
-            padding: 22px 24px;
-            border-radius: var(--radius);
-            border: 1px solid #f8d7da;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-            font-size: 0.9em;
-            line-height: 1.5;
-        }
-        .meta-item i { color: var(--crimson); width: 18px; flex-shrink: 0; font-size: 0.9em; margin-top: 2px; }
-        .label { font-weight: 700; color: #555; min-width: 100px; flex-shrink: 0; }
-        .meta-val { color: var(--ink); word-break: break-word; }
-
-        /* ── Award box ── */
-        .award-box {
-            background: var(--gold-lt);
-            border: 2px solid var(--gold);
-            border-radius: var(--radius);
-            padding: 18px 22px;
-            margin: 20px 0;
-            display: flex;
+        .detail-action-bar {
+            flex-direction: column;
             align-items: flex-start;
-            gap: 18px;
-        }
-        .award-icon { font-size: 2.2em; color: var(--gold); flex-shrink: 0; line-height: 1; }
-        .award-label { font-size: 0.78em; color: #a07a00; margin-bottom: 4px; font-weight: 600; }
-        .award-text { color: #856404; font-weight: 700; line-height: 1.5; }
-
-        /* ── Section title ── */
-        .section-title {
-            font-weight: 700;
-            color: var(--crimson);
-            margin: 32px 0 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: clamp(1em, 2.5vw, 1.2em);
-            border-left: 5px solid var(--crimson);
-            padding-left: 14px;
-        }
-        .section-title i { font-size: 0.9em; flex-shrink: 0; }
-
-        /* ── Info boxes ── */
-        .info-box {
-            background: #fafafa;
-            padding: 22px 24px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            text-align: justify;
-            margin-bottom: 8px;
-            font-size: 0.93em;
-        }
-        .info-box p { margin-bottom: 14px; }
-        .info-box p:last-child { margin-bottom: 0; }
-        .info-box strong { color: var(--crimson); }
-
-        /* ── Tags ── */
-        .tag-container {
-            margin-top: 22px;
-            padding-top: 16px;
-            border-top: 1px dashed #ccc;
-        }
-        .tag-label { font-weight: 700; color: #555; margin-right: 10px; font-size: 0.9em; }
-        .tag {
-            display: inline-block;
-            background: var(--crimson);
-            color: white;
-            padding: 3px 14px;
-            border-radius: 20px;
-            font-size: 0.82em;
-            margin: 3px 4px 3px 0;
         }
 
-        /* ── Button group ── */
-        .btn-group {
-            margin-top: 36px;
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 14px;
-            border-top: 1px solid var(--border);
-            padding-top: 28px;
+        .tab-btn {
+            padding: 10px 12px;
+            font-size: 0.75rem;
         }
+    }
+</style>
+{% endblock %}
 
-        .btn {
-            padding: 11px 26px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            font-family: 'Sarabun', sans-serif;
-            font-size: 0.92em;
-            transition: all .2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            border: none;
-            min-height: 44px;
-            touch-action: manipulation;
-        }
-        .btn-pdf  { background: #d9534f; color: white; }
-        .btn-pdf:hover  { background: #c9302c; transform: translateY(-2px); }
-        .btn-back { background: var(--gold); color: white; }
-        .btn-back:hover { background: #b8960c; transform: translateY(-2px); }
+{% block content %}
 
-        /* ── Comments section ── */
-        .comments-section {
-            margin-top: 38px;
-            border-top: 2px solid #f0e0e0;
-            padding-top: 28px;
-        }
-
-        .comments-title {
-            color: var(--crimson);
-            font-size: clamp(1em, 2.5vw, 1.2em);
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .comment-card {
-            background: #fafafa;
-            border-left: 4px solid var(--crimson);
-            padding: 14px 18px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-        }
-
-        .comment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-
-        .comment-author {
-            color: var(--crimson);
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.92em;
-        }
-
-        .comment-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .comment-date {
-            color: #999;
-            font-size: 0.8em;
-        }
-
-        .btn-delete-comment {
-            color: #c0392b;
-            text-decoration: none;
-            font-size: 0.88em;
-            transition: opacity .2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .btn-delete-comment:hover { opacity: 0.7; }
-
-        .comment-body {
-            font-size: 0.92em;
-            line-height: 1.7;
-            word-break: break-word;
-        }
-
-        /* ── Comment form ── */
-        .comment-form {
-            margin-top: 20px;
-            background: var(--crimson-lt);
-            padding: 20px 22px;
-            border-radius: var(--radius);
-            border: 1px solid #f8d7da;
-        }
-
-        .form-label {
-            font-weight: 700;
-            color: #555;
-            display: block;
-            margin-bottom: 10px;
-            font-size: 0.92em;
-        }
-
-        .comment-textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid #ddd;
-            border-radius: 8px;
-            font-family: 'Sarabun', sans-serif;
-            font-size: 0.95em;
-            resize: vertical;
-            min-height: 90px;
-            transition: border-color .2s;
-            background: white;
-        }
-        .comment-textarea:focus { outline: none; border-color: var(--crimson); }
-
-        .btn-submit {
-            margin-top: 10px;
-            padding: 10px 24px;
-            background: var(--crimson);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Sarabun', sans-serif;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 0.92em;
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            transition: background .2s, transform .2s;
-            touch-action: manipulation;
-            min-height: 42px;
-        }
-        .btn-submit:hover { background: var(--crimson-dk); transform: translateY(-1px); }
-
-        .login-prompt {
-            text-align: center;
-            color: #888;
-            margin-top: 20px;
-            background: #f5f5f5;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 0.9em;
-        }
-        .login-prompt a { color: var(--crimson); font-weight: 700; text-decoration: none; }
-        .login-prompt a:hover { text-decoration: underline; }
-
-        /* ═══════════════════════════════════════════════
-           RESPONSIVE
-        ═══════════════════════════════════════════════ */
-
-        /* Tablet (768–1023px) */
-        @media (max-width: 1023px) {
-            .container { padding: 30px 28px; }
-        }
-
-        /* Tablet portrait (600–767px) */
-        @media (max-width: 767px) {
-            body { padding: 16px 10px; }
-            .container { padding: 24px 18px; border-radius: 14px; }
-            h1 { padding: 0 40px; font-size: 1.2em; }
-            .meta-info { grid-template-columns: 1fr; gap: 10px; padding: 18px 16px; }
-            .label { min-width: 90px; }
-            .info-box { padding: 16px 18px; }
-            .section-title { margin: 24px 0 10px; }
-            .award-box { flex-direction: column; gap: 10px; padding: 16px 18px; }
-            .award-icon { font-size: 1.8em; }
-            .btn-group { gap: 10px; }
-            .btn { padding: 10px 20px; font-size: 0.88em; }
-            .comment-form { padding: 16px 16px; }
-            .comment-card { padding: 12px 14px; }
-        }
-
-        /* Mobile (< 480px) */
-        @media (max-width: 480px) {
-            body { padding: 10px 8px; }
-            .container { padding: 18px 14px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-            h1 { font-size: 1.05em; padding: 0 36px; }
-            .subtitle { font-size: 0.85em; }
-            .stats-bar { gap: 12px; font-size: 0.85em; }
-            .meta-info { padding: 14px 12px; gap: 10px; }
-            .meta-item { font-size: 0.85em; }
-            .label { min-width: 80px; font-size: 0.85em; }
-            .section-title { font-size: 0.95em; padding-left: 10px; border-left-width: 4px; margin: 20px 0 8px; }
-            .info-box { padding: 14px 14px; font-size: 0.88em; }
-            .btn-group { flex-direction: column; align-items: stretch; }
-            .btn { justify-content: center; width: 100%; }
-            .comment-header { flex-direction: column; align-items: flex-start; }
-            .comment-meta { gap: 8px; }
-            .comments-section { margin-top: 28px; padding-top: 20px; }
-            .comment-form { padding: 14px 12px; }
-            .tag { font-size: 0.78em; }
-        }
-
-        /* Print */
-        @media print {
-            body { padding: 0; background: white; }
-            .container { box-shadow: none; border-radius: 0; padding: 20px; }
-            .btn-group, .comments-section, .admin-controls-top, .stats-bar { display: none !important; }
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-
-    <!-- ── Header ── -->
-    <div class="header">
-        {% if user.is_staff %}
-        <div class="admin-controls-top">
-            <a href="{% url 'edit_project' project.id %}" class="btn-edit-icon" title="แก้ไขผลงาน">
-                <i class="fas fa-edit"></i>
-            </a>
+<!-- ── HERO ── -->
+<div class="detail-hero">
+    <div class="detail-hero-inner">
+        <div class="detail-hero-badge">
+            <span class="badge-dot {% if project.is_approved %}approved{% else %}pending{% endif %}"></span>
+            {% if project.is_approved %}เผยแพร่แล้ว{% else %}รอตรวจสอบ{% endif %}
         </div>
-        {% endif %}
-
-        <h1>{{ project.title_th }}</h1>
+        <h1 class="detail-hero-title">{{ project.title_th }}</h1>
         {% if project.title_en %}
-            <p class="subtitle">{{ project.title_en }}</p>
+        <p class="detail-hero-title-en">{{ project.title_en }}</p>
         {% endif %}
-    </div>
-
-    <!-- ── Stats ── -->
-    <div class="stats-bar">
-        <span><i class="fas fa-eye"></i> เข้าชม {{ project.views_count }} ครั้ง</span>
-        <span><i class="fas fa-download"></i> ดาวน์โหลด {{ project.download_count }} ครั้ง</span>
-    </div>
-
-    <!-- ── Meta ── -->
-    <div class="meta-info">
-        <div class="meta-item">
-            <i class="fas fa-user-tie"></i>
-            <span class="label">ผู้วิจัยหลัก</span>
-            <span class="meta-val">{{ project.student_name }}</span>
-        </div>
-        <div class="meta-item">
-            <i class="fas fa-graduation-cap"></i>
-            <span class="label">สาขาวิชา</span>
-            <span class="meta-val">{{ project.get_department_display }}</span>
-        </div>
-        <div class="meta-item">
-            <i class="fas fa-users"></i>
-            <span class="label">ผู้วิจัยร่วม</span>
-            <span class="meta-val">
-                {{ project.researcher_co1|default:"" }}{% if project.researcher_co2 %}, {{ project.researcher_co2 }}{% endif %}{% if not project.researcher_co1 and not project.researcher_co2 %}-{% endif %}
-            </span>
-        </div>
-        <div class="meta-item">
-            <i class="fas fa-calendar-check"></i>
-            <span class="label">ปีการศึกษา</span>
-            <span class="meta-val">{{ project.academic_year }}</span>
-        </div>
-        <div class="meta-item">
-            <i class="fas fa-vial"></i>
-            <span class="label">ประเภทงาน</span>
-            <span class="meta-val">{{ project.get_research_type_display }}</span>
-        </div>
-        <div class="meta-item">
-            <i class="fas fa-building"></i>
-            <span class="label">หน่วยงาน</span>
-            <span class="meta-val">{{ project.organization|default:"วิทยาลัยเทคนิคร้อยเอ็ด" }}</span>
-        </div>
-        <div class="meta-item">
-            <i class="fas fa-hand-holding-usd"></i>
-            <span class="label">ผู้สนับสนุนทุนวิจัย</span>
-            <span class="meta-val">{{ project.funding_by|default:"-" }}</span>
+        <div class="detail-hero-meta">
+            <span><i class="fas fa-calendar-alt"></i> {{ project.academic_year }}</span>
+            <span><i class="fas fa-university"></i> {{ project.get_department_display }}</span>
+            <span><i class="fas fa-eye"></i> {{ project.views_count }} ครั้ง</span>
+            <span><i class="fas fa-download"></i> {{ project.download_count }} ดาวน์โหลด</span>
+            <span><i class="fas fa-star" style="color:var(--gold)"></i> {{ project.average_rating }} ({{ project.total_ratings }} รีวิว)</span>
         </div>
     </div>
+</div>
 
-    <!-- ── Award ── -->
-    {% if project.awards %}
-    <div class="award-box">
-        <div class="award-icon"><i class="fas fa-trophy"></i></div>
-        <div>
-            <div class="award-label">เกียรติประวัติและรางวัล</div>
-            <div class="award-text">{{ project.awards|linebreaksbr }}</div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- ── Background & Objectives ── -->
-    <div class="section-title"><i class="fas fa-align-left"></i> ความเป็นมาและวัตถุประสงค์</div>
-    <div class="info-box">
-        <p><strong>ความเป็นมา</strong><br>{{ project.background|linebreaksbr|default:"-" }}</p>
-        <p><strong>วัตถุประสงค์</strong><br>{{ project.objectives|linebreaksbr|default:"-" }}</p>
-        {% if project.scope %}
-            <p><strong>ขอบเขตการดำเนินงาน</strong><br>{{ project.scope|linebreaksbr }}</p>
-        {% endif %}
-    </div>
-
-    <!-- ── Abstract ── -->
-    <div class="section-title"><i class="fas fa-book"></i> บทคัดย่อ</div>
-    <div class="info-box">
-        {{ project.abstract|linebreaks|default:"ไม่มีข้อมูลบทคัดย่อ" }}
-    </div>
-
-    <!-- ── Methodology ── -->
-    {% if project.theory or project.methodology %}
-    <div class="section-title"><i class="fas fa-microscope"></i> ระเบียบวิธีวิจัย</div>
-    <div class="info-box">
-        {% if project.theory %}<p><strong>ทฤษฎีที่เกี่ยวข้อง</strong><br>{{ project.theory|linebreaksbr }}</p>{% endif %}
-        {% if project.methodology %}<p><strong>วิธีดำเนินการวิจัย</strong><br>{{ project.methodology|linebreaksbr }}</p>{% endif %}
-    </div>
-    {% endif %}
-
-    <!-- ── Results ── -->
-    {% if project.results %}
-    <div class="section-title"><i class="fas fa-poll"></i> ผลการวิจัย</div>
-    <div class="info-box">{{ project.results|linebreaksbr }}</div>
-    {% endif %}
-
-    <!-- ── Discussion ── -->
-    {% if project.discussion or project.suggestions_use or project.suggestions_next %}
-    <div class="section-title"><i class="fas fa-comment-dots"></i> บทสรุปและข้อเสนอแนะ</div>
-    <div class="info-box">
-        {% if project.discussion %}<p><strong>อภิปรายผล</strong><br>{{ project.discussion|linebreaksbr }}</p>{% endif %}
-        {% if project.suggestions_use %}<p><strong>การนำไปใช้ประโยชน์</strong><br>{{ project.suggestions_use|linebreaksbr }}</p>{% endif %}
-        {% if project.suggestions_next %}<p><strong>ข้อเสนอแนะในอนาคต</strong><br>{{ project.suggestions_next|linebreaksbr }}</p>{% endif %}
-    </div>
-    {% endif %}
-
-    <!-- ── Keywords ── -->
-    {% if project.keywords %}
-    <div class="tag-container">
-        <span class="tag-label">คำสำคัญ</span>
-        {% for keyword in project.keywords.split %}
-            <span class="tag">{{ keyword }}</span>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- ── Buttons ── -->
-    <div class="btn-group">
-        <a href="{% url 'project_list' %}" class="btn btn-back">
-            <i class="fas fa-arrow-left"></i> กลับหน้าหลัก
+<!-- ── STICKY ACTION BAR ── -->
+<div class="detail-action-bar">
+    <div class="action-bar-left">
+        <a href="{% url 'project_list' %}" class="btn-bar btn-bar-outline">
+            <i class="fas fa-arrow-left"></i> หน้าหลัก
         </a>
+        <span class="breadcrumb-text">
+            <a href="{% url 'my_projects' %}">ผลงานของฉัน</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{% url 'favorite_list' %}">รายการโปรด</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{% url 'research_search' %}">ค้นหาผลงาน</a>
+        </span>
+    </div>
+    <div class="action-bar-right">
+        {% if user.is_authenticated %}
+        <form action="{% url 'toggle_favorite' project.id %}" method="POST" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-bar btn-bar-outline"
+                style="color: {% if is_favorited %}#ef4444{% else %}inherit{% endif %}; border-color: {% if is_favorited %}#ef4444{% else %}rgba(122,12,34,0.15){% endif %};">
+                <i class="{% if is_favorited %}fas{% else %}far{% endif %} fa-heart"></i>
+                {% if is_favorited %}ลบรายการโปรด{% else %}เพิ่มรายการโปรด{% endif %}
+            </button>
+        </form>
+        {% endif %}
+        {% if project.is_approved %}
+        <button class="btn-bar btn-bar-outline" onclick="shareProject()">
+            <i class="fas fa-share-alt"></i> แชร์
+        </button>
+        {% endif %}
+        {% if request.user.username == project.student_name or request.user.is_staff %}
+        <a href="{% url 'edit_project' project.id %}" class="btn-bar btn-bar-gold">
+            <i class="fas fa-edit"></i> แก้ไข
+        </a>
+        <a href="{% url 'delete_project' project.id %}" class="btn-bar btn-bar-danger"
+            onclick="return confirm('คุณแน่ใจว่าต้องการลบผลงานชิ้นนี้?')">
+            <i class="fas fa-trash-alt"></i> ลบ
+        </a>
+        {% endif %}
         {% if project.pdf_file %}
-        <a href="{% url 'download_pdf' project.id %}" class="btn btn-pdf">
-            <i class="fas fa-download"></i> ดาวน์โหลดไฟล์ PDF
+        <button type="button" class="btn-bar btn-bar-gold"
+            onclick="openPdfPreview('{% url 'pdf_preview' project.id %}', '{{ project.title_th|escapejs }}')">
+            <i class="fas fa-eye"></i> ดูไฟล์
+        </button>
+        <a href="{{ project.pdf_file.url }}" class="btn-bar btn-bar-crimson" download>
+            <i class="fas fa-download"></i> ดาวน์โหลด PDF
         </a>
         {% endif %}
     </div>
+</div>
 
-    <!-- ── Comments ── -->
-    <div class="comments-section">
-        <h3 class="comments-title">
-            <i class="fas fa-comments"></i> ความคิดเห็น ({{ comments.count }})
-        </h3>
+<!-- ── MAIN CONTENT ── -->
+<div class="detail-content">
 
-        {% for c in comments %}
-        <div class="comment-card">
-            <div class="comment-header">
-                <span class="comment-author">
-                    <i class="fas fa-user-circle"></i> {{ c.user.username }}
-                </span>
-                <div class="comment-meta">
-                    <small class="comment-date">{{ c.created_at|date:"d/m/Y H:i" }}</small>
-                    {% if user.is_staff or user == c.user %}
-                    <a href="{% url 'delete_comment' c.id %}"
-                       onclick="return confirm('คุณแน่ใจว่าต้องการลบความคิดเห็นนี้?');"
-                       class="btn-delete-comment">
-                        <i class="fas fa-trash"></i> ลบ
-                    </a>
+    <!-- LEFT: Article body -->
+    <div>
+
+
+        <!-- Abstract card -->
+        <div class="d-card">
+            <div class="d-card-head"><i class="fas fa-align-left"></i> บทคัดย่อ (Abstract)</div>
+            <div class="d-card-body">
+                <div class="abstract-text">{{ project.abstract }}</div>
+                {% if project.keywords %}
+                <div style="margin-top: 15px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+                    <span class="kw-inline-label"
+                        style="font-weight: 700; color: var(--crimson); font-size: 1rem;">คำสำคัญ</span>
+                    {% for kw in project.keywords|split:',' %}
+                    <span class="kw-chip" style="background: var(--crimson-pale); color: var(--crimson); font-size: 0.75rem; font-weight: 700; padding: 5px 14px; border-radius: 99px; border: 1px solid rgba(122,12,34,0.15);">{{ kw|trim }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Full content tabs -->
+        <div class="d-card">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('background', this)">ความเป็นมา</button>
+                <button class="tab-btn" onclick="switchTab('objectives', this)">วัตถุประสงค์</button>
+                <button class="tab-btn" onclick="switchTab('methodology', this)">วิธีการวิจัย</button>
+                <button class="tab-btn" onclick="switchTab('results', this)">ผลการวิจัย</button>
+                <button class="tab-btn" onclick="switchTab('discussion', this)">อภิปรายผล</button>
+                <button class="tab-btn" onclick="switchTab('suggestions', this)">ข้อเสนอแนะ</button>
+            </div>
+
+            <!-- Background -->
+            <div id="tab-background" class="tab-pane active">
+                {% if project.background %}
+                <div class="sec-block">
+                    <div class="sec-label">ความเป็นมาและหลักการเหตุผล</div>
+                    <div class="sec-text">{{ project.background }}</div>
+                </div>
+                {% endif %}
+                {% if project.scope %}
+                <div class="sec-block">
+                    <div class="sec-label">ขอบเขตการวิจัย</div>
+                    <div class="sec-text">{{ project.scope }}</div>
+                </div>
+                {% endif %}
+                {% if project.theory %}
+                <div class="sec-block">
+                    <div class="sec-label">ทฤษฎีที่เกี่ยวข้อง</div>
+                    <div class="sec-text">{{ project.theory }}</div>
+                </div>
+                {% endif %}
+                {% if not project.background and not project.scope and not project.theory %}
+                <p class="sec-empty">ไม่มีข้อมูลในส่วนนี้</p>
+                {% endif %}
+            </div>
+
+            <!-- Objectives -->
+            <div id="tab-objectives" class="tab-pane">
+                {% if project.objectives %}
+                <div class="sec-block">
+                    <div class="sec-label">วัตถุประสงค์การวิจัย</div>
+                    <div class="sec-text">{{ project.objectives }}</div>
+                </div>
+                {% endif %}
+                {% if project.suggestions_use %}
+                <div class="sec-block">
+                    <div class="sec-label">ประโยชน์ที่คาดว่าจะได้รับ</div>
+                    <div class="sec-text">{{ project.suggestions_use }}</div>
+                </div>
+                {% endif %}
+                {% if not project.objectives and not project.suggestions_use %}
+                <p class="sec-empty">ไม่มีข้อมูลในส่วนนี้</p>
+                {% endif %}
+            </div>
+
+            <!-- Methodology -->
+            <div id="tab-methodology" class="tab-pane">
+                {% if project.methodology %}
+                <div class="sec-block">
+                    <div class="sec-label">วิธีการดำเนินการวิจัย</div>
+                    <div class="sec-text">{{ project.methodology }}</div>
+                </div>
+                {% endif %}
+                {% if not project.methodology %}
+                <p class="sec-empty">ไม่มีข้อมูลในส่วนนี้</p>
+                {% endif %}
+            </div>
+
+            <!-- Results -->
+            <div id="tab-results" class="tab-pane">
+                {% if project.results %}
+                <div class="sec-block">
+                    <div class="sec-label">ผลการวิจัย</div>
+                    <div class="sec-text">{{ project.results }}</div>
+                </div>
+                {% endif %}
+                {% if not project.results %}
+                <p class="sec-empty">ไม่มีข้อมูลในส่วนนี้</p>
+                {% endif %}
+            </div>
+
+            <!-- Discussion -->
+            <div id="tab-discussion" class="tab-pane">
+                {% if project.discussion %}
+                <div class="sec-block">
+                    <div class="sec-label">อภิปรายผล</div>
+                    <div class="sec-text">{{ project.discussion }}</div>
+                </div>
+                {% endif %}
+                {% if not project.discussion %}
+                <p class="sec-empty">ไม่มีข้อมูลในส่วนนี้</p>
+                {% endif %}
+            </div>
+
+            <!-- Suggestions -->
+            <div id="tab-suggestions" class="tab-pane">
+                {% if project.suggestions_next %}
+                <div class="sec-block">
+                    <div class="sec-label">ข้อเสนอแนะในการวิจัยครั้งต่อไป</div>
+                    <div class="sec-text">{{ project.suggestions_next }}</div>
+                </div>
+                {% endif %}
+                {% if not project.suggestions_next %}
+                <p class="sec-empty">ไม่มีข้อมูลในส่วนนี้</p>
+                {% endif %}
+            </div>
+
+        </div><!-- end tabs card -->
+
+        <!-- ── YOUTUBE STYLE COMMENTS SECTION ── -->
+        <div class="yt-comment-section">
+            <div class="yt-comment-header">
+                ความคิดเห็น <span class="count">{{ comments|length }}</span>
+            </div>
+
+            <!-- Form เพิ่มคอมเมนต์ -->
+            {% if user.is_authenticated %}
+            <div class="yt-comment-form">
+                <div class="yt-avatar">{{ user.username|first|upper }}</div>
+                <form action="{% url 'add_comment' project.id %}" method="POST" class="yt-input-container" id="ytCommentForm">
+                    {% csrf_token %}
+                    <textarea name="body" class="yt-textarea" placeholder="เพิ่มความคิดเห็น..." rows="1" 
+                        oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                        onfocus="document.getElementById('ytFormActions').style.opacity = '1'; document.getElementById('ytFormActions').style.pointerEvents = 'auto'"></textarea>
+                    <div class="yt-form-actions" id="ytFormActions">
+                        <button type="button" class="btn-yt btn-yt-cancel" 
+                            onclick="const t = this.form.querySelector('textarea'); t.value = ''; t.style.height = ''; document.getElementById('ytFormActions').style.opacity = '0'; document.getElementById('ytFormActions').style.pointerEvents = 'none'">ยกเลิก</button>
+                        <button type="submit" class="btn-yt btn-yt-submit">ส่งความคิดเห็น</button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <div style="display:flex; align-items:center; gap:14px; padding:18px; background:var(--cream); border-radius:12px; margin-bottom:32px;">
+                <i class="fas fa-lock" style="color:var(--muted); font-size:1.2rem;"></i>
+                <div>
+                    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:4px;">เข้าสู่ระบบเพื่อแสดงความคิดเห็น</p>
+                    <a href="{% url 'login' %}" style="font-size:0.83rem; font-weight:700; color:var(--crimson); text-decoration:none;">เข้าสู่ระบบ →</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- รายการคอมเมนต์ -->
+            <div class="yt-comment-list">
+                {% if comments %}
+                    {% for c in comments %}
+                        {% if not c.parent %}
+                        <div class="yt-comment-item">
+                            <div class="yt-avatar">{{ c.user.username|first|upper }}</div>
+                            <div class="yt-comment-content">
+                                <div class="yt-comment-meta">
+                                    <span class="yt-comment-user">{{ c.user.username }}</span>
+                                    <span class="yt-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
+                                </div>
+                                <div class="yt-comment-text">{{ c.body }}</div>
+                                <div class="yt-comment-actions">
+                                    {% if user.is_staff or c.user == user %}
+                                    <form action="{% url 'delete_comment' c.id %}" method="POST" onsubmit="return confirm('ลบความคิดเห็นนี้?')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="yt-action-link delete">ลบ</button>
+                                    </form>
+                                    {% endif %}
+                                    {% if user.is_authenticated %}
+                                    <button class="yt-action-link" onclick="toggleReplyForm('{{ c.id }}')">ตอบกลับ</button>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Reply Form (Hidden) -->
+                                {% if user.is_authenticated %}
+                                <div class="yt-reply-form-container" id="reply-form-{{ c.id }}">
+                                    <form action="{% url 'add_comment' project.id %}" method="POST" class="yt-comment-form" style="margin-bottom: 0; margin-top: 12px;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="parent_id" value="{{ c.id }}">
+                                        <div class="yt-avatar" style="width: 24px; height: 24px; font-size: 0.7rem;">{{ user.username|first|upper }}</div>
+                                        <div class="yt-input-container">
+                                            <textarea name="body" class="yt-textarea" placeholder="ตอบกลับ..." rows="1" 
+                                                oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                            <div class="yt-form-actions" style="opacity: 1; pointer-events: auto;">
+                                                <button type="button" class="btn-yt btn-yt-cancel" onclick="toggleReplyForm('{{ c.id }}')">ยกเลิก</button>
+                                                <button type="submit" class="btn-yt btn-yt-submit">ตอบกลับ</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                {% endif %}
+
+                                <!-- Render Replies -->
+                                {% if c.replies.all %}
+                                <div class="yt-reply-list">
+                                    {% for reply in c.replies.all %}
+                                    <div class="yt-reply-item">
+                                        <div class="yt-reply-avatar">{{ reply.user.username|first|upper }}</div>
+                                        <div class="yt-comment-content">
+                                            <div class="yt-comment-meta">
+                                                <span class="yt-comment-user">{{ reply.user.username }}</span>
+                                                <span class="yt-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
+                                            </div>
+                                            <div class="yt-comment-text">{{ reply.body }}</div>
+                                            <div class="yt-comment-actions">
+                                                {% if user.is_staff or reply.user == user %}
+                                                <form action="{% url 'delete_comment' reply.id %}" method="POST" onsubmit="return confirm('ลบความคิดเห็นนี้?')">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="yt-action-link delete">ลบ</button>
+                                                </form>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center; padding:40px 0; color:var(--muted);">
+                        <i class="far fa-comment-dots" style="font-size:2.5rem; opacity:0.1; display:block; margin-bottom:12px;"></i>
+                        <p style="font-size:0.9rem;">ยังไม่มีความคิดเห็น</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- ── END YOUTUBE COMMENTS ── -->
+        <!-- ── END COMMENTS ── -->
+
+    </div><!-- end left -->
+
+    <!-- RIGHT: Sidebar -->
+    <div class="detail-sidebar">
+
+        <!-- Stats -->
+        <div class="d-card">
+            <div class="d-card-head"><i class="fas fa-chart-bar"></i> สถิติการเข้าถึง</div>
+            <div class="d-card-body" style="padding: 16px;">
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-num">{{ project.views_count }}</div>
+                        <div class="stat-lbl">ยอดเข้าชม</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">{{ project.download_count|default:0 }}</div>
+                        <div class="stat-lbl">ดาวน์โหลด</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Info -->
+        <div class="d-card">
+            <div class="d-card-head"><i class="fas fa-info-circle"></i> ข้อมูลผลงาน</div>
+            <div class="d-card-body" style="padding: 6px 22px 14px;">
+                <div class="info-row">
+                    <span class="info-key">สถานะ</span>
+                    <span class="info-val">
+                        {% if project.is_approved %}
+                        <span class="status-chip chip-approved"><i class="fas fa-check-circle"></i> เผยแพร่แล้ว</span>
+                        {% else %}
+                        <span class="status-chip chip-pending"><i class="fas fa-clock"></i> รอตรวจสอบ</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-key">ปีการศึกษา</span>
+                    <span class="info-val">{{ project.academic_year }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-key">ประเภทงานวิจัย</span>
+                    <span class="info-val">{{ project.get_research_type_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-key">สาขาวิชา/หน่วยงาน</span>
+                    <span class="info-val">{{ project.get_department_display }}</span>
+                </div>
+                {% if project.organization %}
+                <div class="info-row">
+                    <span class="info-key">หน่วยงาน/วิทยาลัย</span>
+                    <span class="info-val">{{ project.organization }}</span>
+                </div>
+                {% endif %}
+                {% if project.funding_by %}
+                <div class="info-row">
+                    <span class="info-key">แหล่งทุนวิจัย</span>
+                    <span class="info-val">{{ project.funding_by }}</span>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- Researchers -->
+        <div class="d-card">
+            <div class="d-card-head"><i class="fas fa-users"></i> ทีมนักวิจัย</div>
+            <div class="d-card-body" style="padding: 6px 22px 14px;">
+                <div class="researcher-grid">
+                    {% if project.student_name %}
+                    <div class="researcher-item">
+                        <div class="r-avatar"><i class="fas fa-user"></i></div>
+                        <div>
+                            <div class="r-name">
+                                {% for name in project.student_name|split:',' %}
+                                <div style="margin-bottom: 2px;">{{ name|trim }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="r-role">นักวิจัยหลัก</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if project.researcher_co1 %}
+                    <div class="researcher-item">
+                        <div class="r-avatar"><i class="fas fa-user"></i></div>
+                        <div>
+                            <div class="r-name">
+                                {% for name in project.researcher_co1|split:',' %}
+                                <div style="margin-bottom: 2px;">{{ name|trim }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="r-role">นักวิจัยร่วม</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if project.researcher_co2 %}
+                    <div class="researcher-item">
+                        <div class="r-avatar"><i class="fas fa-user"></i></div>
+                        <div>
+                            <div class="r-name">
+                                {% for name in project.researcher_co2|split:',' %}
+                                <div style="margin-bottom: 2px;">{{ name|trim }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="r-role">นักวิจัยร่วม</div>
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
-            <p class="comment-body">{{ c.body }}</p>
         </div>
-        {% endfor %}
 
-        {% if user.is_authenticated %}
-        <form method="POST" action="{% url 'add_comment' project.id %}" class="comment-form">
-            {% csrf_token %}
-            <label class="form-label">
-                <i class="fas fa-pen"></i> แสดงความคิดเห็น
-            </label>
-            <textarea name="body" rows="3" required
-                class="comment-textarea"
-                placeholder="เขียนความคิดเห็นของคุณที่นี่..."></textarea>
-            <button type="submit" class="btn-submit">
-                <i class="fas fa-paper-plane"></i> ส่งความคิดเห็น
-            </button>
-        </form>
-        {% else %}
-        <p class="login-prompt">
-            <a href="{% url 'login' %}">เข้าสู่ระบบ</a> เพื่อแสดงความคิดเห็น
-        </p>
+        <!-- Awards -->
+        {% if project.awards %}
+        <div class="d-card">
+            <div class="d-card-head"><i class="fas fa-trophy"></i> รางวัลและเกียรติประวัติ</div>
+            <div class="d-card-body">
+                <div class="award-badge">
+                    <span class="award-icon">🏆</span>
+                    <span class="award-text">{{ project.awards }}</span>
+                </div>
+            </div>
+        </div>
         {% endif %}
-    </div>
 
-</div>
-</body>
-</html>
+        <!-- Rating card -->
+        {% if user.is_authenticated %}
+        <div class="d-card" style="margin-top: 24px;">
+            <div class="d-card-head"><i class="fas fa-star"></i> ให้คะแนนผลงาน</div>
+            <div class="d-card-body" style="padding: 16px;">
+                <form action="{% url 'rate_project' project.id %}" method="POST"
+                    style="display: flex; flex-direction: column; gap: 10px;">
+                    {% csrf_token %}
+                    <select name="score"
+                        style="padding: 8px; border-radius: var(--r-sm); border: 1px solid var(--border-lt); font-family: 'Sarabun', sans-serif;">
+                        <option value="5" {% if user_rating == 5 %}selected{% endif %}>5 ดาว - ดีมาก</option>
+                        <option value="4" {% if user_rating == 4 %}selected{% endif %}>4 ดาว - ดี</option>
+                        <option value="3" {% if user_rating == 3 %}selected{% endif %}>3 ดาว - ปานกลาง</option>
+                        <option value="2" {% if user_rating == 2 %}selected{% endif %}>2 ดาว - พอใช้</option>
+                        <option value="1" {% if user_rating == 1 %}selected{% endif %}>1 ดาว - ต้องปรับปรุง</option>
+                    </select>
+                    <button type="submit"
+                        style="background: linear-gradient(135deg, var(--gold), #e0a820); color: var(--crimson-dk); font-weight: 800; border: none; padding: 8px; border-radius: var(--r-sm); cursor: pointer; transition: opacity 0.2s;">
+                        บันทึกคะแนน
+                    </button>
+                    {% if user_rating > 0 %}
+                    <p style="font-size: 0.75rem; color: var(--muted); text-align: center; margin:0;">
+                        คุณให้คะแนนไว้ <strong>{{ user_rating }} ดาว</strong>
+                    </p>
+                    {% endif %}
+                </form>
+                {% if user_rating > 0 %}
+                <form action="{% url 'cancel_rating' project.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit"
+                        style="display: block; width: 100%; text-align: center; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 6px; border-radius: var(--r-sm); margin-top: 10px; cursor: pointer; font-size: 0.8rem; font-family: 'Sarabun', sans-serif; transition: background 0.2s;"
+                        onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                        <i class="fas fa-times-circle"></i> ยกเลิกการให้คะแนน
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div><!-- end sidebar -->
+
+</div><!-- end detail-content -->
+
+<!-- Shared PDF Modal Component -->
+{% include 'research/components/pdf_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ── Tab switching ──────────────────────────────────────────
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+
+    // ── Toggle Reply Form ──────────────────────────────────────
+    function toggleReplyForm(commentId) {
+        const form = document.getElementById('reply-form-' + commentId);
+        if (form.classList.contains('active')) {
+            form.classList.remove('active');
+        } else {
+            form.classList.add('active');
+            const textarea = form.querySelector('textarea');
+            if (textarea) textarea.focus();
+        }
+    }
+
+    // ── Share ──────────────────────────────────────────────────
+    function shareProject() {
+        if (navigator.share) {
+            navigator.share({ title: document.title, url: window.location.href })
+                .catch(() => { });
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(function () {
+                window.showToast && showToast('คัดลอกลิงก์เรียบร้อยแล้ว', 'success');
+            });
+        }
+    }
+
+    // ── Format Text ──────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        function formatAcademicDisplay(el) {
+            let text = el.textContent || "";
+            if (!text.trim()) return;
+            
+            let lines = text.split('\n');
+            el.innerHTML = ''; 
+            
+            lines.forEach((line) => {
+                if (line.trim() === '') {
+                    let spacer = document.createElement('div');
+                    spacer.style.height = '10px';
+                    el.appendChild(spacer);
+                    return;
+                }
+                
+                // Match list items like "1. ", "1) ", "(1) ", "- ", "• "
+                let listMatch = line.match(/^(\s*)(\(?\d+[\.\)]|\d+\.\d+|[-•*])\s+(.*)/);
+                if (listMatch) {
+                    let leadingSpaces = listMatch[1].replace(/ /g, '\u00A0').replace(/\t/g, '\u00A0\u00A0\u00A0\u00A0');
+                    let bullet = listMatch[2];
+                    let content = listMatch[3];
+                    
+                    let container = document.createElement('div');
+                    container.style.display = 'flex';
+                    container.style.marginBottom = '6px';
+                    container.style.lineHeight = '1.8';
+                    
+                    let spanSpace = document.createElement('span');
+                    spanSpace.style.whiteSpace = 'pre';
+                    spanSpace.textContent = leadingSpaces;
+                    
+                    let spanBullet = document.createElement('span');
+                    spanBullet.style.flexShrink = '0';
+                    spanBullet.style.width = '1.8em';
+                    spanBullet.style.fontWeight = '700';
+                    spanBullet.textContent = bullet;
+                    
+                    let spanContent = document.createElement('span');
+                    spanContent.style.flex = '1';
+                    spanContent.style.textAlign = 'justify';
+                    spanContent.style.wordBreak = 'break-word';
+                    spanContent.textContent = content;
+                    
+                    container.appendChild(spanSpace);
+                    container.appendChild(spanBullet);
+                    container.appendChild(spanContent);
+                    el.appendChild(container);
+                } else {
+                    // Normal paragraph
+                    let leadingMatch = line.match(/^(\s+)(.*)/);
+                    let content = line;
+                    
+                    let container = document.createElement('div');
+                    container.style.marginBottom = '12px';
+                    container.style.lineHeight = '1.8';
+                    container.style.textAlign = 'justify';
+                    container.style.wordBreak = 'break-word';
+                    
+                    if (leadingMatch) {
+                        // User manually indented
+                        let leadingSpaces = leadingMatch[1].replace(/ /g, '\u00A0').replace(/\t/g, '\u00A0\u00A0\u00A0\u00A0');
+                        let spanSpace = document.createElement('span');
+                        spanSpace.style.whiteSpace = 'pre';
+                        spanSpace.textContent = leadingSpaces;
+                        container.appendChild(spanSpace);
+                        content = leadingMatch[2];
+                    } else {
+                        // Auto indent if no manual spaces
+                        container.style.textIndent = '2.5em';
+                    }
+                    
+                    let spanContent = document.createElement('span');
+                    spanContent.textContent = content;
+                    container.appendChild(spanContent);
+                    
+                    el.appendChild(container);
+                }
+            });
+        }
+
+        document.querySelectorAll('.abstract-text, .sec-text').forEach(formatAcademicDisplay);
+    });
+</script>
+{% endblock %}

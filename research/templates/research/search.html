@@ -1,0 +1,876 @@
+{% extends 'research/base.html' %}
+{% load static %}
+
+{% block title %}ค้นหาผลงานวิจัย | RETC Academic Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ═══════════════════════════════════════════════════════════
+   SEARCH PAGE — PREMIUM MAROON THEME (CONSISTENT WITH HOME)
+   ═══════════════════════════════════════════════════════════ */
+
+    :root {
+        --navy-dark: #0a192f;
+        --navy-light: #2c75a8;
+        --blue: #3b82f6;
+        --green: #10b981;
+        --purple: #8b5cf6;
+        --orange: #f59e0b;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+
+        /* Maroon Theme Colors */
+        --crimson: #8a0c24;
+        --crimson-dk: #5a0918;
+        --maroon-deep: #1a0208;
+        --gold: #c9972b;
+        --gold-lt: #f0c060;
+        --bg-light: #f8f5f0;
+    }
+
+    body {
+        background-color: var(--bg-light);
+    }
+
+    /* ── PAGE HEADER ───────────────────────────────────────────── */
+    .page-header {
+        background: linear-gradient(150deg, #1a0208 0%, #5a0918 30%, #8a0c24 60%, #3e0510 100%);
+        color: white;
+        padding: 80px 10% 100px;
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header h1 {
+        font-family: 'Sarabun', sans-serif;
+        font-size: clamp(2rem, 5vw, 3.2rem);
+        font-weight: 800;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 15px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-header h1 i {
+        color: var(--gold-lt);
+        font-size: 0.85em;
+    }
+
+    .page-header p {
+        font-family: 'Sarabun', sans-serif;
+        font-size: clamp(0.95rem, 2vw, 1.15rem);
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+        position: relative;
+        z-index: 2;
+        max-width: 600px;
+    }
+
+    /* ── COMPACT SEARCH BOX ────────────────────────────────────── */
+    .search-container {
+        max-width: 1100px;
+        margin: -45px auto 40px;
+        padding: 0 24px;
+        position: relative;
+        z-index: 100;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-input-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 15px;
+        border-right: 1px solid var(--gray-200);
+        min-width: 250px;
+    }
+
+    .search-input-wrap i {
+        color: var(--gray-400);
+        font-size: 1.1rem;
+    }
+
+    .search-input-wrap input {
+        width: 100%;
+        padding: 14px 0;
+        border: none;
+        outline: none;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 1rem;
+        color: var(--maroon-deep);
+    }
+
+    .search-filters-wrap {
+        flex: 0 0 auto;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .search-filter-container {
+        position: relative;
+        flex: 0 0 auto;
+    }
+
+    .search-filter {
+        width: auto;
+        min-width: 150px;
+        padding: 12px 38px 12px 18px;
+        border: 2px solid #f3f4f6;
+        border-radius: 14px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.92rem;
+        font-weight: 700;
+        background: white;
+        color: var(--maroon-deep);
+        cursor: pointer;
+        outline: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        appearance: none;
+        -webkit-appearance: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .search-filter:hover {
+        border-color: var(--gray-300);
+        background: #f9fafb;
+    }
+
+    .search-filter:focus {
+        border-color: var(--gray-400);
+        background: white;
+        box-shadow: none;
+    }
+
+    .filter-arrow {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: var(--gray-400);
+        font-size: 0.8rem;
+        transition: all 0.2s;
+    }
+
+    .search-filter:focus + .filter-arrow {
+        color: var(--crimson);
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    .btn-search-go {
+        padding: 12px 28px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--crimson), #6b0a1e);
+        color: white;
+        font-family: 'Sarabun', sans-serif;
+        font-weight: 800;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-search-go:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(122, 12, 34, 0.3);
+    }
+
+    /* ── PROJECTS GRID ─────────────────────────────────────────── */
+    .main-results {
+        max-width: 1100px;
+        margin: 0 auto 80px;
+        padding: 0 24px;
+    }
+
+    .results-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        font-weight: 600;
+        color: var(--gray-700);
+    }
+
+    .results-info b {
+        color: var(--crimson);
+    }
+
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+
+    .project-card {
+        background: white;
+        border-radius: 22px;
+        border: 1px solid var(--gray-200);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        position: relative;
+    }
+
+    .project-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        border-color: rgba(138, 12, 36, 0.15);
+    }
+
+    .card-bar {
+        height: 5px;
+        width: 100%;
+    }
+
+    .card-ไฟฟ้า {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    /* Sky Blue */
+    .card-อิเล็กทรอนิกส์ {
+        background: linear-gradient(90deg, #0ea5e9, #7dd3fc);
+    }
+
+    /* Blue */
+    .card-การผลิต {
+        background: linear-gradient(90deg, #6b7280, #9ca3af);
+    }
+
+    /* Gray */
+    .card-เครื่องกล {
+        background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+
+    /* Red */
+    .card-คอมพิวเตอร์ {
+        background: linear-gradient(90deg, #ec4899, #f472b6);
+    }
+
+    /* Pink */
+    .card-default {
+        background: linear-gradient(90deg, #8a0c24, #c0455d);
+    }
+
+    .project-card-header {
+        padding: 20px 24px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .dept-tag {
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 5px 14px;
+        border-radius: 50px;
+    }
+
+    .year-tag {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--gray-400);
+        background: var(--gray-50);
+        padding: 4px 10px;
+        border-radius: 8px;
+        white-space: nowrap;
+    }
+
+    .project-card-body {
+        padding: 18px 24px 22px;
+        flex: 1;
+    }
+
+    .project-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--maroon-deep);
+        line-height: 1.5;
+        margin-bottom: 14px;
+        display: block;
+        text-decoration: none;
+        transition: color 0.2s;
+        height: 3.15em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .project-title:hover {
+        color: var(--crimson);
+    }
+
+    .project-author {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        color: var(--gray-600);
+        margin-bottom: 16px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .author-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #fdf0f2;
+        color: var(--crimson);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .project-snippet {
+        font-size: 0.82rem;
+        color: var(--gray-500);
+        line-height: 1.6;
+        height: 4.8em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+
+    .project-card-footer {
+        padding: 14px 24px;
+        background: var(--gray-50);
+        border-top: 1px solid var(--gray-100);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .project-stats {
+        display: flex;
+        gap: 14px;
+    }
+
+    .project-stats span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--gray-400);
+    }
+
+    .project-rating {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #92400e;
+        background: #fef3c7;
+        padding: 3px 10px;
+        border-radius: 50px;
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .card-actions {
+        padding: 14px 24px 20px;
+        background: var(--gray-50);
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 12px;
+        border-radius: 12px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-details {
+        grid-column: span 2;
+        background: linear-gradient(135deg, var(--crimson), #6b0a1e);
+        color: white;
+        border: none;
+    }
+
+    .btn-details:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(122, 12, 34, 0.3);
+    }
+
+    .btn-open {
+        border: 1.5px solid var(--crimson);
+        color: var(--crimson);
+        cursor: pointer;
+        background: transparent;
+    }
+
+    .btn-open:hover {
+        background: var(--crimson);
+        color: white;
+    }
+
+    .btn-pdf {
+        border: 1.5px solid #a01030;
+        color: #a01030;
+    }
+
+    .btn-pdf:hover {
+        background: #a01030;
+        color: white;
+    }
+
+    .btn-edit {
+        border: 1.5px solid var(--gold);
+        color: var(--gold);
+    }
+
+    .btn-edit:hover {
+        background: var(--gold);
+        color: white;
+    }
+
+    /* ── DEPARTMENTS COLORING ── */
+    .dept-ไฟฟ้า {
+        background: #fffbeb;
+        color: #92400e;
+    }
+
+    /* Sky Blue Tint */
+    .dept-อิเล็กทรอนิกส์ {
+        background: #f0f9ff;
+        color: #0369a1;
+    }
+
+    /* Blue Tint */
+    .dept-การผลิต {
+        background: #f9fafb;
+        color: #374151;
+    }
+
+    /* Gray Tint */
+    .dept-เครื่องกล {
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    /* Red Tint */
+    .dept-คอมพิวเตอร์ {
+        background: #fdf2f8;
+        color: #9d174d;
+    }
+
+    /* Pink Tint */
+    .dept-default {
+        background: #e9f0f0;
+        color: #444;
+    }
+
+    /* ── PAGINATION ── */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 15px;
+        margin-top: 40px;
+        padding: 20px 0;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .btn-pag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 50px;
+        background: white;
+        color: var(--crimson);
+        border: 1.5px solid var(--crimson);
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-pag:hover {
+        background: var(--crimson);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(138, 12, 36, 0.2);
+    }
+
+    .pag-info {
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        padding: 0 10px;
+    }
+
+    /* ── PDF PREVIEW MODAL STYLES (WHITE GLASSMORPHISM) ──────────── */
+    .pdf-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(8px);
+        padding: 20px;
+    }
+
+    .pdf-modal-container {
+        width: 100%;
+        max-width: 1200px;
+        height: 95vh;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+        animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .pdf-modal-header {
+        padding: 18px 24px;
+        background: rgba(255, 255, 255, 0.6);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .pdf-modal-title {
+        color: var(--maroon-deep);
+        font-family: 'Sarabun', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pdf-modal-close {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-600);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .pdf-modal-close:hover {
+        background: #ef4444;
+        color: white;
+        transform: rotate(90deg);
+    }
+
+    .pdf-modal-body {
+        flex: 1;
+        position: relative;
+        background: transparent;
+    }
+
+    .pdf-modal-body iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    .pdf-modal-footer {
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.6);
+        color: var(--gray-500);
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.85rem;
+        text-align: center;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    @keyframes modalScaleUp {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @media (max-width: 880px) {
+        .search-box {
+            flex-direction: column;
+            padding: 12px;
+        }
+
+        .search-input-wrap {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--gray-100);
+            padding: 0 10px 10px;
+        }
+
+        .search-filters-wrap {
+            width: 100%;
+            padding-top: 10px;
+        }
+
+        .btn-search-go {
+            width: 100%;
+        }
+
+        .projects-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .pdf-modal-container {
+            height: 90vh;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .projects-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ══════════════════════════════════════════
+     PAGE HEADER
+═══════════════════════════════════════════ -->
+<header class="page-header">
+    <h1><i class="fas fa-search"></i> <span>ค้นหาผลงานวิจัย</span></h1>
+    <p>ค้นหาและกรองผลงานตามเงื่อนไขที่ต้องการ</p>
+</header>
+
+<!-- ══════════════════════════════════════════
+     SEARCH CONTAINER
+═══════════════════════════════════════════ -->
+<div class="search-container">
+    <form method="GET" action="." id="searchForm">
+        <div class="search-box">
+            <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" placeholder="ค้นหาชื่อเรื่องหรือชื่อผู้วิจัย..."
+                    value="{{ request.GET.q|default:'' }}">
+            </div>
+
+            <div class="search-filters-wrap">
+                <div class="search-filter-container">
+                    <select name="dept" class="search-filter" onchange="document.getElementById('searchForm').submit()">
+                        <option value="">ทุกสาขาวิชา</option>
+                        <option value="EE" {% if request.GET.dept == 'EE' %}selected{% endif %}>สาขาเทคโนโลยีไฟฟ้า</option>
+                        <option value="ET" {% if request.GET.dept == 'ET' %}selected{% endif %}>สาขาเทคโนโลยีอิเล็กทรอนิกส์
+                        </option>
+                        <option value="PT" {% if request.GET.dept == 'PT' %}selected{% endif %}>สาขาเทคโนโลยีการผลิต</option>
+                        <option value="MT" {% if request.GET.dept == 'MT' %}selected{% endif %}>สาขาเทคโนโลยีเครื่องกล
+                        </option>
+                        <option value="CT" {% if request.GET.dept == 'CT' %}selected{% endif %}>สาขาเทคโนโลยีคอมพิวเตอร์
+                        </option>
+                    </select>
+                    <i class="fas fa-chevron-down filter-arrow"></i>
+                </div>
+
+                <div class="search-filter-container">
+                    <select name="year" class="search-filter" onchange="document.getElementById('searchForm').submit()">
+                        <option value="">ทุกปีการศึกษา</option>
+                        {% for year in all_years %}
+                        <option value="{{ year|stringformat:'s' }}" {% if request.GET.year == year|stringformat:'s' %}selected{% endif %}>ปีการศึกษา {{ year }}</option>
+                        {% endfor %}
+                    </select>
+                    <i class="fas fa-chevron-down filter-arrow"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-search-go">
+                ค้นหาข้อมูล
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN RESULTS
+═══════════════════════════════════════════ -->
+<main class="main-results">
+    {% if projects %}
+    <div class="results-info">
+        <span>พบ <b>{{ projects.paginator.count }}</b> ผลงาน</span>
+        <span style="font-weight: 400; color: var(--gray-500); font-size: 0.85rem;">
+            (หน้า {{ projects.number }} จาก {{ projects.paginator.num_pages }})
+        </span>
+    </div>
+
+    <div class="projects-grid">
+        {% for p in projects %}
+        {% with dept=p.get_department_display %}
+        <div class="project-card">
+            <div class="card-bar 
+                    {% if 'ไฟฟ้า' in dept %}card-ไฟฟ้า
+                    {% elif 'อิเล็กทรอนิกส์' in dept %}card-อิเล็กทรอนิกส์
+                    {% elif 'การผลิต' in dept %}card-การผลิต
+                    {% elif 'เครื่องกล' in dept %}card-เครื่องกล
+                    {% elif 'คอมพิวเตอร์' in dept %}card-คอมพิวเตอร์
+                    {% else %}card-default{% endif %}"></div>
+
+            <div class="project-card-header">
+                <span class="dept-tag
+                        {% if 'ไฟฟ้า' in dept %}dept-ไฟฟ้า
+                        {% elif 'อิเล็กทรอนิกส์' in dept %}dept-อิเล็กทรอนิกส์
+                        {% elif 'การผลิต' in dept %}dept-การผลิต
+                        {% elif 'เครื่องกล' in dept %}dept-เครื่องกล
+                        {% elif 'คอมพิวเตอร์' in dept %}dept-คอมพิวเตอร์
+                        {% else %}dept-default{% endif %}">{{ dept }}</span>
+                <span class="year-tag">{{ p.academic_year }}</span>
+            </div>
+
+            <div class="project-card-body">
+                <a href="{% url 'project_detail' p.id %}" class="project-title">{{ p.title_th }}</a>
+                <div class="project-author" title="{{ p.student_name }}">
+                    <div class="author-avatar"><i class="fas fa-user-graduate"></i></div>
+                    {{ p.student_name }}
+                </div>
+                <p class="project-snippet">{{ p.abstract|truncatechars:120 }}</p>
+            </div>
+
+            <div class="project-card-footer">
+                <div class="project-stats">
+                    <span title="เข้าชม"><i class="fas fa-eye"></i> {{ p.views_count }}</span>
+                    <span title="ดาวน์โหลด"><i class="fas fa-download"></i> {{ p.download_count }}</span>
+                </div>
+                {% if p.average_rating > 0 %}
+                <div class="project-rating">
+                    <i class="fas fa-star"></i> {{ p.average_rating }}
+                </div>
+                {% else %}
+                <div class="project-rating" style="background: transparent; color: var(--gray-400); font-weight: 500;">
+                    ยังไม่มีคะแนน
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-actions">
+                <a href="{% url 'project_detail' p.id %}" class="btn-action btn-details">
+                    อ่านรายละเอียด
+                </a>
+                {% if p.pdf_file %}
+                <button type="button" class="btn-action btn-open"
+                    onclick="openPdfPreview('{% url 'pdf_preview' p.id %}', '{{ p.title_th|escapejs }}')">
+                    <i class="fas fa-eye"></i> อ่านไฟล์
+                </button>
+                <a href="{% url 'download_pdf' p.id %}" class="btn-action btn-pdf" download>
+                    <i class="fas fa-file-download"></i> ดาวน์โหลดไฟล์
+                </a>
+                {% endif %}
+                {% if user.is_authenticated %}
+                {% if user.is_staff or p.student_name == user.username %}
+                <a href="{% url 'edit_project' p.id %}" class="btn-action btn-edit">
+                    <i class="fas fa-edit"></i> แก้ไข
+                </a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+
+    {% if projects.paginator.num_pages > 1 %}
+    <div class="pagination-wrapper">
+        {% if projects.has_previous %}
+        <a href="?page={{ projects.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_dept %}&dept={{ current_dept }}{% endif %}{% if current_year %}&year={{ current_year }}{% endif %}"
+            class="btn-pag">
+            <i class="fas fa-chevron-left"></i> ย้อนกลับ
+        </a>
+        {% endif %}
+
+        <span class="pag-info">หน้า {{ projects.number }} / {{ projects.paginator.num_pages }}</span>
+
+        {% if projects.has_next %}
+        <a href="?page={{ projects.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_dept %}&dept={{ current_dept }}{% endif %}{% if current_year %}&year={{ current_year }}{% endif %}"
+            class="btn-pag">
+            ถัดไป <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        ไม่พบผลงานวิจัยที่ต้องการ
+    </div>
+    {% endif %}
+</main>
+
+<!-- Shared PDF Modal Component -->
+{% include 'research/components/pdf_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Subtle entry animation for cards
+        const cards = document.querySelectorAll('.project-card');
+        cards.forEach((card, i) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.4s ease-out ' + (i * 50) + 'ms';
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 10);
+        });
+    });
+</script>
+{% endblock %}

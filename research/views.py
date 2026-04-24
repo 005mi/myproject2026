@@ -1,15 +1,17 @@
 import csv
+import json
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Count, F, Sum
+from django.db.models import Q, Count, F, Sum, Avg
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import FileResponse, HttpResponse
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.auth.models import User
-from .models import Project, UserProfile, Comment
+from .models import Project, UserProfile, Comment, Favorite, Rating
 from .forms import ProjectForm
 
 
@@ -18,7 +20,22 @@ def project_list(request):
     dept_filter = request.GET.get('dept', '').strip()
     year_filter = request.GET.get('year', '').strip()
 
-    projects_qs = Project.objects.filter(is_approved=True).order_by('-academic_year', '-id')
+    projects_qs = Project.objects.filter(is_approved=True).select_related().prefetch_related('ratings')
+    
+    is_landing = not (query or dept_filter or year_filter)
+    top_rated_projects = []
+    latest_projects = []
+
+    if is_landing:
+        # Fetch Top Rated (highest avg score) - limited to 6
+        top_rated_projects = Project.objects.filter(is_approved=True).annotate(
+            avg_score=Avg('ratings__score')
+        ).filter(avg_score__isnull=False).order_by('-avg_score', '-views_count')[:6]
+        
+        # Fetch 6 Latest
+        latest_projects = Project.objects.filter(is_approved=True).order_by('-id')[:6]
+    
+    # Apply filters for search results
     if query:
         projects_qs = projects_qs.filter(
             Q(title_th__icontains=query) | Q(student_name__icontains=query)
@@ -27,6 +44,8 @@ def project_list(request):
         projects_qs = projects_qs.filter(department=dept_filter)
     if year_filter:
         projects_qs = projects_qs.filter(academic_year=year_filter)
+
+    projects_qs = projects_qs.order_by('-academic_year', '-id')
 
     # ── ปีการศึกษาทั้งหมดที่มีในระบบ ─────────────────────────────────────────
     all_years = list(
@@ -49,6 +68,10 @@ def project_list(request):
         Project.objects.filter(is_approved=True)
         .aggregate(total=Sum('views_count'))['total'] or 0
     )
+    total_downloads = (
+        Project.objects.filter(is_approved=True)
+        .aggregate(total=Sum('download_count'))['total'] or 0
+    )
     stats_by_dept = (
         Project.objects.filter(is_approved=True)
         .values('department').annotate(total=Count('id')).order_by('-total')
@@ -65,8 +88,12 @@ def project_list(request):
 
     return render(request, 'research/list.html', {
         'projects':           projects,
+        'top_rated_projects': top_rated_projects,
+        'latest_projects':    latest_projects,
+        'is_landing':         is_landing,
         'total_count':        total_count,
         'total_system_views': total_system_views,
+        'total_downloads':    total_downloads,
         'top_dept_name':      top_dept_name,
         'top_viewed':         top_viewed,
         'top_downloaded':     top_downloaded,
@@ -74,9 +101,119 @@ def project_list(request):
         'current_year':       year_filter,
         'recent_years':       recent_years,
         'older_years':        older_years,
+        'all_years':          all_years,
         'query':              query,
+        'favorited_ids':      [f.project_id for f in Favorite.objects.filter(user=request.user.id)] if request.user.is_authenticated else [],
     })
 
+
+def project_search(request):
+    query       = request.GET.get('q', '').strip()
+    dept_filter = request.GET.get('dept', '').strip()
+    year_filter = request.GET.get('year', '').strip()
+
+    projects_qs = Project.objects.filter(is_approved=True).order_by('-academic_year', '-id')
+    if query:
+        projects_qs = projects_qs.filter(
+            Q(title_th__icontains=query) | Q(student_name__icontains=query)
+        )
+    if dept_filter:
+        projects_qs = projects_qs.filter(department=dept_filter)
+    if year_filter:
+        projects_qs = projects_qs.filter(academic_year=year_filter)
+
+    # ── ปีการศึกษาทั้งหมดที่มีในระบบ ─────────────────────────────────────────
+    all_years = list(
+        Project.objects.filter(is_approved=True)
+        .values_list('academic_year', flat=True)
+        .distinct()
+        .order_by('-academic_year')
+    )
+
+    # ── Pagination 21 รายการ/หน้า (3 คอลัมน์ × 7 แถว) ────────────────────────
+    paginator = Paginator(projects_qs, 21)
+    projects  = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'research/search.html', {
+        'projects':           projects,
+        'current_dept':       dept_filter,
+        'current_year':       year_filter,
+        'all_years':          all_years,
+        'query':              query,
+        'favorited_ids':      [f.project_id for f in Favorite.objects.filter(user=request.user.id)] if request.user.is_authenticated else [],
+    })
+
+
+@xframe_options_exempt
+def serve_pdf_preview(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    if not project.pdf_file:
+        return HttpResponse("ไม่พบไฟล์ PDF ในระบบ", status=404)
+    
+    try:
+        response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
+        # We don't set Content-Disposition to 'attachment' so it opens in the iframe
+        return response
+    except FileNotFoundError:
+        return HttpResponse("ไฟล์สูญหายหรือถูกลบจากเซิร์ฟเวอร์", status=404)
+
+
+def project_stats(request):
+    all_projects = Project.objects.filter(is_approved=True)
+
+    total_count = all_projects.count()
+    total_views = all_projects.aggregate(total=Sum('views_count'))['total'] or 0
+    total_downloads = all_projects.aggregate(total=Sum('download_count'))['total'] or 0
+
+    dept_stats = list(all_projects.values('department').annotate(count=Count('id')).order_by('-count'))
+    
+    DEPARTMENTS = dict(Project.DEPARTMENTS)
+    # Simplify label strings by removing unneeded words if desired, e.g. "สาขาเทคโนโลยี" -> ""
+    major_counts_data = {}
+    for d in dept_stats:
+        dept_name = DEPARTMENTS.get(d['department'], d['department']).replace('สาขาเทคโนโลยี', '')
+        major_counts_data[dept_name] = d['count']
+
+    # Top Dept
+    top_dept_name = '-'
+    top_dept_rating = '0.0'
+    if dept_stats:
+        top_dept_code = dept_stats[0]['department']
+        top_dept_name = DEPARTMENTS.get(top_dept_code, top_dept_code).replace('สาขาเทคโนโลยี', '')
+        
+        # Calculate real average for the top department
+        top_dept_avg = Project.objects.filter(department=top_dept_code).aggregate(Avg('ratings__score'))['ratings__score__avg']
+        top_dept_rating = f"{top_dept_avg:.1f}" if top_dept_avg else "0.0"
+
+    top_viewed = list(all_projects.order_by('-views_count')[:5].values('id', 'title_th', 'views_count'))
+    top_downloaded = list(all_projects.order_by('-download_count')[:5].values('id', 'title_th', 'download_count'))
+
+    # Replace MOCK with REAL Top Rated logic
+    # We annotate projects with their average rating and order by it
+    top_rated_qs = all_projects.annotate(avg_score=Avg('ratings__score')).filter(avg_score__isnull=False).order_by('-avg_score', '-views_count')[:5]
+    top_rated = []
+    for p in top_rated_qs:
+        top_rated.append({
+            'id': p.id,
+            'title_th': p.title_th,
+            'score': f"{p.avg_score:.1f}"
+        })
+
+    chart_labels = list(major_counts_data.keys())
+    chart_data = list(major_counts_data.values())
+
+    return render(request, 'research/stats.html', {
+        'total_count': total_count,
+        'total_views': total_views,
+        'total_downloads': total_downloads,
+        'top_dept_name': top_dept_name,
+        'top_dept_rating': top_dept_rating,
+        'top_viewed': top_viewed,
+        'top_downloaded': top_downloaded,
+        'top_rated': top_rated,
+        'chart_labels': json.dumps(chart_labels),
+        'chart_data': json.dumps(chart_data)
+    })
 
 # ─── Admin ────────────────────────────────────────────────────────────────────
 
@@ -87,12 +224,67 @@ def admin_dashboard(request):
         return redirect('project_list')
     pending_projects  = Project.objects.filter(is_approved=False).order_by('-id')
     approved_projects = Project.objects.filter(is_approved=True).order_by('-id')
+    users = User.objects.select_related('profile').order_by('-date_joined')
     return render(request, 'research/admin_dashboard.html', {
         'pending_projects':  pending_projects,
         'approved_projects': approved_projects,
         'pending_count':     pending_projects.count(),
         'approved_count':    approved_projects.count(),
+        'users':             users,
+        'user_count':        users.count(),
     })
+
+
+@login_required
+def delete_user(request, user_id):
+    print(f"DEBUG delete_user: method={request.method}, user_id={user_id}, request.user={request.user}")
+    if not request.user.is_staff:
+        messages.error(request, "ไม่มีสิทธิ์")
+        return redirect('project_list')
+    if request.method == 'POST':
+        target = get_object_or_404(User, id=user_id)
+        if target == request.user:
+            messages.error(request, "ไม่สามารถลบบัญชีตัวเองได้")
+        else:
+            name = target.username
+            target.delete()
+            messages.success(request, f"ลบผู้ใช้ '{name}' เรียบร้อยแล้ว")
+    return redirect('admin_dashboard')
+
+
+@login_required
+def toggle_user_staff(request, user_id):
+    print(f"DEBUG toggle_user_staff: method={request.method}, user_id={user_id}, request.user={request.user}")
+    if not request.user.is_staff:
+        messages.error(request, "ไม่มีสิทธิ์")
+        return redirect('project_list')
+    if request.method == 'POST':
+        target = get_object_or_404(User, id=user_id)
+        if target == request.user:
+            messages.error(request, "ไม่สามารถเปลี่ยนสิทธิ์ตัวเองได้")
+        else:
+            target.is_staff = not target.is_staff
+            target.save()
+            role = 'ผู้ดูแลระบบ' if target.is_staff else 'ผู้ใช้ทั่วไป'
+            messages.success(request, f"เปลี่ยนสิทธิ์ '{target.username}' เป็น {role} เรียบร้อยแล้ว")
+    return redirect('admin_dashboard')
+
+
+@login_required
+def reset_user_password(request, user_id):
+    if not request.user.is_staff:
+        messages.error(request, "ไม่มีสิทธิ์")
+        return redirect('project_list')
+    if request.method == 'POST':
+        target = get_object_or_404(User, id=user_id)
+        new_password = request.POST.get('new_password', '').strip()
+        if len(new_password) < 6:
+            messages.error(request, "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร")
+        else:
+            target.set_password(new_password)
+            target.save()
+            messages.success(request, f"รีเซ็ตรหัสผ่านสำหรับ '{target.username}' เรียบร้อยแล้ว")
+    return redirect('admin_dashboard')
 
 
 @login_required
@@ -114,6 +306,23 @@ def export_projects_csv(request):
             "อนุมัติแล้ว" if p.is_approved else "รอตรวจสอบ",
         ])
     return response
+
+
+@login_required
+def my_projects(request):
+    # Show both approved and pending papers for the logged-in user
+    projects_qs = Project.objects.filter(student_name=request.user.username).order_by('-id')
+    
+    total_count = projects_qs.count()
+    pending_count = projects_qs.filter(is_approved=False).count()
+    approved_count = projects_qs.filter(is_approved=True).count()
+    
+    return render(request, 'research/my_list.html', {
+        'projects': projects_qs,
+        'total_count': total_count,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+    })
 
 
 # ─── Project CRUD ─────────────────────────────────────────────────────────────
@@ -183,26 +392,44 @@ def edit_project(request, project_id):
     return render(request, 'research/edit.html', {
         'form':      form,
         'project':   project,
+        'edit_mode': True,
     })
 
 
 def project_detail(request, project_id):
-    # BUG FIX: ใช้ is_approved=True เพื่อกันคนพิมพ์ URL ตรงเข้าผลงานที่ยังไม่อนุมัติ
-    project = get_object_or_404(Project, id=project_id, is_approved=True)
+    # BUG FIX: อนุญาตให้เข้าดูได้ทั้งอนุมัติแล้วและยังไม่อนุมัติ (สำหรับคนอัปโหลดตรวจความเรียบร้อย)
+    # แต่ถ้าไม่อนุมัติ และไม่ใช่เจ้าของ/สตาฟ จะ redirect ออก (กันคนสุ่ม ID)
+    project = get_object_or_404(Project, id=project_id)
     
+    if not project.is_approved and not request.user.is_staff and project.student_name != request.user.username:
+        messages.warning(request, "ผลงานนี้อยู่ระหว่างการตรวจสอบ")
+        return redirect('project_list')
+
     # --- 🟢 ส่วนที่แก้ไข: เพิ่มระบบ Session ป้องกันการปั๊มวิว 🟢 ---
     session_key = f'viewed_project_{project.id}'
     if not request.session.get(session_key, False):
         Project.objects.filter(id=project_id).update(views_count=F('views_count') + 1)
         request.session[session_key] = True
-        request.session.modified = True  # บังคับให้ Django บันทึก Session ทันที
+        request.session.modified = True
     # -------------------------------------------------------------
         
     project.refresh_from_db()
+    
+    # เรายังเก็บ logic เดิมไว้เผื่ออนาคตต้องการแสดงคอมเมนต์ หรือ Favorite
     comments = project.comments.select_related('user').all()
+    is_favorited = False
+    user_rating = 0
+    if request.user.is_authenticated:
+        is_favorited = Favorite.objects.filter(user=request.user, project=project).exists()
+        rating_obj = Rating.objects.filter(user=request.user, project=project).first()
+        if rating_obj:
+            user_rating = rating_obj.score
+
     return render(request, 'research/detail.html', {
         'project':  project,
         'comments': comments,
+        'is_favorited': is_favorited,
+        'user_rating': user_rating,
     })
 
 def download_pdf(request, project_id):
@@ -270,8 +497,41 @@ def register_view(request):
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
+        user_role_requested = request.POST.get('user_role', 'student')
+        
         if form.is_valid():
             user = form.get_user()
+            is_actually_staff = user.is_staff
+            
+            # ดึง User Type จาก Profile (ถ้ามี)
+            actual_user_type = 'guest'
+            if hasattr(user, 'profile'):
+                actual_user_type = user.profile.user_type
+            
+            # --- 🛡️ การตรวจสอบสิทธิ์แบบเข้มงวด 🛡️ ---
+            
+            # 1. กรณีเลือก "เจ้าหน้าที่"
+            if user_role_requested == 'admin' and not is_actually_staff:
+                messages.error(request, "บัญชีนี้ไม่มีสิทธิ์เข้าใช้งานในฐานะเจ้าหน้าที่")
+                return render(request, 'research/login.html', {'form': form, 'error': True})
+            
+            # 2. กรณีบัญชี Admin ไปเข้า Tab อื่น
+            if user_role_requested != 'admin' and is_actually_staff:
+                messages.error(request, "บัญชีเจ้าหน้าที่ กรุณาเลือกประเภท 'เจ้าหน้าที่' เพื่อเข้าสู่ระบบ")
+                return render(request, 'research/login.html', {'form': form, 'error': True})
+            
+            # 3. กรณีเลือก "นักศึกษา" แต่เป็น "บุคคลภายนอก"
+            if user_role_requested == 'student' and not is_actually_staff and actual_user_type == 'guest':
+                messages.error(request, "บัญชีนี้เป็นประเภทบุคคลภายนอก กรุณาเลือกประเภท 'บุคคลภายนอก'")
+                return render(request, 'research/login.html', {'form': form, 'error': True})
+            
+            # 4. กรณีเลือก "บุคคลภายนอก" แต่เป็น "นักศึกษา"
+            if user_role_requested == 'guest' and not is_actually_staff and actual_user_type == 'student':
+                messages.error(request, "บัญชีนี้เป็นประเภทนักศึกษา กรุณาเลือกประเภท 'นักศึกษา'")
+                return render(request, 'research/login.html', {'form': form, 'error': True})
+            
+            # ----------------------------------------
+            
             login(request, user)
             if user.is_staff:
                 messages.success(request, f'ยินดีต้อนรับ Admin "{user.username}" เข้าสู่ระบบสำเร็จ')
@@ -279,8 +539,6 @@ def login_view(request):
                 messages.success(request, f'ยินดีต้อนรับ "{user.username}" เข้าสู่ระบบสำเร็จ')
             return redirect('project_list')
         else:
-            # ✅ render หน้า login ซ้ำพร้อม error=True แทนการใช้ messages
-            # เพื่อให้ {% if error %} ใน template แสดง error ในหน้า login โดยตรง
             return render(request, 'research/login.html', {'form': form, 'error': True})
     else:
         form = AuthenticationForm()
@@ -302,8 +560,22 @@ def add_comment(request, project_id):
     if request.method == 'POST':
         project = get_object_or_404(Project, id=project_id)
         body = request.POST.get('body', '').strip()
+        parent_id = request.POST.get('parent_id')
+        
         if body:
-            Comment.objects.create(project=project, user=request.user, body=body)
+            parent_comment = None
+            if parent_id:
+                try:
+                    parent_comment = Comment.objects.get(id=parent_id)
+                except Comment.DoesNotExist:
+                    parent_comment = None
+                    
+            Comment.objects.create(
+                project=project, 
+                user=request.user, 
+                body=body, 
+                parent=parent_comment
+            )
             messages.success(request, "แสดงความคิดเห็นสำเร็จ")
         else:
             messages.error(request, "กรุณากรอกข้อความก่อนส่ง")
@@ -370,3 +642,91 @@ def quick_password_reset(request):
                 messages.error(request, "ข้อมูลไม่ถูกต้อง ไม่สามารถเปลี่ยนรหัสผ่านได้")
 
     return render(request, 'research/password_reset.html')
+
+
+# ─── Favorites ✅ เพิ่มใหม่ ───────────────────────────────────────────────────
+
+@login_required
+def favorite_list(request):
+    """
+    Shows a list of projects that the current user has favorited with ratings info.
+    """
+    favorites = Favorite.objects.filter(user=request.user).select_related('project')
+    project_ids = [fav.project.id for fav in favorites]
+    
+    # ดึงข้อมูล Project พร้อมคำนวณ Rating อัตโนมัติ
+    projects = Project.objects.filter(id__in=project_ids).annotate(
+        avg_score=Avg('ratings__score'),
+        rating_count=Count('ratings')
+    ).order_by('-id')
+    
+    return render(request, 'research/favorites.html', {
+        'projects': projects,
+    })
+
+
+@login_required
+def toggle_favorite(request, project_id):
+    """
+    Adds or removes a project from the current user's favorites.
+    Can be called via POST or AJAX.
+    """
+    project = get_object_or_404(Project, id=project_id)
+    favorite_obj = Favorite.objects.filter(user=request.user, project=project)
+    
+    is_favorited = False
+    if favorite_obj.exists():
+        favorite_obj.delete()
+        is_favorited = False
+        message = "นำออกจากรายการโปรดแล้ว"
+    else:
+        Favorite.objects.create(user=request.user, project=project)
+        is_favorited = True
+        message = "บันทึกในรายการโปรดแล้ว"
+        
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return HttpResponse(json.dumps({
+            'success': True,
+            'is_favorited': is_favorited,
+            'message': message
+        }), content_type="application/json")
+    
+    messages.success(request, message)
+    return redirect(request.META.get('HTTP_REFERER', 'project_list'))
+
+
+@login_required
+def rate_project(request, project_id):
+    """
+    Handles project rating submissions (1-5 stars). If score is 0, removes the rating.
+    """
+    if request.method == 'POST':
+        project = get_object_or_404(Project, id=project_id)
+        score = request.POST.get('score')
+        
+        try:
+            score = int(score)
+            if 1 <= score <= 5:
+                Rating.objects.update_or_create(
+                    user=request.user,
+                    project=project,
+                    defaults={'score': score}
+                )
+                messages.success(request, f"คุณให้คะแนนผลงานนี้ {score} ดาวเรียบร้อยแล้ว")
+            elif score == 0:
+                Rating.objects.filter(user=request.user, project=project).delete()
+                messages.success(request, "ยกเลิกการให้คะแนนเรียบร้อยแล้ว")
+            else:
+                messages.error(request, "คะแนนต้องอยู่ระหว่าง 1-5")
+        except (ValueError, TypeError):
+            messages.error(request, "ข้อมูลคะแนนไม่ถูกต้อง")
+            
+    return redirect('project_detail', project_id=project_id)
+
+@login_required
+def cancel_rating(request, project_id):
+    if request.method == 'POST':
+        project = get_object_or_404(Project, id=project_id)
+        Rating.objects.filter(user=request.user, project=project).delete()
+        messages.success(request, "ยกเลิกการให้คะแนนเรียบร้อยแล้ว")
+    return redirect('project_detail', project_id=project_id)
