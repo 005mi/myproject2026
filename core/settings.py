@@ -32,7 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
     
     # แอปพลิเคชันของคุณ
     'research', 
@@ -142,3 +144,6 @@ if os.getenv('EMAIL_HOST'):
 else:
     # สำหรับทดสอบ: อีเมลจะแสดงใน Console ของ VS Code ไม่ต้องใช้เน็ต
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# --- Cloudinary Storage for Permanent PDF Files ---
+if os.getenv('CLOUDINARY_URL'):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
