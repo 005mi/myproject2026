@@ -2,7 +2,7 @@ import csv
 import json
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count, F, Sum, Avg
@@ -11,9 +11,24 @@ from django.core.paginator import Paginator
 from django.http import FileResponse, HttpResponse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.auth.models import User
-from .models import Project, UserProfile, Comment, Favorite, Rating
+from .models import Project, Comment, Favorite, Rating
 from .forms import ProjectForm
+from django_ratelimit.decorators import ratelimit
 
+
+# ─── Helpers ───────────────────────────────────────────────────────────────────
+def get_global_stats():
+    approved = Project.objects.filter(is_approved=True)
+    return {
+        'total_count': approved.count(),
+        'total_system_views': approved.aggregate(total=Sum('views_count'))['total'] or 0,
+        'total_downloads': approved.aggregate(total=Sum('download_count'))['total'] or 0,
+    }
+
+def get_user_favorite_ids(user):
+    if user.is_authenticated:
+        return list(Favorite.objects.filter(user=user).values_list('project_id', flat=True))
+    return []
 
 def project_list(request):
     query       = request.GET.get('q', '').strip()
@@ -30,7 +45,7 @@ def project_list(request):
         # Fetch Top Rated (highest avg score) - limited to 6
         top_rated_projects = Project.objects.filter(is_approved=True).annotate(
             avg_score=Avg('ratings__score')
-        ).filter(avg_score__isnull=False).order_by('-avg_score', '-views_count')[:6]
+        ).filter(avg_score__isnull=False).order_by('-avg_score', '-download_count', '-views_count', '-id')[:6]
         
         # Fetch 6 Latest
         latest_projects = Project.objects.filter(is_approved=True).order_by('-id')[:6]
@@ -63,15 +78,12 @@ def project_list(request):
     # ── Stats ──────────────────────────────────────────────────────────────────
     top_viewed     = Project.objects.filter(is_approved=True).order_by('-views_count')[:5]
     top_downloaded = Project.objects.filter(is_approved=True).order_by('-download_count')[:5]
-    total_count    = Project.objects.filter(is_approved=True).count()
-    total_system_views = (
-        Project.objects.filter(is_approved=True)
-        .aggregate(total=Sum('views_count'))['total'] or 0
-    )
-    total_downloads = (
-        Project.objects.filter(is_approved=True)
-        .aggregate(total=Sum('download_count'))['total'] or 0
-    )
+    
+    g_stats = get_global_stats()
+    total_count = f"{g_stats['total_count']:,}"
+    total_system_views = f"{g_stats['total_system_views']:,}"
+    total_downloads = f"{g_stats['total_downloads']:,}"
+    
     stats_by_dept = (
         Project.objects.filter(is_approved=True)
         .values('department').annotate(total=Count('id')).order_by('-total')
@@ -103,7 +115,7 @@ def project_list(request):
         'older_years':        older_years,
         'all_years':          all_years,
         'query':              query,
-        'favorited_ids':      [f.project_id for f in Favorite.objects.filter(user=request.user.id)] if request.user.is_authenticated else [],
+        'favorited_ids':      get_user_favorite_ids(request.user),
     })
 
 
@@ -140,7 +152,7 @@ def project_search(request):
         'current_year':       year_filter,
         'all_years':          all_years,
         'query':              query,
-        'favorited_ids':      [f.project_id for f in Favorite.objects.filter(user=request.user.id)] if request.user.is_authenticated else [],
+        'favorited_ids':      get_user_favorite_ids(request.user),
     })
 
 
@@ -161,9 +173,10 @@ def serve_pdf_preview(request, project_id):
 def project_stats(request):
     all_projects = Project.objects.filter(is_approved=True)
 
-    total_count = all_projects.count()
-    total_views = all_projects.aggregate(total=Sum('views_count'))['total'] or 0
-    total_downloads = all_projects.aggregate(total=Sum('download_count'))['total'] or 0
+    g_stats = get_global_stats()
+    total_count = f"{g_stats['total_count']:,}"
+    total_views = f"{g_stats['total_system_views']:,}"
+    total_downloads = f"{g_stats['total_downloads']:,}"
 
     dept_stats = list(all_projects.values('department').annotate(count=Count('id')).order_by('-count'))
     
@@ -190,7 +203,7 @@ def project_stats(request):
 
     # Replace MOCK with REAL Top Rated logic
     # We annotate projects with their average rating and order by it
-    top_rated_qs = all_projects.annotate(avg_score=Avg('ratings__score')).filter(avg_score__isnull=False).order_by('-avg_score', '-views_count')[:5]
+    top_rated_qs = all_projects.annotate(avg_score=Avg('ratings__score')).filter(avg_score__isnull=False).order_by('-avg_score', '-download_count', '-views_count', '-id')[:5]
     top_rated = []
     for p in top_rated_qs:
         top_rated.append({
@@ -435,7 +448,13 @@ def project_detail(request, project_id):
 def download_pdf(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     if project.pdf_file:
-        Project.objects.filter(id=project_id).update(download_count=F('download_count') + 1)
+        # --- 🟢 เพิ่มระบบ Session ป้องกันการปั๊มยอดดาวน์โหลด 🟢 ---
+        session_key = f'downloaded_project_{project.id}'
+        if not request.session.get(session_key, False):
+            Project.objects.filter(id=project_id).update(download_count=F('download_count') + 1)
+            request.session[session_key] = True
+            request.session.modified = True
+        # -------------------------------------------------------------
         return FileResponse(project.pdf_file.open(), content_type='application/pdf')
     messages.warning(request, "ผลงานนี้ยังไม่มีไฟล์ PDF แนบ")
     return redirect('project_detail', project_id=project_id)
@@ -443,6 +462,7 @@ def download_pdf(request, project_id):
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 
+@ratelimit(key='ip', rate='5/m', block=True)
 def register_view(request):
     if request.method == 'POST':
         u_name   = request.POST.get('username', '').strip()
@@ -452,12 +472,8 @@ def register_view(request):
         u_notify = request.POST.get('notify_new_project') == '1'
         u_phone  = request.POST.get('phone', '').strip()
 
-        if not u_name or not u_pass:
-            messages.error(request, "กรุณากรอกชื่อผู้ใช้และรหัสผ่านให้ครบ")
-            return render(request, 'research/register.html')
-
-        if u_type == 'guest' and not u_email:
-            messages.error(request, "บุคคลภายนอกต้องกรอกอีเมลเพื่อยืนยันตัวตน")
+        if not u_name or not u_pass or not u_email:
+            messages.error(request, "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน (ชื่อผู้ใช้, รหัสผ่าน, และอีเมล)")
             return render(request, 'research/register.html')
 
         if u_type == 'student' and (not u_name.isdigit() or len(u_name) != 11):
@@ -494,6 +510,7 @@ def register_view(request):
     return render(request, 'research/register.html')
 
 
+@ratelimit(key='ip', rate='5/m', block=True)
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
@@ -597,51 +614,7 @@ def delete_comment(request, comment_id):
 
 # ─── Password Reset ───────────────────────────────────────────────────────────
 
-def quick_password_reset(request):
-    if request.method == 'POST':
-        # BUG FIX: ก่อนหน้านี้รับแค่ 'username' และ 'email' แต่ template ส่งมาเป็น
-        # 'username_student' / 'username_guest' และ 'phone' (นักศึกษา) หรือ 'email' (guest)
-        user_type = request.POST.get('user_type', 'student')
-        new_pass  = request.POST.get('new_password', '').strip()
-        conf_pass = request.POST.get('confirm_password', '').strip()
 
-        if user_type == 'student':
-            u_name  = request.POST.get('username_student', '').strip()
-            u_phone = request.POST.get('phone', '').strip()
-            u_email = ''
-        else:
-            u_name  = request.POST.get('username_guest', '').strip()
-            u_email = request.POST.get('email', '').strip()
-            u_phone = ''
-
-        if not u_name:
-            messages.error(request, "กรุณากรอกชื่อผู้ใช้ / รหัสนักศึกษา")
-        elif new_pass != conf_pass:
-            messages.error(request, "รหัสผ่านใหม่ไม่ตรงกัน")
-        elif len(new_pass) < 6:
-            messages.error(request, "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร")
-        else:
-            try:
-                if user_type == 'student':
-                    user = User.objects.get(username=u_name)
-                    # ตรวจสอบเบอร์โทรที่ลงทะเบียนไว้
-                    if not hasattr(user, 'profile') or user.profile.phone != u_phone:
-                        raise User.DoesNotExist
-                else:
-                    user = User.objects.get(username=u_name, email=u_email)
-
-                user.set_password(new_pass)
-                user.save()
-                messages.success(
-                    request,
-                    f'เปลี่ยนรหัสผ่านสำหรับ "{u_name}" สำเร็จแล้ว! กรุณาเข้าสู่ระบบใหม่'
-                )
-                return redirect('login')
-
-            except User.DoesNotExist:
-                messages.error(request, "ข้อมูลไม่ถูกต้อง ไม่สามารถเปลี่ยนรหัสผ่านได้")
-
-    return render(request, 'research/password_reset.html')
 
 
 # ─── Favorites ✅ เพิ่มใหม่ ───────────────────────────────────────────────────
@@ -649,19 +622,22 @@ def quick_password_reset(request):
 @login_required
 def favorite_list(request):
     """
-    Shows a list of projects that the current user has favorited with ratings info.
+    Shows a list of projects that the current user has favorited with pagination and ratings info.
     """
     favorites = Favorite.objects.filter(user=request.user).select_related('project')
     project_ids = [fav.project.id for fav in favorites]
     
-    # ดึงข้อมูล Project พร้อมคำนวณ Rating อัตโนมัติ
-    projects = Project.objects.filter(id__in=project_ids).annotate(
-        avg_score=Avg('ratings__score'),
-        rating_count=Count('ratings')
-    ).order_by('-id')
+    # Query favorite projects — average_rating is a @property on the model
+    projects_qs = Project.objects.filter(id__in=project_ids).order_by('-id')
+    
+    # ── PAGINATION (12 items per page = 3 columns x 4 rows) ──
+    paginator = Paginator(projects_qs, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
     return render(request, 'research/favorites.html', {
-        'projects': projects,
+        'projects': page_obj,  # Now passing the page object
+        'total_count': projects_qs.count()
     })
 
 
@@ -729,4 +705,27 @@ def cancel_rating(request, project_id):
         project = get_object_or_404(Project, id=project_id)
         Rating.objects.filter(user=request.user, project=project).delete()
         messages.success(request, "ยกเลิกการให้คะแนนเรียบร้อยแล้ว")
-    return redirect('project_detail', project_id=project_id)
+    return redirect('project_detail', project_id=project_id)
+
+@login_required
+def profile_edit(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        
+        if not email:
+            messages.error(request, "จำเป็นต้องระบุอีเมลเพื่อความปลอดภัย")
+        else:
+            # Update User model
+            request.user.email = email
+            request.user.save()
+            
+            # Update UserProfile model
+            profile = request.user.profile
+            profile.phone = phone
+            profile.save()
+            
+            messages.success(request, "อัปเดตข้อมูลส่วนตัวเรียบร้อยแล้ว")
+            return redirect('project_list')
+            
+    return render(request, 'research/profile_edit.html')

@@ -295,8 +295,9 @@
             {% endif %}
             <label class="file-zone" for="{{ form.pdf_file.id_for_label }}">
                 <i class="fas fa-cloud-upload-alt file-icon"></i>
-                <p id="file-label">คลิกเพื่อเลือกไฟล์ หรือลากมาวาง</p>
+                <p id="file-label">{% if edit_mode and project.pdf_file %}เปลี่ยนไฟล์ PDF{% else %}คลิกเพื่อเลือกไฟล์ หรือลากมาวาง{% endif %}</p>
                 {{ form.pdf_file }}
+                <p id="file-chosen-name" style="font-size: 0.9rem; color: var(--crimson); font-weight: 700; margin-top: 5px; display: none;"></p>
                 <p style="font-size: 0.85rem; color: var(--gray-400); margin-top: 8px;">รองรับเฉพาะไฟล์ .pdf เท่านั้น</p>
             </label>
         </div>
@@ -354,12 +355,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 3. Clear draft on successful submit
-    form.addEventListener('submit', () => {
+    // 3. File Selection UI & Validation
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileChosenName = document.getElementById('file-chosen-name');
+    const fileLabel = document.getElementById('file-label');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                const fileName = this.files[0].name;
+                fileChosenName.textContent = "เลือกไฟล์แล้ว: " + fileName;
+                fileChosenName.style.display = 'block';
+                fileLabel.textContent = "เปลี่ยนไฟล์ใหม่";
+            } else {
+                fileChosenName.style.display = 'none';
+                fileLabel.textContent = isEditMode ? "เปลี่ยนไฟล์ PDF" : "คลิกเพื่อเลือกไฟล์ หรือลากมาวาง";
+            }
+        });
+    }
+
+    // 4. Form Submit Validation
+    form.addEventListener('submit', (e) => {
+        // Validation: Required PDF for NEW projects
+        if (!isEditMode && (!fileInput || !fileInput.files || fileInput.files.length === 0)) {
+            e.preventDefault();
+            alert('กรุณาเลือกไฟล์ PDF ผลงานวิจัยฉบับเต็มก่อนส่งผลงานค่ะ');
+            fileInput.closest('.file-zone').style.borderColor = 'var(--red)';
+            fileInput.closest('.file-zone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
         if (!isEditMode) localStorage.removeItem('research_upload_draft');
     });
 
-    // 4. Inject Smart Toolbars and Tab Key Support
+    // 5. Inject Smart Toolbars and Tab Key Support
     textareas.forEach(textarea => {
         // Enable Tab key for indentation
         textarea.addEventListener('keydown', function(e) {

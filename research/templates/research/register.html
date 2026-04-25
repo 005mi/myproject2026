@@ -230,10 +230,14 @@
                            placeholder="กรอกรหัสนักศึกษา (11 หลัก)" autocomplete="username" required>
                 </div>
 
-                <div class="form-group hidden-field" id="email-field">
+                <div class="form-group" id="email-field">
                     <label class="form-label" for="email">อีเมล <span class="req">*</span></label>
                     <input type="email" name="email" id="email" class="form-input"
-                           placeholder="example@email.com" autocomplete="email">
+                           placeholder="example@email.com" autocomplete="email" required>
+                    <p class="field-hint">
+                        <i class="fas fa-envelope" style="color:var(--gold);"></i>
+                        ใช้สำหรับกู้คืนรหัสผ่าน
+                    </p>
                 </div>
 
                 <div class="form-group">
@@ -285,8 +289,7 @@ function setUserType(type, btn) {
     const isGuest = type === 'guest';
     document.getElementById('username-label').textContent = isGuest ? 'ชื่อผู้ใช้งาน' : 'รหัสนักศึกษา / ชื่อผู้ใช้งาน';
     document.getElementById('username').placeholder = isGuest ? 'กรอกชื่อผู้ใช้งาน' : 'กรอกรหัสนักศึกษา (11 หลัก)';
-    document.getElementById('email-field').classList.toggle('hidden-field', !isGuest);
-    document.getElementById('email').required = isGuest;
+    // อีเมลจำเป็นสำหรับทุกคนแล้ว ไม่ต้องซ่อน
     document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 }

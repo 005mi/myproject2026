@@ -5,19 +5,23 @@ Django settings for core project.
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(4234al7eaw96cx42qunr+v*m)etgj)!%-tmr@=d8k591#_!j@'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-it-now')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # 🔥 แก้ตรงนี้
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
 
 # Application definition

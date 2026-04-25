@@ -1,0 +1,154 @@
+{% extends 'research/base.html' %}
+{% load static %}
+
+{% block title %}แก้ไขข้อมูลส่วนตัว | RETC Academic Portal{% endblock %}
+
+{% block extra_css %}
+    <style>
+        :root {
+            --crimson:    #7a0c22;
+            --crimson-lt: #9e1b36;
+            --gold:       #c9972b;
+            --cream:      #fdf8f2;
+            --muted:      #7a6e6a;
+            --border:     rgba(122,12,34,0.12);
+        }
+        .profile-wrapper {
+            font-family: 'Sarabun', sans-serif;
+            background: var(--cream);
+            min-height: calc(100vh - 64px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 40px 20px;
+        }
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 40px;
+            width: 100%; max-width: 550px;
+            box-shadow: 0 25px 60px rgba(122,12,34,0.12);
+        }
+        .card-header { text-align: center; margin-bottom: 35px; }
+        .card-icon {
+            width: 70px; height: 70px;
+            background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-lt) 100%);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            color: white; font-size: 1.8em;
+            box-shadow: 0 10px 20px rgba(122,12,34,0.2);
+        }
+        h2 { color: var(--crimson); font-size: 1.7em; font-weight: 800; margin-bottom: 8px; }
+        .subtitle { color: var(--muted); font-size: 0.95em; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .form-group { text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.85em; color: var(--crimson); }
+        
+        .input-wrap {
+            display: flex; align-items: center; gap: 12px;
+            background: #f9f9f9;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 0 16px; transition: 0.3s;
+        }
+        .input-wrap:focus-within {
+            border-color: var(--crimson);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(122,12,34,0.05);
+        }
+        .input-wrap i { color: #aaa; width: 20px; text-align: center; }
+        .input-wrap input {
+            flex: 1; border: none; background: transparent;
+            padding: 14px 0; outline: none;
+            font-family: 'Sarabun'; font-size: 1em; color: #333;
+        }
+        .input-wrap input:disabled { color: #999; cursor: not-allowed; }
+
+        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
+        .btn-save {
+            flex: 2; padding: 16px;
+            background: var(--crimson);
+            color: white; border: none; border-radius: 14px;
+            font-family: 'Sarabun'; font-size: 1.05em; font-weight: 700;
+            cursor: pointer; transition: 0.3s;
+            box-shadow: 0 6px 20px rgba(122,12,34,0.25);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-save:hover { background: var(--crimson-lt); transform: translateY(-2px); }
+        
+        .btn-cancel {
+            flex: 1; padding: 16px;
+            background: #f1f1f1;
+            color: #666; text-decoration: none; border-radius: 14px;
+            font-family: 'Sarabun'; font-size: 1em; font-weight: 700;
+            text-align: center; transition: 0.3s;
+        }
+        .btn-cancel:hover { background: #e5e5e5; }
+
+        .security-note {
+            margin-top: 25px; padding: 15px;
+            background: rgba(201,151,43,0.08);
+            border-radius: 12px; border-left: 4px solid var(--gold);
+            font-size: 0.85em; color: #7a5a1a; line-height: 1.5;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-user-cog"></i></div>
+            <h2>ข้อมูลส่วนตัวและการตั้งค่า</h2>
+            <p class="subtitle">จัดการข้อมูลของคุณเพื่อความปลอดภัยของบัญชี</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <!-- ข้อมูลที่แก้ไขไม่ได้ (Username/ID) -->
+                <div class="form-group">
+                    <label>ชื่อผู้ใช้งาน / รหัสนักศึกษา</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-id-badge"></i>
+                        <input type="text" value="{{ user.username }}" disabled>
+                    </div>
+                </div>
+
+                <!-- อีเมล (สำคัญมาก) -->
+                <div class="form-group">
+                    <label>อีเมล (สำหรับการกู้คืนรหัสผ่าน) <span style="color:red">*</span></label>
+                    <div class="input-wrap">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" name="email" value="{{ user.email }}" placeholder="example@mail.com" required>
+                    </div>
+                </div>
+
+                <!-- เบอร์โทร -->
+                <div class="form-group">
+                    <label>เบอร์โทรศัพท์</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" name="phone" value="{{ user.profile.phone }}" placeholder="08x-xxx-xxxx" maxlength="10">
+                    </div>
+                </div>
+            </div>
+
+            <div class="security-note">
+                <i class="fas fa-shield-alt"></i> 
+                <strong>ทำไมต้องใส่อีเมล?</strong> 
+                ระบบใหม่ของเราใช้ "อีเมล" เป็นช่องทางหลักในการยืนยันตัวตนเมื่อคุณลืมรหัสผ่าน หากไม่มีอีเมล คุณจะไม่สามารถกู้คืนรหัสผ่านด้วยตนเองได้
+            </div>
+
+            <div class="btn-group">
+                <a href="{% url 'project_list' %}" class="btn-cancel">ยกเลิก</a>
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-check-circle"></i> บันทึกข้อมูลส่วนตัว
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -302,23 +302,7 @@
         background: linear-gradient(90deg, #ec4899, #f472b6);
     }
 
-    .card-EE {
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    }
-
-    .card-ET {
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    }
-
-    .card-PT {
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    }
-
-    .card-MT {
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    }
-
-    .card-CT {
+    .card-EE, .card-ET, .card-PT, .card-MT, .card-CT {
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     }
 
@@ -328,55 +312,35 @@
     }
 
     .card-header {
-        padding: 22px 22px 0;
+        padding: 24px 22px 0;
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-top: 10px;
+        align-items: flex-start;
+        flex-wrap: wrap; gap: 10px;
     }
 
     .dept-tag {
-        font-size: 0.7rem;
-        font-weight: 800;
-        padding: 5px 12px;
-        border-radius: 50px;
-        letter-spacing: 0.02em;
-        white-space: nowrap;
+        font-size: 0.72rem; font-weight: 800;
+        padding: 6px 14px; border-radius: 8px; letter-spacing: 0.03em;
+        white-space: nowrap; flex-shrink: 0;
+        display: inline-flex; align-items: center; gap: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid transparent;
     }
 
-    .dept-EE {
-        background: #fffbeb;
-        color: #92400e;
-    }
+    .dept-EE { background: #fff7ed; color: #c2410c; border-color: #ffedd5; }
+    .dept-ET { background: #f0f9ff; color: #0369a1; border-color: #e0f2fe; }
+    .dept-PT { background: #f8fafc; color: #475569; border-color: #f1f5f9; }
+    .dept-MT { background: #fef2f2; color: #b91c1c; border-color: #fee2e2; }
+    .dept-CT { background: #fdf2f8; color: #be185d; border-color: #fce7f3; }
 
-    .dept-ET {
-        background: #f0f9ff;
-        color: #0369a1;
+    .year-tag {
+        font-size: 0.75rem; font-weight: 700; color: #64748b;
+        background: #f8fafc; padding: 5px 12px; border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        display: inline-flex; align-items: center; gap: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
     }
-
-    .dept-PT {
-        background: #f9fafb;
-        color: #374151;
-    }
-
-    .dept-MT {
-        background: #fef2f2;
-        color: #991b1b;
-    }
-
-    .dept-CT {
-        background: #fdf2f8;
-        color: #9d174d;
-    }
-
-    .year-chip {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #9ca3af;
-        background: #f3f4f6;
-        padding: 4px 10px;
-        border-radius: 8px;
-    }
+    .year-tag i { color: #94a3b8; }
 
     .card-body {
         padding: 16px 22px;
@@ -607,26 +571,26 @@
     <div class="mylist-content">
 
         <!-- Summary Stats -->
-        {% with total=projects|length %}
+        {% with total=total_count %}
         <div class="stats-row">
             <div class="stat-card">
                 <div class="stat-icon total"><i class="fas fa-layer-group"></i></div>
                 <div class="stat-info">
-                    <div class="stat-number">{{ total }}</div>
+                    <div class="stat-number">{{ total_count }}</div>
                     <div class="stat-label">ผลงานทั้งหมด</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon approved"><i class="fas fa-check-circle"></i></div>
                 <div class="stat-info">
-                    <div class="stat-number">{{ projects|dictsort:"is_approved"|length }}</div>
+                    <div class="stat-number">{{ approved_count }}</div>
                     <div class="stat-label">เผยแพร่แล้ว</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon pending"><i class="fas fa-hourglass-half"></i></div>
                 <div class="stat-info">
-                    <div class="stat-number" id="stat-pending">–</div>
+                    <div class="stat-number">{{ pending_count }}</div>
                     <div class="stat-label">รอตรวจสอบ</div>
                 </div>
             </div>
@@ -645,15 +609,15 @@
         <div class="filter-row" id="filterRow">
             <button class="filter-tab active" onclick="filterCards('all', this)" id="tab-all">
                 <i class="fas fa-th-large"></i> ทั้งหมด
-                <span class="tab-count" id="count-all">{{ projects|length }}</span>
+                <span class="tab-count" id="count-all">{{ total_count }}</span>
             </button>
             <button class="filter-tab" onclick="filterCards('approved', this)">
                 <i class="fas fa-check-circle"></i> เผยแพร่แล้ว
-                <span class="tab-count" id="count-approved">0</span>
+                <span class="tab-count" id="count-approved">{{ approved_count }}</span>
             </button>
             <button class="filter-tab" onclick="filterCards('pending', this)">
                 <i class="fas fa-clock"></i> รอตรวจสอบ
-                <span class="tab-count" id="count-pending">0</span>
+                <span class="tab-count" id="count-pending">{{ pending_count }}</span>
             </button>
         </div>
         {% endif %}
@@ -674,8 +638,12 @@
             <div class="project-card card-{{ p.department }}"
                 data-approved="{{ p.is_approved|yesno:'approved,pending' }}" data-views="{{ p.views_count }}">
                 <div class="card-header">
-                    <span class="dept-tag dept-{{ p.department }}">{{ p.get_department_display }}</span>
-                    <span class="year-chip">{{ p.academic_year }}</span>
+                    <span class="dept-tag dept-{{ p.department }}">
+                        <i class="fas fa-graduation-cap"></i> {{ p.get_department_display }}
+                    </span>
+                    <span class="year-tag">
+                        <i class="fas fa-calendar-alt"></i> พ.ศ. {{ p.academic_year }}
+                    </span>
                 </div>
                 <div class="card-body">
                     <a href="{% url 'project_detail' p.id %}" class="card-title">{{ p.title_th }}</a>
@@ -716,27 +684,18 @@
 
 <script>
     (function () {
-        const cards = document.querySelectorAll('.project-card');
-        let approved = 0, pending = 0, totalViews = 0;
-
-        cards.forEach(c => {
-            if (c.dataset.approved === 'approved') approved++;
-            else pending++;
+        // ── ยอดเข้าชมรวม: คำนวณจาก data-views ของการ์ดทั้งหมด ──
+        let totalViews = 0;
+        document.querySelectorAll('.project-card').forEach(c => {
             totalViews += parseInt(c.dataset.views || '0', 10);
         });
-
-        // Fill stat numbers
-        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        setEl('stat-pending', pending);
-        setEl('stat-views', totalViews.toLocaleString());
-        setEl('count-approved', approved);
-        setEl('count-pending', pending);
+        const el = document.getElementById('stat-views');
+        if (el) el.textContent = totalViews.toLocaleString();
     })();
 
     function filterCards(type, btn) {
         document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
-
         document.querySelectorAll('.project-card').forEach(card => {
             const show = type === 'all' || card.dataset.approved === type;
             card.style.display = show ? '' : 'none';

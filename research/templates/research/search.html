@@ -275,28 +275,29 @@
     }
 
     .project-card-header {
-        padding: 20px 24px 0;
+        padding: 24px 24px 0;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
+        flex-wrap: wrap; gap: 10px;
     }
 
     .dept-tag {
-        font-size: 0.72rem;
-        font-weight: 800;
-        padding: 5px 14px;
-        border-radius: 50px;
+        font-size: 0.72rem; font-weight: 800;
+        padding: 6px 14px; border-radius: 8px; letter-spacing: 0.03em;
+        white-space: nowrap; flex-shrink: 0;
+        display: inline-flex; align-items: center; gap: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid transparent;
     }
 
     .year-tag {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--gray-400);
-        background: var(--gray-50);
-        padding: 4px 10px;
-        border-radius: 8px;
-        white-space: nowrap;
+        font-size: 0.75rem; font-weight: 700; color: #64748b;
+        background: #f8fafc; padding: 5px 12px; border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        display: inline-flex; align-items: center; gap: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
     }
+    .year-tag i { color: #94a3b8; }
 
     .project-card-body {
         padding: 18px 24px 22px;
@@ -462,40 +463,11 @@
     }
 
     /* ── DEPARTMENTS COLORING ── */
-    .dept-ไฟฟ้า {
-        background: #fffbeb;
-        color: #92400e;
-    }
-
-    /* Sky Blue Tint */
-    .dept-อิเล็กทรอนิกส์ {
-        background: #f0f9ff;
-        color: #0369a1;
-    }
-
-    /* Blue Tint */
-    .dept-การผลิต {
-        background: #f9fafb;
-        color: #374151;
-    }
-
-    /* Gray Tint */
-    .dept-เครื่องกล {
-        background: #fef2f2;
-        color: #991b1b;
-    }
-
-    /* Red Tint */
-    .dept-คอมพิวเตอร์ {
-        background: #fdf2f8;
-        color: #9d174d;
-    }
-
-    /* Pink Tint */
-    .dept-default {
-        background: #e9f0f0;
-        color: #444;
-    }
+    .dept-EE { background: #fff7ed; color: #c2410c; border-color: #ffedd5; }
+    .dept-ET { background: #f0f9ff; color: #0369a1; border-color: #e0f2fe; }
+    .dept-PT { background: #f8fafc; color: #475569; border-color: #f1f5f9; }
+    .dept-MT { background: #fef2f2; color: #b91c1c; border-color: #fee2e2; }
+    .dept-CT { background: #fdf2f8; color: #be185d; border-color: #fce7f3; }
 
     /* ── PAGINATION ── */
     .pagination-wrapper {
@@ -763,14 +735,12 @@
                     {% else %}card-default{% endif %}"></div>
 
             <div class="project-card-header">
-                <span class="dept-tag
-                        {% if 'ไฟฟ้า' in dept %}dept-ไฟฟ้า
-                        {% elif 'อิเล็กทรอนิกส์' in dept %}dept-อิเล็กทรอนิกส์
-                        {% elif 'การผลิต' in dept %}dept-การผลิต
-                        {% elif 'เครื่องกล' in dept %}dept-เครื่องกล
-                        {% elif 'คอมพิวเตอร์' in dept %}dept-คอมพิวเตอร์
-                        {% else %}dept-default{% endif %}">{{ dept }}</span>
-                <span class="year-tag">{{ p.academic_year }}</span>
+                <span class="dept-tag dept-{{ p.department }}">
+                    <i class="fas fa-graduation-cap"></i> {{ p.get_department_display }}
+                </span>
+                <span class="year-tag">
+                    <i class="fas fa-calendar-alt"></i> พ.ศ. {{ p.academic_year }}
+                </span>
             </div>
 
             <div class="project-card-body">
