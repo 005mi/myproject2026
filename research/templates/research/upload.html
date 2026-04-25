@@ -305,7 +305,7 @@
         <div style="margin-top: 50px; display: flex; justify-content: center; gap: 20px;">
             <a href="{% url 'my_projects' %}" class="btn-outline">ยกเลิก</a>
             <button type="submit" class="btn-submit" id="submitBtn" style="max-width: 300px;">
-                <i class="fas fa-save"></i> 
+                <i class="fas fa-paper-plane"></i> 
                 <span>{% if edit_mode %}บันทึกการแก้ไข{% else %}ส่งผลงานเข้าคลังระบบ{% endif %}</span>
             </button>
         </div>
@@ -376,14 +376,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Form Submit Validation
     form.addEventListener('submit', (e) => {
+        // Validation: Required fields check
+        const requiredFields = [
+            { id: '{{ form.title_th.id_for_label }}', name: 'ชื่อผลงานวิจัย (ไทย)' },
+            { id: '{{ form.department.id_for_label }}', name: 'สาขาวิชา/หน่วยงาน' },
+            { id: '{{ form.academic_year.id_for_label }}', name: 'ปีที่เสร็จสิ้น' },
+            { id: '{{ form.student_name.id_for_label }}', name: 'ชื่อนักวิจัยหลัก' },
+            { id: '{{ form.abstract.id_for_label }}', name: 'บทคัดย่อ (Abstract)' }
+        ];
+
+        for (const field of requiredFields) {
+            const el = document.getElementById(field.id);
+            if (!el || !el.value.trim()) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ข้อมูลไม่ครบถ้วน',
+                    text: `กรุณากรอก ${field.name} ก่อนส่งผลงานค่ะ`,
+                    confirmButtonText: 'รับทราบ',
+                    confirmButtonColor: '#7a0c22'
+                });
+                el.focus();
+                el.style.borderColor = 'var(--red)';
+                return;
+            }
+        }
+
         // Validation: Required PDF for NEW projects
         if (!isEditMode && (!fileInput || !fileInput.files || fileInput.files.length === 0)) {
             e.preventDefault();
-            alert('กรุณาเลือกไฟล์ PDF ผลงานวิจัยฉบับเต็มก่อนส่งผลงานค่ะ');
+            Swal.fire({
+                icon: 'error',
+                title: 'ไม่พบไฟล์แนบ',
+                text: 'กรุณาเลือกไฟล์ PDF ผลงานวิจัยฉบับเต็มก่อนส่งผลงานค่ะ',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#7a0c22'
+            });
             fileInput.closest('.file-zone').style.borderColor = 'var(--red)';
             fileInput.closest('.file-zone').scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
+
+        // Show Loading
+        Swal.fire({
+            title: 'กำลังส่งข้อมูล...',
+            text: 'กรุณารอสักครู่ ระบบกำลังอัปโหลดไฟล์ของคุณ',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
 
         if (!isEditMode) localStorage.removeItem('research_upload_draft');
     });

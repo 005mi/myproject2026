@@ -68,7 +68,7 @@ class Project(models.Model):
     awards = models.TextField(verbose_name="รางวัลที่เคยได้รับ", blank=True, null=True)
 
     # --- ส่วนที่ 3: เนื้อหาทางวิชาการ ---
-    abstract = models.TextField(verbose_name="บทคัดย่อ", blank=True)
+    abstract = models.TextField(verbose_name="บทคัดย่อ")
     keywords = models.CharField(max_length=255, verbose_name="คำสำคัญ (Keywords)", blank=True)
     background = models.TextField(verbose_name="ความเป็นมา/หลักการและเหตุผล", blank=True)
     objectives = models.TextField(verbose_name="วัตถุประสงค์การวิจัย", blank=True)
@@ -85,8 +85,7 @@ class Project(models.Model):
     pdf_file = models.FileField(
         upload_to='pdfs/',
         verbose_name="ไฟล์ PDF ฉบับเต็ม",
-        validators=[FileExtensionValidator(allowed_extensions=['pdf']), validate_file_size],
-        null=True, blank=True
+        validators=[FileExtensionValidator(allowed_extensions=['pdf']), validate_file_size]
     )
     is_approved = models.BooleanField(default=False, verbose_name="อนุมัติการเผยแพร่")
     views_count = models.PositiveIntegerField(default=0, verbose_name="ยอดเข้าชม")
