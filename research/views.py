@@ -388,20 +388,32 @@ def delete_project(request, project_id):
 @login_required
 def edit_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    
+    # 🛡️ Admin can edit everything, Students can only edit their own
     if not request.user.is_staff and project.student_name != request.user.username:
         messages.error(request, "คุณไม่มีสิทธิ์แก้ไขผลงานของผู้อื่น")
         return redirect('project_list')
-    if request.method == 'POST':
-        form = ProjectForm(request.POST, request.FILES, instance=project)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'แก้ไขผลงาน "{project.title_th}" สำเร็จแล้ว')
-            return redirect('project_list')
+        
+    try:
+        if request.method == 'POST':
+            form = ProjectForm(request.POST, request.FILES, instance=project)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f'แก้ไขผลงาน "{project.title_th}" สำเร็จแล้ว')
+                return redirect('project_list')
+            else:
+                messages.error(request, "กรุณาตรวจสอบข้อมูลที่กรอก มีบางช่องที่ไม่ถูกต้อง")
         else:
-            messages.error(request, "กรุณาตรวจสอบข้อมูลที่กรอก มีบางช่องที่ไม่ถูกต้อง")
-    else:
+            form = ProjectForm(instance=project)
+    except FileNotFoundError:
+        # If file is missing on Render disk, we still want to allow editing text fields
+        # We manually re-initialize the form without the instance's missing file if needed,
+        # but usually, simply notifying the user is better.
+        messages.warning(request, "ระบบตรวจพบว่าไฟล์ PDF เดิมสูญหายจากเซิร์ฟเวอร์ (เนื่องจากการ Restart) คุณสามารถแก้ไขข้อมูลส่วนอื่นและอัปโหลดไฟล์ใหม่ได้ครับ")
         form = ProjectForm(instance=project)
-    # BUG FIX: ส่ง project ไปด้วยเพื่อแสดงชื่อในหัวฟอร์ม edit
+        # Force pdf_file to None in the form so it doesn't try to access the missing file
+        form.initial['pdf_file'] = None
+
     return render(request, 'research/edit.html', {
         'form':      form,
         'project':   project,

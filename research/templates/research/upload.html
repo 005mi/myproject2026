@@ -403,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Validation: Required PDF for NEW projects
+        const fileInput = document.querySelector('input[type="file"]');
         if (!isEditMode && (!fileInput || !fileInput.files || fileInput.files.length === 0)) {
             e.preventDefault();
             Swal.fire({
@@ -412,8 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButtonText: 'ตกลง',
                 confirmButtonColor: '#7a0c22'
             });
-            fileInput.closest('.file-zone').style.borderColor = 'var(--red)';
-            fileInput.closest('.file-zone').scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
 
