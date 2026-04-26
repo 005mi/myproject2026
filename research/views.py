@@ -324,7 +324,7 @@ def export_projects_csv(request):
 @login_required
 def my_projects(request):
     # Show both approved and pending papers for the logged-in user
-    projects_qs = Project.objects.filter(student_name=request.user.username).order_by('-id')
+    projects_qs = Project.objects.filter(uploaded_by=request.user).order_by('-id')
     
     total_count = projects_qs.count()
     pending_count = projects_qs.filter(is_approved=False).count()
@@ -349,7 +349,8 @@ def project_upload(request):
         form = ProjectForm(request.POST, request.FILES)
         if form.is_valid():
             project = form.save(commit=False)
-            project.student_name = request.user.username
+            project.uploaded_by = request.user
+            # ✅ ไม่ทับ student_name แล้ว เพื่อให้ผู้ใช้พิมพ์ชื่ออะไรก็ได้
             project.is_approved  = False
             project.save()
             messages.success(request, "ส่งผลงานสำเร็จแล้ว! กรุณารอแอดมินตรวจสอบและอนุมัติ")
@@ -376,7 +377,7 @@ def approve_project(request, project_id):
 @login_required
 def delete_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    if request.user.is_staff or project.student_name == request.user.username:
+    if request.user.is_staff or project.uploaded_by == request.user:
         title = project.title_th
         project.delete()
         messages.success(request, f'ลบผลงาน "{title}" เรียบร้อยแล้ว')
@@ -390,7 +391,7 @@ def edit_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     
     # 🛡️ Admin can edit everything, Students can only edit their own
-    if not request.user.is_staff and project.student_name != request.user.username:
+    if not request.user.is_staff and project.uploaded_by != request.user:
         messages.error(request, "คุณไม่มีสิทธิ์แก้ไขผลงานของผู้อื่น")
         return redirect('project_list')
         
@@ -426,7 +427,7 @@ def project_detail(request, project_id):
     # แต่ถ้าไม่อนุมัติ และไม่ใช่เจ้าของ/สตาฟ จะ redirect ออก (กันคนสุ่ม ID)
     project = get_object_or_404(Project, id=project_id)
     
-    if not project.is_approved and not request.user.is_staff and project.student_name != request.user.username:
+    if not project.is_approved and not request.user.is_staff and project.uploaded_by != request.user:
         messages.warning(request, "ผลงานนี้อยู่ระหว่างการตรวจสอบ")
         return redirect('project_list')
 

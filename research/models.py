@@ -87,6 +87,7 @@ class Project(models.Model):
         verbose_name="ไฟล์ PDF ฉบับเต็ม",
         validators=[FileExtensionValidator(allowed_extensions=['pdf']), validate_file_size]
     )
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='uploaded_projects', verbose_name="ผู้เข้าใช้งานที่อัปโหลด")
     is_approved = models.BooleanField(default=False, verbose_name="อนุมัติการเผยแพร่")
     views_count = models.PositiveIntegerField(default=0, verbose_name="ยอดเข้าชม")
     download_count = models.PositiveIntegerField(default=0, verbose_name="ยอดดาวน์โหลด")
