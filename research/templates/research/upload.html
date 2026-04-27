@@ -154,6 +154,39 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: modalFade 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         @keyframes modalFade { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .upload-hero { padding: 60px 16px 110px; }
+            .hero-inner { padding: 0; }
+            .upload-card { padding: 32px 20px; margin: -50px 12px 60px; border-radius: 18px; }
+            .section-head { font-size: 1.15rem; margin-top: 28px; padding-bottom: 12px; }
+            .form-grid { grid-template-columns: 1fr; gap: 0; }
+            .full-width { grid-column: span 1; }
+        }
+
+        @media (max-width: 480px) {
+            .upload-hero { padding: 48px 14px 90px; }
+            .upload-hero h1 { font-size: clamp(1.4rem, 6vw, 1.9rem); gap: 10px; }
+            .upload-hero p { font-size: 0.95rem; }
+            .upload-card { padding: 24px 14px; margin: -40px 8px 48px; border-radius: 16px; }
+            .section-head { font-size: 1.05rem; gap: 8px; }
+            .form-group { margin-bottom: 16px; }
+            .form-group label { font-size: 0.9rem; }
+            .form-control, .django-widget, input[type="text"], input[type="number"], select, textarea {
+                padding: 10px 12px; font-size: 0.95rem;
+            }
+            .file-zone { padding: 20px 14px; }
+
+            /* Stack the Submit / Cancel buttons */
+            div[style*="justify-content: center"][style*="gap: 20px"] {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .btn-outline { min-width: unset; text-align: center; }
+            .btn-submit { max-width: unset !important; }
+        }
     </style>
 {% endblock %}
 

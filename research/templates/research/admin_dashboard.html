@@ -1269,7 +1269,7 @@
         /* ── Small Mobile (< 480px) ── */
         @media (max-width: 480px) {
             .stat-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
             }
 
@@ -1287,6 +1287,14 @@
 
             .stat-card {
                 padding: 12px 14px;
+                gap: 10px;
+            }
+
+            .stat-icon-wrap {
+                width: 38px;
+                height: 38px;
+                font-size: 1em;
+                border-radius: 10px;
             }
 
             .section-title-text {
@@ -1296,6 +1304,15 @@
             .btn-act {
                 font-size: 0.76em;
                 padding: 7px 9px;
+            }
+
+            /* Make tables scroll horizontally */
+            .user-table, .rank-table-wrap table {
+                min-width: 480px;
+            }
+            .card-body, .card-table-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
         }
 

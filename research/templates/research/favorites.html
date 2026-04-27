@@ -258,7 +258,27 @@
     .page-info { font-size: 0.9rem; font-weight: 700; color: #64748b; margin: 0 10px; }
 
     @media (max-width: 768px) {
-        .fav-hero-inner { flex-direction: column; align-items: flex-start; gap: 30px; }
+        .fav-hero { padding: 60px 16px 140px; }
+        .fav-hero-inner { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .fav-content { padding: 0 16px; margin-top: -80px; }
+        .hero-title-group h1 { font-size: clamp(1.8rem, 7vw, 2.5rem); gap: 12px; }
+        .fav-stats-badge { padding: 12px 20px; }
+    }
+
+    @media (max-width: 500px) {
+        .fav-hero { padding: 48px 14px 120px; }
+        .fav-content { padding: 0 12px; margin-top: -70px; }
+        .hero-title-group h1 { font-size: 1.8rem; }
+        .card-header { padding: 18px 16px 0; }
+        .card-body { padding: 14px 16px; }
+        .card-footer { padding: 12px 16px; }
+        .card-actions { padding: 10px 16px 16px; gap: 7px; }
+        .btn-card { padding: 9px 10px; font-size: 0.78rem; }
+        .empty-fav { padding: 60px 24px; }
+        .empty-fav h2 { font-size: 1.4rem; }
+        .empty-fav p { font-size: 0.95rem; }
+        .pagination-wrapper { flex-wrap: wrap; justify-content: center; gap: 8px; }
+        .page-link { width: 38px; height: 38px; border-radius: 10px; }
     }
 </style>
 {% endblock %}
