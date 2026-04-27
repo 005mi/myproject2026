@@ -163,8 +163,15 @@ def serve_pdf_preview(request, project_id):
         return HttpResponse("ไม่พบไฟล์ PDF ในระบบ", status=404)
     
     try:
+        # --- 🟢 นับยอดวิวเมื่อมีการเปิดดูไฟล์ (ป้องกันการปั๊มยอดด้วย Session) 🟢 ---
+        session_key = f'viewed_project_{project.id}'
+        if not request.session.get(session_key, False):
+            Project.objects.filter(id=project_id).update(views_count=F('views_count') + 1)
+            request.session[session_key] = True
+            request.session.modified = True
+        # -----------------------------------------------------------------------
+
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
-        # We don't set Content-Disposition to 'attachment' so it opens in the iframe
         return response
     except FileNotFoundError:
         return HttpResponse("ไฟล์สูญหายหรือถูกลบจากเซิร์ฟเวอร์", status=404)
@@ -377,6 +384,7 @@ def approve_project(request, project_id):
 @login_required
 def delete_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    # 🛡️ เช็คสิทธิ์: เป็น Admin หรือเป็นคนที่อัปโหลดผลงานชิ้นนี้
     if request.user.is_staff or project.uploaded_by == request.user:
         title = project.title_th
         project.delete()
@@ -390,7 +398,7 @@ def delete_project(request, project_id):
 def edit_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     
-    # 🛡️ Admin can edit everything, Students can only edit their own
+    # 🛡️ Admin แก้ได้ทุกอย่าง, นักศึกษาแก้ได้เฉพาะงานที่ตัวเองอัปโหลด
     if not request.user.is_staff and project.uploaded_by != request.user:
         messages.error(request, "คุณไม่มีสิทธิ์แก้ไขผลงานของผู้อื่น")
         return redirect('project_list')

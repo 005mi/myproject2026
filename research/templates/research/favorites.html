@@ -332,7 +332,7 @@
                 <div class="card-footer">
                     <div class="stats-group">
                         <span class="stat-item"><i class="fas fa-eye"></i> {{ p.views_count }}</span>
-                        <span class="stat-item"><i class="fas fa-download"></i> {{ p.download_count }}</span>
+                        <span class="stat-item"><i class="fas fa-download"></i> <span id="download-count-{{ p.id }}">{{ p.download_count }}</span></span>
                     </div>
                     {% if p.average_rating > 0 %}
                     <div class="rating-badge">
@@ -352,7 +352,8 @@
                         onclick="openPdfPreview('{% url 'pdf_preview' p.id %}', '{{ p.title_th|escapejs }}')">
                         <i class="fas fa-eye"></i> เปิดไฟล์
                     </button>
-                    <a href="{% url 'download_pdf' p.id %}" class="btn-card btn-sec" download>
+                    <a href="{% url 'download_pdf' p.id %}" class="btn-card btn-sec" download
+                        onclick="incrementDownloadCount('{{ p.id }}')">
                         <i class="fas fa-file-download"></i> ดาวน์โหลด
                     </a>
                     {% endif %}
@@ -390,4 +391,15 @@
 
 <!-- Shared PDF Modal Component -->
 {% include 'research/components/pdf_modal.html' %}
+{% endblock %}
+{% block extra_js %}
+<script>
+    function incrementDownloadCount(projectId) {
+        const el = document.getElementById('download-count-' + projectId);
+        if (el) {
+            let current = parseInt(el.textContent.replace(/,/g, '')) || 0;
+            el.textContent = (current + 1).toLocaleString();
+        }
+    }
+</script>
 {% endblock %}

@@ -67,7 +67,8 @@
 <script>
     function openPdfPreview(url, title) {
         document.getElementById('modalTitle').textContent = title;
-        document.getElementById('pdfFrame').src = url;
+        // ✅ เพิ่ม #toolbar=0 เพื่อซ่อนเครื่องมือของ Browser
+        document.getElementById('pdfFrame').src = url + '#toolbar=0&navpanes=0&scrollbar=0';
         const modal = document.getElementById('pdfModal');
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';

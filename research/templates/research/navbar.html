@@ -332,7 +332,7 @@
                         <div class="nav-user-avatar">{{ user.username|first|upper }}</div>
                         <div class="nav-user-info">
                             <span class="nav-user-name">{{ user.username }}</span>
-                            <span class="role-badge">{% if user.is_staff %}เจ้าหน้าที่{% elif user.profile.user_type == 'student' %}นักศึกษา{% else %}ภายนอก{% endif %}</span>
+                            <span class="role-badge">{% if user.is_staff %}เจ้าหน้าที่{% elif user.profile.user_type == 'student' %}นักศึกษา{% else %}บุคคลภายนอก{% endif %}</span>
                         </div>
                     </a>
                 </div>
@@ -355,7 +355,7 @@
                 <div class="nav-user-avatar">{{ user.username|first|upper }}</div>
                 <div class="nav-user-info">
                     <span class="nav-user-name">{{ user.username }}</span>
-                    <span class="role-badge">{% if user.is_staff %}เจ้าหน้าที่{% elif user.profile.user_type == 'student' %}นักศึกษา{% else %}ภายนอก{% endif %}</span>
+                    <span class="role-badge">{% if user.is_staff %}เจ้าหน้าที่{% elif user.profile.user_type == 'student' %}นักศึกษา{% else %}บุคคลภายนอก{% endif %}</span>
                 </div>
             </a>
             <div style="display:flex; gap:6px; margin-left:5px;">

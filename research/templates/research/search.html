@@ -755,7 +755,7 @@
             <div class="project-card-footer">
                 <div class="project-stats">
                     <span title="เข้าชม"><i class="fas fa-eye"></i> {{ p.views_count }}</span>
-                    <span title="ดาวน์โหลด"><i class="fas fa-download"></i> {{ p.download_count }}</span>
+                    <span title="ดาวน์โหลด"><i class="fas fa-download"></i> <span id="download-count-{{ p.id }}">{{ p.download_count }}</span></span>
                 </div>
                 {% if p.average_rating > 0 %}
                 <div class="project-rating">
@@ -777,12 +777,13 @@
                     onclick="openPdfPreview('{% url 'pdf_preview' p.id %}', '{{ p.title_th|escapejs }}')">
                     <i class="fas fa-eye"></i> อ่านไฟล์
                 </button>
-                <a href="{% url 'download_pdf' p.id %}" class="btn-action btn-pdf" download>
+                <a href="{% url 'download_pdf' p.id %}" class="btn-action btn-pdf" download
+                    onclick="incrementDownloadCount('{{ p.id }}')">
                     <i class="fas fa-file-download"></i> ดาวน์โหลดไฟล์
                 </a>
                 {% endif %}
                 {% if user.is_authenticated %}
-                {% if user.is_staff or p.student_name == user.username %}
+                {% if user.is_staff or p.uploaded_by == user %}
                 <a href="{% url 'edit_project' p.id %}" class="btn-action btn-edit">
                     <i class="fas fa-edit"></i> แก้ไข
                 </a>
@@ -828,6 +829,14 @@
 {% block extra_js %}
 <script>
 
+
+    function incrementDownloadCount(projectId) {
+        const el = document.getElementById('download-count-' + projectId);
+        if (el) {
+            let current = parseInt(el.textContent.replace(/,/g, '')) || 0;
+            el.textContent = (current + 1).toLocaleString();
+        }
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
         // Subtle entry animation for cards

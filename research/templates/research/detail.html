@@ -951,7 +951,7 @@
             <span><i class="fas fa-calendar-alt"></i> {{ project.academic_year }}</span>
             <span><i class="fas fa-university"></i> {{ project.get_department_display }}</span>
             <span><i class="fas fa-eye"></i> {{ project.views_count }} ครั้ง</span>
-            <span><i class="fas fa-download"></i> {{ project.download_count }} ดาวน์โหลด</span>
+            <span><i class="fas fa-download"></i> <span id="downloadCountDisplay">{{ project.download_count }}</span> ดาวน์โหลด</span>
             <span><i class="fas fa-star" style="color:var(--gold)"></i> {{ project.average_rating }} ({{ project.total_ratings }} รีวิว)</span>
         </div>
     </div>
@@ -987,7 +987,7 @@
             <i class="fas fa-share-alt"></i> แชร์
         </button>
         {% endif %}
-        {% if request.user.username == project.student_name or request.user.is_staff %}
+        {% if project.uploaded_by == request.user or request.user.is_staff %}
         <a href="{% url 'edit_project' project.id %}" class="btn-bar btn-bar-gold">
             <i class="fas fa-edit"></i> แก้ไข
         </a>
@@ -1001,7 +1001,8 @@
             onclick="openPdfPreview('{% url 'pdf_preview' project.id %}', '{{ project.title_th|escapejs }}')">
             <i class="fas fa-eye"></i> ดูไฟล์
         </button>
-        <a href="{{ project.pdf_file.url }}" class="btn-bar btn-bar-crimson" download>
+        <a href="{% url 'download_pdf' project.id %}" class="btn-bar btn-bar-crimson" download
+            onclick="incrementDownloadCount()">
             <i class="fas fa-download"></i> ดาวน์โหลด PDF
         </a>
         {% endif %}
@@ -1466,6 +1467,15 @@
     }
 
     // ── Format Text ──────────────────────────────────────────────
+    /* ── Stats Increment Logic ── */
+    function incrementDownloadCount() {
+        const statNum = document.getElementById('downloadCountDisplay');
+        if (statNum) {
+            let current = parseInt(statNum.textContent.replace(/,/g, '')) || 0;
+            statNum.textContent = (current + 1).toLocaleString();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         function formatAcademicDisplay(el) {
             let text = el.textContent || "";

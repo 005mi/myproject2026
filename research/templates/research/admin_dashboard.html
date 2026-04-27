@@ -2100,7 +2100,8 @@
         function openPdfModal(title, url) {
             const modal = document.getElementById('pdfPreviewModal');
             document.getElementById('pdfModalTitle').textContent = title;
-            document.getElementById('pdfIframe').src = url;
+            // ✅ เพิ่ม #toolbar=0 เพื่อซ่อนเครื่องมือของ Browser
+            document.getElementById('pdfIframe').src = url + '#toolbar=0&navpanes=0&scrollbar=0';
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
