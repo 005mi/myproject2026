@@ -192,7 +192,7 @@
 /* ── STATS CARDS ───────────────────────────────────────────── */
 .stats-section {
     max-width: 1080px; margin: -72px auto 0;
-    padding: 0 24px; position: relative; z-index: 20;
+    padding: 0 16px; position: relative; z-index: 20;
 }
 .stats-grid {
     display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
@@ -237,7 +237,7 @@
 
 /* ── MAIN CONTENT ──────────────────────────────────────────── */
 .main-wrap {
-    max-width: 1080px; margin: 80px auto 60px; padding: 0 24px;
+    max-width: 1080px; margin: 80px auto 60px; padding: 0 16px;
 }
 
 /* Section header */
@@ -587,17 +587,42 @@
 
 /* ── RESPONSIVE ────────────────────────────────────────────── */
 @media (max-width: 900px) {
-    .stats-grid { grid-template-columns: 1fr; }
     .stats-section { margin-top: -44px; }
     .ranking-body { padding: 0 20px 22px; }
     .ranking-head { padding: 22px 20px; }
 }
+/* Tablet: stats 3 columns, smaller padding */
 @media (max-width: 768px) {
-    .hero-section { padding: 80px 20px 150px; }
+    .hero-section { padding: 80px 16px 140px; }
     .projects-grid { grid-template-columns: 1fr; }
     .section-head { flex-direction: column; align-items: flex-start; gap: 12px; }
     .rank-tabs { width: 100%; }
     .hero-link-group { flex-direction: column; align-items: center; }
+    /* Keep stats 3 cols but smaller */
+    .stats-grid { gap: 12px; }
+    .stat-card { padding: 18px 14px; gap: 12px; border-radius: 18px; }
+    .stat-icon { width: 48px; height: 48px; font-size: 1.25rem; border-radius: 14px; }
+    .stat-number { font-size: 1.8rem; }
+    .stat-label { font-size: 0.65rem; }
+    .main-wrap { margin-top: 56px; }
+}
+/* Mobile small: still 3 cols, even more compact */
+@media (max-width: 480px) {
+    .hero-section { padding: 64px 14px 120px; }
+    .stats-section { padding: 0 10px; margin-top: -36px; }
+    .stats-grid { gap: 8px; }
+    .stat-card { padding: 14px 10px; gap: 8px; border-radius: 14px; flex-direction: column; align-items: flex-start; }
+    .stat-icon { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 12px; }
+    .stat-number { font-size: 1.5rem; }
+    .stat-label { font-size: 0.6rem; letter-spacing: 0; }
+    .main-wrap { padding: 0 12px; margin-top: 40px; }
+    .hero-search-box input { padding: 14px 16px; font-size: 0.9rem; }
+    .hero-search-box button { padding: 10px 18px; font-size: 0.85rem; }
+    .card-actions { grid-template-columns: 1fr; }
+    .btn-details { grid-column: span 1; }
+    .section-head h2 { font-size: 1.2rem; }
+    .see-all-btn { font-size: 0.8rem; padding: 7px 14px; }
+    .hero-title { font-size: clamp(1.8rem, 8vw, 2.4rem); }
 }
 </style>
 {% endblock %}
