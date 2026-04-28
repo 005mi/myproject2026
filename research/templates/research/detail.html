@@ -920,17 +920,13 @@
 
     /* ── RESPONSIVE RE-ENGINEERING ── */
     @media (max-width: 860px) {
-        :root { --page-px: 16px; }
+        :root { --page-px: clamp(16px, 4%, 32px); }
         .detail-content {
             grid-template-columns: 1fr;
-            margin-top: 20px; /* เลื่อนลงมาไม่ให้ถูก Action Bar บัง */
-            gap: 24px;
+            margin-top: -30px;
         }
         .detail-sidebar {
-            order: 2; /* ข้อมูลสถิติ/ทีมงาน อยู่ต่อจากเนื้อหาหลัก */
-        }
-        .yt-comment-section {
-            order: 3; /* ความคิดเห็นอยู่ล่างสุดเสมอ */
+            order: 2; /* ย้าย Sidebar ไปต่อท้ายเนื้อหาหลัก เพื่อให้บทคัดย่อขึ้นก่อน */
         }
     }
 
@@ -1090,8 +1086,8 @@
 <!-- ── MAIN CONTENT ── -->
 <div class="detail-content">
 
-    <!-- LEFT-TOP: Abstract & Tabs (Order 1) -->
-    <div style="order: 1;">
+    <!-- LEFT: Article body -->
+    <div>
 
 
         <!-- Abstract card -->
@@ -1220,12 +1216,126 @@
 
         </div><!-- end tabs card -->
 
+        <!-- ── YOUTUBE STYLE COMMENTS SECTION ── -->
+        <div class="yt-comment-section">
+            <div class="yt-comment-header">
+                ความคิดเห็น <span class="count">{{ comments|length }}</span>
+            </div>
+
+            <!-- Form เพิ่มคอมเมนต์ -->
+            {% if user.is_authenticated %}
+            <div class="yt-comment-form">
+                <div class="yt-avatar">{{ user.username|first|upper }}</div>
+                <form action="{% url 'add_comment' project.id %}" method="POST" class="yt-input-container" id="ytCommentForm">
+                    {% csrf_token %}
+                    <textarea name="body" class="yt-textarea" placeholder="เพิ่มความคิดเห็น..." rows="1" 
+                        oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                        onfocus="document.getElementById('ytFormActions').style.opacity = '1'; document.getElementById('ytFormActions').style.pointerEvents = 'auto'"></textarea>
+                    <div class="yt-form-actions" id="ytFormActions">
+                        <button type="button" class="btn-yt btn-yt-cancel" 
+                            onclick="const t = this.form.querySelector('textarea'); t.value = ''; t.style.height = ''; document.getElementById('ytFormActions').style.opacity = '0'; document.getElementById('ytFormActions').style.pointerEvents = 'none'">ยกเลิก</button>
+                        <button type="submit" class="btn-yt btn-yt-submit">ส่งความคิดเห็น</button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <div style="display:flex; align-items:center; gap:14px; padding:18px; background:var(--cream); border-radius:12px; margin-bottom:32px;">
+                <i class="fas fa-lock" style="color:var(--muted); font-size:1.2rem;"></i>
+                <div>
+                    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:4px;">เข้าสู่ระบบเพื่อแสดงความคิดเห็น</p>
+                    <a href="{% url 'login' %}" style="font-size:0.83rem; font-weight:700; color:var(--crimson); text-decoration:none;">เข้าสู่ระบบ →</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- รายการคอมเมนต์ -->
+            <div class="yt-comment-list">
+                {% if comments %}
+                    {% for c in comments %}
+                        {% if not c.parent %}
+                        <div class="yt-comment-item">
+                            <div class="yt-avatar">{{ c.user.username|first|upper }}</div>
+                            <div class="yt-comment-content">
+                                <div class="yt-comment-meta">
+                                    <span class="yt-comment-user">{{ c.user.username }}</span>
+                                    <span class="yt-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
+                                </div>
+                                <div class="yt-comment-text">{{ c.body }}</div>
+                                <div class="yt-comment-actions">
+                                    {% if user.is_staff or c.user == user %}
+                                    <form action="{% url 'delete_comment' c.id %}" method="POST" onsubmit="return confirm('ลบความคิดเห็นนี้?')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="yt-action-link delete">ลบ</button>
+                                    </form>
+                                    {% endif %}
+                                    {% if user.is_authenticated %}
+                                    <button class="yt-action-link" onclick="toggleReplyForm('{{ c.id }}')">ตอบกลับ</button>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Reply Form (Hidden) -->
+                                {% if user.is_authenticated %}
+                                <div class="yt-reply-form-container" id="reply-form-{{ c.id }}">
+                                    <form action="{% url 'add_comment' project.id %}" method="POST" class="yt-comment-form" style="margin-bottom: 0; margin-top: 12px;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="parent_id" value="{{ c.id }}">
+                                        <div class="yt-avatar" style="width: 24px; height: 24px; font-size: 0.7rem;">{{ user.username|first|upper }}</div>
+                                        <div class="yt-input-container">
+                                            <textarea name="body" class="yt-textarea" placeholder="ตอบกลับ..." rows="1" 
+                                                oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                            <div class="yt-form-actions" style="opacity: 1; pointer-events: auto;">
+                                                <button type="button" class="btn-yt btn-yt-cancel" onclick="toggleReplyForm('{{ c.id }}')">ยกเลิก</button>
+                                                <button type="submit" class="btn-yt btn-yt-submit">ตอบกลับ</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                {% endif %}
+
+                                <!-- Render Replies -->
+                                {% if c.replies.all %}
+                                <div class="yt-reply-list">
+                                    {% for reply in c.replies.all %}
+                                    <div class="yt-reply-item">
+                                        <div class="yt-reply-avatar">{{ reply.user.username|first|upper }}</div>
+                                        <div class="yt-comment-content">
+                                            <div class="yt-comment-meta">
+                                                <span class="yt-comment-user">{{ reply.user.username }}</span>
+                                                <span class="yt-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
+                                            </div>
+                                            <div class="yt-comment-text">{{ reply.body }}</div>
+                                            <div class="yt-comment-actions">
+                                                {% if user.is_staff or reply.user == user %}
+                                                <form action="{% url 'delete_comment' reply.id %}" method="POST" onsubmit="return confirm('ลบความคิดเห็นนี้?')">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="yt-action-link delete">ลบ</button>
+                                                </form>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center; padding:40px 0; color:var(--muted);">
+                        <i class="far fa-comment-dots" style="font-size:2.5rem; opacity:0.1; display:block; margin-bottom:12px;"></i>
+                        <p style="font-size:0.9rem;">ยังไม่มีความคิดเห็น</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- ── END YOUTUBE COMMENTS ── -->
         <!-- ── END COMMENTS ── -->
 
-    </div><!-- end left-top (Abstract + Tabs) -->
+    </div><!-- end left -->
 
-    <!-- RIGHT: Sidebar (Stats, Info, Researchers, etc.) -->
-    <div class="detail-sidebar" style="order: 2;">
+    <!-- RIGHT: Sidebar -->
+    <div class="detail-sidebar">
 
         <!-- Stats -->
         <div class="d-card">
@@ -1388,121 +1498,6 @@
         {% endif %}
 
     </div><!-- end sidebar -->
-
-    <!-- BOTTOM: Comments Section (Order 3) -->
-    <div class="yt-comment-section">
-        <div class="yt-comment-header">
-            ความคิดเห็น <span class="count">{{ comments|length }}</span>
-        </div>
-
-        <!-- Form เพิ่มคอมเมนต์ -->
-        {% if user.is_authenticated %}
-        <div class="yt-comment-form">
-            <div class="yt-avatar">{{ user.username|first|upper }}</div>
-            <form action="{% url 'add_comment' project.id %}" method="POST" class="yt-input-container" id="ytCommentForm">
-                {% csrf_token %}
-                <textarea name="body" class="yt-textarea" placeholder="เพิ่มความคิดเห็น..." rows="1" 
-                    oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
-                    onfocus="document.getElementById('ytFormActions').style.opacity = '1'; document.getElementById('ytFormActions').style.pointerEvents = 'auto'"></textarea>
-                <div class="yt-form-actions" id="ytFormActions">
-                    <button type="button" class="btn-yt btn-yt-cancel" 
-                        onclick="const t = this.form.querySelector('textarea'); t.value = ''; t.style.height = ''; document.getElementById('ytFormActions').style.opacity = '0'; document.getElementById('ytFormActions').style.pointerEvents = 'none'">ยกเลิก</button>
-                    <button type="submit" class="btn-yt btn-yt-submit">ส่งความคิดเห็น</button>
-                </div>
-            </form>
-        </div>
-        {% else %}
-        <div style="display:flex; align-items:center; gap:14px; padding:18px; background:var(--cream); border-radius:12px; margin-bottom:32px;">
-            <i class="fas fa-lock" style="color:var(--muted); font-size:1.2rem;"></i>
-            <div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-bottom:4px;">เข้าสู่ระบบเพื่อแสดงความคิดเห็น</p>
-                <a href="{% url 'login' %}" style="font-size:0.83rem; font-weight:700; color:var(--crimson); text-decoration:none;">เข้าสู่ระบบ →</a>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- รายการคอมเมนต์ -->
-        <div class="yt-comment-list">
-            {% if comments %}
-                {% for c in comments %}
-                    {% if not c.parent %}
-                    <div class="yt-comment-item">
-                        <div class="yt-avatar">{{ c.user.username|first|upper }}</div>
-                        <div class="yt-comment-content">
-                            <div class="yt-comment-meta">
-                                <span class="yt-comment-user">{{ c.user.username }}</span>
-                                <span class="yt-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
-                            </div>
-                            <div class="yt-comment-text">{{ c.body }}</div>
-                            <div class="yt-comment-actions">
-                                {% if user.is_staff or c.user == user %}
-                                <form action="{% url 'delete_comment' c.id %}" method="POST" onsubmit="return confirm('ลบความคิดเห็นนี้?')">
-                                    {% csrf_token %}
-                                    <button type="submit" class="yt-action-link delete">ลบ</button>
-                                </form>
-                                {% endif %}
-                                {% if user.is_authenticated %}
-                                <button class="yt-action-link" onclick="toggleReplyForm('{{ c.id }}')">ตอบกลับ</button>
-                                {% endif %}
-                            </div>
-
-                            <!-- Reply Form (Hidden) -->
-                            {% if user.is_authenticated %}
-                            <div class="yt-reply-form-container" id="reply-form-{{ c.id }}">
-                                <form action="{% url 'add_comment' project.id %}" method="POST" class="yt-comment-form" style="margin-bottom: 0; margin-top: 12px;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="parent_id" value="{{ c.id }}">
-                                    <div class="yt-avatar" style="width: 24px; height: 24px; font-size: 0.7rem;">{{ user.username|first|upper }}</div>
-                                    <div class="yt-input-container">
-                                        <textarea name="body" class="yt-textarea" placeholder="ตอบกลับ..." rows="1" 
-                                            oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-                                        <div class="yt-form-actions" style="opacity: 1; pointer-events: auto;">
-                                            <button type="button" class="btn-yt btn-yt-cancel" onclick="toggleReplyForm('{{ c.id }}')">ยกเลิก</button>
-                                            <button type="submit" class="btn-yt btn-yt-submit">ตอบกลับ</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                            {% endif %}
-
-                            <!-- Render Replies -->
-                            {% if c.replies.all %}
-                            <div class="yt-reply-list">
-                                {% for reply in c.replies.all %}
-                                <div class="yt-reply-item">
-                                    <div class="yt-reply-avatar">{{ reply.user.username|first|upper }}</div>
-                                    <div class="yt-comment-content">
-                                        <div class="yt-comment-meta">
-                                            <span class="yt-comment-user">{{ reply.user.username }}</span>
-                                            <span class="yt-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
-                                        </div>
-                                        <div class="yt-comment-text">{{ reply.body }}</div>
-                                        <div class="yt-comment-actions">
-                                            {% if user.is_staff or reply.user == user %}
-                                            <form action="{% url 'delete_comment' reply.id %}" method="POST" onsubmit="return confirm('ลบความคิดเห็นนี้?')">
-                                                {% csrf_token %}
-                                                <button type="submit" class="yt-action-link delete">ลบ</button>
-                                            </form>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                <div style="text-align:center; padding:40px 0; color:var(--muted);">
-                    <i class="far fa-comment-dots" style="font-size:2.5rem; opacity:0.1; display:block; margin-bottom:12px;"></i>
-                    <p style="font-size:0.9rem;">ยังไม่มีความคิดเห็น</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-    <!-- ── END YOUTUBE COMMENTS ── -->
 
 </div><!-- end detail-content -->
 
