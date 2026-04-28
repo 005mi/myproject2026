@@ -10,10 +10,15 @@
        PROJECT DETAIL PAGE
        ══════════════════════════════════════ */
 
+    /* ── PAGE-LEVEL HORIZONTAL PADDING (unified) ── */
+    :root {
+        --page-px: clamp(24px, 5%, 64px);
+    }
+
     /* ── HERO ── */
     .detail-hero {
         background: linear-gradient(150deg, #2a0308 0%, #6a0a1e 40%, #8a1028 70%, #3a0510 100%);
-        padding: 40px clamp(24px, 5%, 64px) 90px;
+        padding: 40px var(--page-px) 90px;
         color: white;
         position: relative;
         overflow: hidden;
@@ -109,7 +114,7 @@
     .detail-action-bar {
         background: white;
         border-bottom: 1px solid var(--border-lt);
-        padding: 11px clamp(24px, 5%, 64px);
+        padding: 11px var(--page-px);
         position: sticky;
         top: 0;
         z-index: 200;
@@ -212,7 +217,7 @@
     .detail-content {
         max-width: var(--max-w);
         margin: 10px auto 60px;
-        padding: 0 clamp(24px, 5%, 64px);
+        padding: 0 var(--page-px);
         display: grid;
         grid-template-columns: 1fr 300px;
         gap: 20px;
@@ -913,41 +918,43 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 860px) {
+        :root { --page-px: clamp(14px, 4%, 32px); }
         .detail-content {
             grid-template-columns: 1fr;
-            padding: 0 clamp(14px, 4%, 32px);
         }
         .detail-sidebar {
-            order: -1; /* sidebar แสดงด้านบนบนมือถือ */
+            order: -1;
         }
     }
 
     /* Tablet / Large phone */
     @media (max-width: 600px) {
-        .detail-hero { padding: 28px 14px 65px; }
+        :root { --page-px: 16px; }
+
+        .detail-hero { padding: 28px var(--page-px) 65px; }
         .detail-hero-title { font-size: 1.15rem; line-height: 1.4; }
         .detail-hero-title-en { font-size: 0.82rem; }
         .detail-hero-meta { gap: 8px; font-size: 0.73rem; flex-wrap: wrap; }
 
-        /* Action bar: ซ้ายบน, ขวาล่าง */
+        /* Action bar: 2 rows, full-width buttons */
         .detail-action-bar {
             flex-direction: column;
             align-items: flex-start;
-            padding: 10px 14px;
+            padding: 10px var(--page-px);
             gap: 8px;
         }
         .action-bar-left { width: 100%; }
         .action-bar-right {
             width: 100%;
             display: flex;
-            flex-wrap: wrap;   /* wrap แทน scroll */
+            flex-wrap: wrap;
             gap: 6px;
         }
-        /* ปุ่มในแถบ action บนมือถือ */
         .btn-bar {
             padding: 7px 12px;
             font-size: 0.78rem;
             border-radius: 10px;
+            flex: 0 0 auto;
         }
         .breadcrumb-text { display: none; }
 
@@ -966,12 +973,19 @@
 
     /* Small phone ~393px (Vivo V60 Lite, iPhone 14) */
     @media (max-width: 420px) {
-        .detail-hero { padding: 24px 12px 55px; }
+        :root { --page-px: 14px; }
+
+        .detail-hero { padding: 24px var(--page-px) 55px; }
         .detail-hero-title { font-size: 1.05rem; }
         .detail-hero-meta { font-size: 0.7rem; gap: 6px; }
-        .detail-action-bar { padding: 8px 12px; }
-        .detail-content { margin-top: -18px; padding: 0 10px; }
-        .btn-bar { padding: 6px 10px; font-size: 0.75rem; }
+
+        .detail-action-bar { padding: 8px var(--page-px); }
+        .detail-content { margin-top: -18px; padding: 0 var(--page-px); }
+
+        /* Icon-only buttons on very small screens to save space */
+        .btn-bar .btn-text { display: none; }
+        .btn-bar { padding: 8px 10px; font-size: 0.85rem; border-radius: 10px; }
+
         .d-card-body { padding: 12px; }
         .d-card-head { padding: 10px 12px; font-size: 0.9rem; }
         .tab-pane { padding: 12px; }
@@ -980,7 +994,6 @@
         .yt-avatar { width: 34px; height: 34px; font-size: 0.8rem; }
         .stat-num { font-size: 1.3rem; }
         .abstract-text, .sec-text { font-size: 0.9rem; }
-        /* Info rows in sidebar */
         .info-val { font-size: 0.85rem; }
         .r-name { font-size: 0.84rem; }
     }
@@ -1014,7 +1027,7 @@
 <div class="detail-action-bar">
     <div class="action-bar-left">
         <a href="{% url 'project_list' %}" class="btn-bar btn-bar-outline">
-            <i class="fas fa-arrow-left"></i> หน้าหลัก
+            <i class="fas fa-arrow-left"></i> <span class="btn-text">หน้าหลัก</span>
         </a>
         <span class="breadcrumb-text">
             <a href="{% url 'my_projects' %}">ผลงานของฉัน</a>
@@ -1031,36 +1044,37 @@
             <button type="submit" class="btn-bar btn-bar-outline"
                 style="color: {% if is_favorited %}#ef4444{% else %}inherit{% endif %}; border-color: {% if is_favorited %}#ef4444{% else %}rgba(122,12,34,0.15){% endif %};">
                 <i class="{% if is_favorited %}fas{% else %}far{% endif %} fa-heart"></i>
-                {% if is_favorited %}ลบรายการโปรด{% else %}เพิ่มรายการโปรด{% endif %}
+                <span class="btn-text">{% if is_favorited %}ลบรายการโปรด{% else %}เพิ่มรายการโปรด{% endif %}</span>
             </button>
         </form>
         {% endif %}
         {% if project.is_approved %}
         <button class="btn-bar btn-bar-outline" onclick="shareProject()">
-            <i class="fas fa-share-alt"></i> แชร์
+            <i class="fas fa-share-alt"></i> <span class="btn-text">แชร์</span>
         </button>
         {% endif %}
         {% if project.uploaded_by == request.user or request.user.is_staff %}
         <a href="{% url 'edit_project' project.id %}" class="btn-bar btn-bar-gold">
-            <i class="fas fa-edit"></i> แก้ไข
+            <i class="fas fa-edit"></i> <span class="btn-text">แก้ไข</span>
         </a>
         <a href="{% url 'delete_project' project.id %}" class="btn-bar btn-bar-danger"
             onclick="return confirm('คุณแน่ใจว่าต้องการลบผลงานชิ้นนี้?')">
-            <i class="fas fa-trash-alt"></i> ลบ
+            <i class="fas fa-trash-alt"></i> <span class="btn-text">ลบ</span>
         </a>
         {% endif %}
         {% if project.pdf_file %}
         <button type="button" class="btn-bar btn-bar-gold"
             onclick="openPdfPreview('{% url 'pdf_preview' project.id %}', '{{ project.title_th|escapejs }}')">
-            <i class="fas fa-eye"></i> ดูไฟล์
+            <i class="fas fa-eye"></i> <span class="btn-text">ดูไฟล์</span>
         </button>
         <a href="{% url 'download_pdf' project.id %}" class="btn-bar btn-bar-crimson" download
             onclick="incrementDownloadCount()">
-            <i class="fas fa-download"></i> ดาวน์โหลด PDF
+            <i class="fas fa-download"></i> <span class="btn-text">ดาวน์โหลด PDF</span>
         </a>
         {% endif %}
     </div>
 </div>
+
 
 <!-- ── MAIN CONTENT ── -->
 <div class="detail-content">

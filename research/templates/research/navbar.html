@@ -1,282 +1,368 @@
 {% load static %}
 
 <style>
-/* ══════════════════════════════════════════
+    /* ══════════════════════════════════════════
    PREMIUM NAVBAR
 ══════════════════════════════════════════ */
-.main-navbar {
-    background: linear-gradient(135deg, var(--crimson-dk) 0%, #6b0a1e 50%, var(--crimson) 100%);
-    color: white;
-    height: var(--navbar-h);
-    padding: 0 clamp(16px, 4%, 48px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 20px rgba(78,7,21,0.5), 0 0 1px rgba(255,255,255,0.08) inset;
-    font-family: 'Sarabun', sans-serif;
-}
-
-/* Subtle shimmer line at bottom */
-.main-navbar::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(201,151,43,0.5), var(--gold), rgba(201,151,43,0.5), transparent);
-}
-
-/* BRAND */
-.nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    transition: opacity var(--t-fast);
-    flex-shrink: 0;
-}
-.nav-brand:hover { opacity: 0.88; }
-
-.nav-logo-wrap {
-    width: 40px; height: 40px;
-    background: white;
-    border-radius: 50%;
-    padding: 2px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 0 2px rgba(201,151,43,0.3);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
-.nav-logo-img { width: 100%; height: 100%; object-fit: contain; }
-
-.nav-brand-text { display: flex; flex-direction: column; }
-.nav-brand-name {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: white;
-    line-height: 1.2;
-    letter-spacing: 0.2px;
-}
-.nav-brand-sub {
-    font-size: 0.68rem;
-    color: rgba(240,192,96,0.85);
-    font-weight: 500;
-    line-height: 1;
-}
-
-/* NAV LINKS */
-.nav-links {
-    display: flex;
-    gap: 2px;
-    align-items: center;
-}
-
-.nav-link {
-    color: rgba(255,255,255,0.82);
-    font-size: 0.875rem;
-    padding: 7px 13px;
-    border-radius: var(--r-sm);
-    text-decoration: none;
-    transition: all var(--t-base) var(--ease);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    font-weight: 500;
-    position: relative;
-}
-.nav-link i { font-size: 0.85em; opacity: 0.9; }
-.nav-link:hover {
-    background: rgba(255,255,255,0.11);
-    color: white;
-}
-.nav-link.active {
-    background: rgba(255,255,255,0.15);
-    color: white;
-    font-weight: 700;
-}
-.nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: 4px; left: 12px; right: 12px;
-    height: 2px;
-    background: var(--gold-lt);
-    border-radius: 99px;
-}
-
-
-/* USER SECTION */
-.nav-user-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(0,0,0,0.22);
-    padding: 5px 14px;
-    border-radius: 99px;
-    border: 1px solid rgba(255,255,255,0.1);
-    flex-shrink: 0;
-}
-
-.nav-user-avatar {
-    width: 30px; height: 30px;
-    background: linear-gradient(135deg, var(--gold), #e0a820);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem; font-weight: 800;
-    color: var(--crimson-dk);
-    flex-shrink: 0;
-}
-
-.nav-user-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.nav-user-name {
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: white;
-    line-height: 1;
-}
-
-.role-badge {
-    background: linear-gradient(135deg, var(--gold), #e6b422);
-    color: var(--crimson-dk);
-    font-size: 0.6rem;
-    font-weight: 800;
-    padding: 1px 7px;
-    border-radius: 99px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    width: fit-content;
-}
-
-.btn-logout {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.75);
-    cursor: pointer;
-    transition: all var(--t-fast);
-    padding: 5px 8px;
-    border-radius: var(--r-xs);
-    font-size: 0.85rem;
-    text-decoration: none;
-    display: flex; align-items: center; gap: 5px;
-}
-.btn-logout:hover {
-    background: rgba(255,50,50,0.2);
-    border-color: rgba(255,100,100,0.4);
-    color: #ffaaaa;
-}
-
-/* LOGIN BUTTON */
-.btn-nav-login {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.22);
-    color: white !important;
-    font-weight: 700;
-    padding: 7px 18px;
-    border-radius: 99px;
-    text-decoration: none;
-    transition: all var(--t-base);
-    font-size: 0.85rem;
-}
-.btn-nav-login:hover {
-    background: rgba(255,255,255,0.22);
-    transform: translateY(-1px);
-}
-
-/* HAMBURGER */
-.mobile-toggle {
-    display: none;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: white;
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: 8px 10px;
-    border-radius: var(--r-sm);
-    transition: background var(--t-fast);
-}
-.mobile-toggle:hover { background: rgba(255,255,255,0.18); }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 1024px) {
-    .nav-brand-sub { display: none; }
-    .nav-link { font-size: 0.82rem; padding: 6px 10px; }
-}
-
-@media (max-width: 880px) {
-    .nav-links {
-        display: none;
-        flex-direction: column;
-        align-items: stretch;
-        position: absolute;
-        top: var(--navbar-h);
-        left: 0; right: 0;
-        background: var(--crimson-dk);
-        padding: 12px 16px 20px;
-        gap: 4px;
-        border-top: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 16px 32px rgba(0,0,0,0.35);
-        z-index: 999;
-    }
-    .nav-links.mobile-open {
+    .main-navbar {
+        background: linear-gradient(135deg, var(--crimson-dk) 0%, #6b0a1e 50%, var(--crimson) 100%);
+        color: white;
+        height: var(--navbar-h);
+        padding: 0 clamp(16px, 4%, 48px);
         display: flex;
-        animation: menuSlide 0.2s ease;
-    }
-    @keyframes menuSlide {
-        from { opacity: 0; transform: translateY(-10px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    .nav-link { width: 100%; padding: 11px 14px; border-radius: var(--r-sm); }
-    .nav-link.active::after { display: none; }
-
-    .desktop-only-user { display: none !important; }
-    .mobile-toggle { display: flex; }
-
-    .nav-user-section.mobile-only {
-        width: 100%;
-        border-radius: var(--r-sm);
-        margin-top: 6px;
         justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 20px rgba(78, 7, 21, 0.5), 0 0 1px rgba(255, 255, 255, 0.08) inset;
+        font-family: 'Sarabun', sans-serif;
     }
-}
-@media (min-width: 881px) {
-    .mobile-only { display: none !important; }
-}
 
-@media (max-width: 480px) {
-    .nav-logo-wrap { width: 34px; height: 34px; }
-}
+    /* Subtle shimmer line at bottom */
+    .main-navbar::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(201, 151, 43, 0.5), var(--gold), rgba(201, 151, 43, 0.5), transparent);
+    }
 
-/* ── SECURITY BANNER ── */
-.security-banner {
-    background: #fffbeb;
-    border-bottom: 1px solid #fde68a;
-    padding: 10px clamp(16px, 4%, 48px);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    font-size: 0.85rem;
-    color: #92400e;
-    font-weight: 600;
-}
-.security-banner-msg { display: flex; align-items: center; gap: 8px; }
-.security-banner-btn {
-    background: #92400e;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 0.78rem;
-    transition: background 0.2s;
-    white-space: nowrap;
-}
-.security-banner-btn:hover { background: #78350f; color: white; }
+    /* BRAND */
+    .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        transition: opacity var(--t-fast);
+        flex-shrink: 0;
+    }
+
+    .nav-brand:hover {
+        opacity: 0.88;
+    }
+
+    .nav-logo-wrap {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        padding: 2px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(201, 151, 43, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .nav-logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .nav-brand-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .nav-brand-name {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: white;
+        line-height: 1.2;
+        letter-spacing: 0.2px;
+    }
+
+    .nav-brand-sub {
+        font-size: 0.68rem;
+        color: rgba(240, 192, 96, 0.85);
+        font-weight: 500;
+        line-height: 1;
+    }
+
+    /* NAV LINKS */
+    .nav-links {
+        display: flex;
+        gap: 2px;
+        align-items: center;
+    }
+
+    .nav-link {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.875rem;
+        padding: 7px 13px;
+        border-radius: var(--r-sm);
+        text-decoration: none;
+        transition: all var(--t-base) var(--ease);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        font-weight: 500;
+        position: relative;
+    }
+
+    .nav-link i {
+        font-size: 0.85em;
+        opacity: 0.9;
+    }
+
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.11);
+        color: white;
+    }
+
+    .nav-link.active {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        font-weight: 700;
+    }
+
+    .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: 4px;
+        left: 12px;
+        right: 12px;
+        height: 2px;
+        background: var(--gold-lt);
+        border-radius: 99px;
+    }
+
+
+    /* USER SECTION */
+    .nav-user-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(0, 0, 0, 0.22);
+        padding: 5px 14px;
+        border-radius: 99px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
+    }
+
+    .nav-user-avatar {
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, var(--gold), #e0a820);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--crimson-dk);
+        flex-shrink: 0;
+    }
+
+    .nav-user-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .nav-user-name {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: white;
+        line-height: 1;
+    }
+
+    .role-badge {
+        background: linear-gradient(135deg, var(--gold), #e6b422);
+        color: var(--crimson-dk);
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 1px 7px;
+        border-radius: 99px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        width: fit-content;
+    }
+
+    .btn-logout {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.75);
+        cursor: pointer;
+        transition: all var(--t-fast);
+        padding: 5px 8px;
+        border-radius: var(--r-xs);
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-logout:hover {
+        background: rgba(255, 50, 50, 0.2);
+        border-color: rgba(255, 100, 100, 0.4);
+        color: #ffaaaa;
+    }
+
+    /* LOGIN BUTTON */
+    .btn-nav-login {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: white !important;
+        font-weight: 700;
+        padding: 7px 18px;
+        border-radius: 99px;
+        text-decoration: none;
+        transition: all var(--t-base);
+        font-size: 0.85rem;
+    }
+
+    .btn-nav-login:hover {
+        background: rgba(255, 255, 255, 0.22);
+        transform: translateY(-1px);
+    }
+
+    /* HAMBURGER */
+    .mobile-toggle {
+        display: none;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: white;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 8px 10px;
+        border-radius: var(--r-sm);
+        transition: background var(--t-fast);
+    }
+
+    .mobile-toggle:hover {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+        .nav-brand-sub {
+            display: none;
+        }
+
+        .nav-link {
+            font-size: 0.82rem;
+            padding: 6px 10px;
+        }
+    }
+
+    @media (max-width: 880px) {
+        .nav-links {
+            display: none;
+            flex-direction: column;
+            align-items: stretch;
+            position: absolute;
+            top: var(--navbar-h);
+            left: 0;
+            right: 0;
+            background: var(--crimson-dk);
+            padding: 12px 16px 20px;
+            gap: 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+            z-index: 999;
+        }
+
+        .nav-links.mobile-open {
+            display: flex;
+            animation: menuSlide 0.2s ease;
+        }
+
+        @keyframes menuSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-link {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: var(--r-sm);
+        }
+
+        .nav-link.active::after {
+            display: none;
+        }
+
+        .desktop-only-user {
+            display: none !important;
+        }
+
+        .mobile-toggle {
+            display: flex;
+        }
+
+        .nav-user-section.mobile-only {
+            width: 100%;
+            border-radius: var(--r-sm);
+            margin-top: 6px;
+            justify-content: space-between;
+        }
+    }
+
+    @media (min-width: 881px) {
+        .mobile-only {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .nav-logo-wrap {
+            width: 34px;
+            height: 34px;
+        }
+    }
+
+    /* ── SECURITY BANNER ── */
+    .security-banner {
+        background: #fffbeb;
+        border-bottom: 1px solid #fde68a;
+        padding: 10px clamp(16px, 4%, 48px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        font-size: 0.85rem;
+        color: #92400e;
+        font-weight: 600;
+    }
+
+    .security-banner-msg {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .security-banner-btn {
+        background: #92400e;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.78rem;
+        transition: background 0.2s;
+        white-space: nowrap;
+    }
+
+    .security-banner-btn:hover {
+        background: #78350f;
+        color: white;
+    }
 </style>
 
 <nav class="main-navbar">
@@ -290,86 +376,104 @@
         </div>
     </a>
 
-    <button class="mobile-toggle" onclick="document.getElementById('nav-links').classList.toggle('mobile-open')" aria-label="เมนู">
+    <button class="mobile-toggle" onclick="document.getElementById('nav-links').classList.toggle('mobile-open')"
+        aria-label="เมนู">
         <i class="fas fa-bars"></i>
     </button>
 
     <div class="nav-links" id="nav-links">
-        <a href="{% url 'project_list' %}" onclick="document.getElementById('nav-links').classList.remove('mobile-open')" class="nav-link {% if request.resolver_match.url_name == 'project_list' %}active{% endif %}">
+        <a href="{% url 'project_list' %}"
+            onclick="document.getElementById('nav-links').classList.remove('mobile-open')"
+            class="nav-link {% if request.resolver_match.url_name == 'project_list' %}active{% endif %}">
             <i class="fas fa-home"></i> หน้าแรก
         </a>
-        <a href="{% url 'research_search' %}" onclick="document.getElementById('nav-links').classList.remove('mobile-open')" class="nav-link {% if request.resolver_match.url_name == 'research_search' %}active{% endif %}">
+        <a href="{% url 'research_search' %}"
+            onclick="document.getElementById('nav-links').classList.remove('mobile-open')"
+            class="nav-link {% if request.resolver_match.url_name == 'research_search' %}active{% endif %}">
             <i class="fas fa-search"></i> ค้นหาผลงาน
         </a>
-        <a href="{% url 'project_stats' %}" onclick="document.getElementById('nav-links').classList.remove('mobile-open')" class="nav-link {% if request.resolver_match.url_name == 'project_stats' %}active{% endif %}">
+        <a href="{% url 'project_stats' %}"
+            onclick="document.getElementById('nav-links').classList.remove('mobile-open')"
+            class="nav-link {% if request.resolver_match.url_name == 'project_stats' %}active{% endif %}">
             <i class="fas fa-chart-bar"></i> สถิติ
         </a>
 
         {% if user.is_authenticated %}
-            {% if user.is_staff or user.profile.user_type == 'student' %}
-                <a href="{% url 'my_projects' %}" onclick="document.getElementById('nav-links').classList.remove('mobile-open')" class="nav-link {% if request.resolver_match.url_name == 'my_projects' %}active{% endif %}">
-                    <i class="fas fa-file-alt"></i> ผลงานของฉัน
-                </a>
-                <a href="{% url 'project_upload' %}" onclick="document.getElementById('nav-links').classList.remove('mobile-open')" class="nav-link {% if request.resolver_match.url_name == 'project_upload' %}active{% endif %}">
-                    <i class="fas fa-cloud-upload-alt"></i> อัปโหลด
-                </a>
-            {% endif %}
+        {% if user.is_staff or user.profile.user_type == 'student' %}
+        <a href="{% url 'my_projects' %}" onclick="document.getElementById('nav-links').classList.remove('mobile-open')"
+            class="nav-link {% if request.resolver_match.url_name == 'my_projects' %}active{% endif %}">
+            <i class="fas fa-file-alt"></i> ผลงานของฉัน
+        </a>
+        <a href="{% url 'project_upload' %}"
+            onclick="document.getElementById('nav-links').classList.remove('mobile-open')"
+            class="nav-link {% if request.resolver_match.url_name == 'project_upload' %}active{% endif %}">
+            <i class="fas fa-cloud-upload-alt"></i> อัปโหลด
+        </a>
+        {% endif %}
 
-            <a href="{% url 'favorite_list' %}" onclick="document.getElementById('nav-links').classList.remove('mobile-open')" class="nav-link {% if request.resolver_match.url_name == 'favorite_list' %}active{% endif %}">
-                <i class="fas fa-heart"></i> รายการโปรด
-            </a>
+        <a href="{% url 'favorite_list' %}"
+            onclick="document.getElementById('nav-links').classList.remove('mobile-open')"
+            class="nav-link {% if request.resolver_match.url_name == 'favorite_list' %}active{% endif %}">
+            <i class="fas fa-heart"></i> รายการโปรด
+        </a>
 
-            {% if user.is_staff %}
-                <a href="{% url 'admin_dashboard' %}" onclick="document.getElementById('nav-links').classList.remove('mobile-open')" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                    <i class="fas fa-shield-alt"></i> Admin
+        {% if user.is_staff %}
+        <a href="{% url 'admin_dashboard' %}"
+            onclick="document.getElementById('nav-links').classList.remove('mobile-open')"
+            class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+            <i class="fas fa-shield-alt"></i> Admin
+        </a>
+        {% endif %}
+
+        <!-- Mobile User Info -->
+        <div class="nav-user-section mobile-only">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <a href="{% url 'profile_edit' %}"
+                    style="text-decoration:none; display:flex; align-items:center; gap:8px;">
+                    <div class="nav-user-avatar">{{ user.username|first|upper }}</div>
+                    <div class="nav-user-info">
+                        <span class="nav-user-name">{{ user.username }}</span>
+                        <span class="role-badge">{% if user.is_staff %}เจ้าหน้าที่{% elif user.profile.user_type ==
+                            'student' %}นักศึกษา{% else %}บุคคลภายนอก{% endif %}</span>
+                    </div>
                 </a>
-            {% endif %}
-
-            <!-- Mobile User Info -->
-            <div class="nav-user-section mobile-only">
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <a href="{% url 'profile_edit' %}" style="text-decoration:none; display:flex; align-items:center; gap:8px;">
-                        <div class="nav-user-avatar">{{ user.username|first|upper }}</div>
-                        <div class="nav-user-info">
-                            <span class="nav-user-name">{{ user.username }}</span>
-                            <span class="role-badge">{% if user.is_staff %}เจ้าหน้าที่{% elif user.profile.user_type == 'student' %}นักศึกษา{% else %}บุคคลภายนอก{% endif %}</span>
-                        </div>
-                    </a>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <a href="{% url 'profile_edit' %}" class="btn-logout" title="ตั้งค่าโปรไฟล์" style="background:rgba(255,255,255,0.15);"><i class="fas fa-cog"></i></a>
-                    <a href="{% url 'logout' %}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> ออก</a>
-                </div>
             </div>
+            <div style="display:flex; gap:10px;">
+                <a href="{% url 'profile_edit' %}" class="btn-logout" title="ตั้งค่าโปรไฟล์"
+                    style="background:rgba(255,255,255,0.15);"><i class="fas fa-cog"></i></a>
+                <a href="{% url 'logout' %}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> ออก</a>
+            </div>
+        </div>
         {% else %}
-            <div class="nav-user-section mobile-only" style="background:transparent;border:none;justify-content:center;">
-                <a href="{% url 'login' %}" class="btn-nav-login"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</a>
-            </div>
+        <div class="nav-user-section mobile-only" style="background:transparent;border:none;justify-content:center;">
+            <a href="{% url 'login' %}" class="btn-nav-login"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</a>
+        </div>
         {% endif %}
     </div>
 
     <!-- Desktop User Section -->
     <div class="nav-user-section desktop-only-user">
         {% if user.is_authenticated %}
-            <a href="{% url 'profile_edit' %}" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
-                <div class="nav-user-avatar">{{ user.username|first|upper }}</div>
-                <div class="nav-user-info">
-                    <span class="nav-user-name">{{ user.username }}</span>
-                    <span class="role-badge">{% if user.is_staff %}เจ้าหน้าที่{% elif user.profile.user_type == 'student' %}นักศึกษา{% else %}บุคคลภายนอก{% endif %}</span>
-                </div>
-            </a>
-            <div style="display:flex; gap:6px; margin-left:5px;">
-                <a href="{% url 'profile_edit' %}" class="btn-logout" title="ตั้งค่าโปรไฟล์">
-                    <i class="fas fa-user-cog"></i>
-                </a>
-                <a href="{% url 'logout' %}" class="btn-logout" title="ออกจากระบบ">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
+        <a href="{% url 'profile_edit' %}" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+            <div class="nav-user-avatar">{{ user.username|first|upper }}</div>
+            <div class="nav-user-info">
+                <span class="nav-user-name">{{ user.username }}</span>
+                <span class="role-badge">{% if user.is_staff %}เจ้าหน้าที่{% elif user.profile.user_type == 'student'
+                    %}นักศึกษา{% else %}บุคคลภายนอก{% endif %}</span>
             </div>
-        {% else %}
-            <a href="{% url 'login' %}" class="btn-nav-login">
-                <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+        </a>
+        <div style="display:flex; gap:6px; margin-left:5px;">
+            <a href="{% url 'profile_edit' %}" class="btn-logout" title="ตั้งค่าโปรไฟล์">
+                <i class="fas fa-user-cog"></i>
             </a>
+            <a href="{% url 'logout' %}" class="btn-logout" title="ออกจากระบบ">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn-nav-login">
+            <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+        </a>
         {% endif %}
     </div>
 </nav>
