@@ -22,6 +22,8 @@
         color: white;
         position: relative;
         overflow: hidden;
+        word-break: break-word; /* ป้องกันชื่อเรื่องยาวล้น */
+        overflow-wrap: anywhere;
     }
 
     .detail-hero::before {
@@ -116,7 +118,7 @@
         border-bottom: 1px solid var(--border-lt);
         padding: 11px var(--page-px);
         position: sticky;
-        top: 0;
+        top: var(--navbar-h); /* Fix: Stop below the main navbar */
         z-index: 200;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         display: flex;
@@ -916,14 +918,15 @@
         color: #92400e;
     }
 
-    /* ── RESPONSIVE ── */
+    /* ── RESPONSIVE RE-ENGINEERING ── */
     @media (max-width: 860px) {
-        :root { --page-px: clamp(14px, 4%, 32px); }
+        :root { --page-px: clamp(16px, 4%, 32px); }
         .detail-content {
             grid-template-columns: 1fr;
+            margin-top: -30px;
         }
         .detail-sidebar {
-            order: -1;
+            order: 2; /* ย้าย Sidebar ไปต่อท้ายเนื้อหาหลัก เพื่อให้บทคัดย่อขึ้นก่อน */
         }
     }
 
@@ -931,91 +934,75 @@
     @media (max-width: 600px) {
         :root { --page-px: 16px; }
 
-        .detail-hero { padding: 28px var(--page-px) 65px; }
-        .detail-hero-title { font-size: 1.15rem; line-height: 1.4; }
-        .detail-hero-title-en { font-size: 0.82rem; }
-        .detail-hero-meta { gap: 8px; font-size: 0.73rem; flex-wrap: wrap; }
+        .detail-hero { padding: 32px var(--page-px) 70px; }
+        .detail-hero-title { font-size: 1.2rem; line-height: 1.4; }
+        .detail-hero-title-en { font-size: 0.85rem; opacity: 0.8; }
+        .detail-hero-meta { gap: 8px; font-size: 0.75rem; flex-wrap: wrap; }
 
-        /* Action bar: 2 rows, full-width buttons */
         .detail-action-bar {
-            flex-direction: column;
-            align-items: flex-start;
             padding: 10px var(--page-px);
-            gap: 8px;
+            top: var(--navbar-h);
+            flex-direction: row;
+            flex-wrap: wrap;
         }
-        .action-bar-left { width: 100%; }
         .action-bar-right {
             width: 100%;
-            display: flex;
-            flex-wrap: wrap;
+            justify-content: flex-start;
             gap: 6px;
         }
-        .btn-bar {
-            padding: 7px 12px;
-            font-size: 0.78rem;
-            border-radius: 10px;
-            flex: 0 0 auto;
-        }
-        .breadcrumb-text { display: none; }
+        .btn-bar { padding: 8px 14px; font-size: 0.82rem; border-radius: 10px; }
 
-        .detail-content { margin-top: -24px; }
-        .d-card-body { padding: 14px; }
-        .d-card-head { padding: 12px 14px; font-size: 0.95rem; }
-        .tab-pane { padding: 14px; }
-        .tab-btn { padding: 10px 12px; font-size: 0.75rem; }
-        .yt-comment-section { padding: 14px; }
-        .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .stat-num { font-size: 1.4rem; }
-        .stat-lbl { font-size: 0.62rem; }
-        .abstract-text, .sec-text { font-size: 0.92rem; line-height: 1.85; }
-        .sec-label { font-size: 0.95rem; }
+        .d-card-body { padding: 18px; }
+        .tab-pane { padding: 16px; }
+        .tab-btn { padding: 12px 14px; font-size: 0.8rem; }
+        .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     }
 
-    /* Small phone ~393px (Vivo V60 Lite, iPhone 14) */
+    /* Small phone (Vivo, iPhone SE/14, etc.) */
     @media (max-width: 420px) {
         :root { --page-px: 14px; }
 
-        .detail-hero { padding: 24px var(--page-px) 55px; }
+        .detail-hero { padding: 24px var(--page-px) 60px; }
         .detail-hero-title { font-size: 1.05rem; }
-        .detail-hero-meta { font-size: 0.7rem; gap: 6px; }
+        .detail-hero-meta { font-size: 0.72rem; gap: 6px; }
 
         .detail-action-bar {
-            flex-direction: row;
-            flex-wrap: wrap;
-            align-items: center;
             padding: 8px var(--page-px);
-            gap: 6px;
-            justify-content: flex-end;
+            gap: 5px;
+            top: var(--navbar-h);
         }
         .action-bar-left { display: none; }
-        .action-bar-right {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            width: 100%;
-            justify-content: flex-start;
-        }
+        .action-bar-right { gap: 5px; }
 
-        /* ปุ่มทุกปุ่มเป็น icon-only */
+        /* ปุ่ม Icon-only เฉพาะมือถือเล็กมาก เพื่อประหยัดพื้นที่ */
         .btn-bar .btn-text { display: none; }
         .btn-bar {
-            padding: 9px 11px;
-            font-size: 0.9rem;
-            border-radius: 10px;
-            min-width: 38px;
+            padding: 10px;
+            min-width: 40px;
             justify-content: center;
+            border-radius: 12px;
         }
 
-        .d-card-body { padding: 12px; }
-        .d-card-head { padding: 10px 12px; font-size: 0.9rem; }
-        .tab-pane { padding: 12px; }
-        .yt-comment-form { gap: 8px; }
-        .yt-reply-list { margin-left: 28px; }
-        .yt-avatar { width: 34px; height: 34px; font-size: 0.8rem; }
+        .d-card-body { padding: 14px; }
+        .d-card-head { padding: 12px 14px; font-size: 0.9rem; }
+        
+        .tab-nav { padding: 0 10px; }
+        .tab-btn { padding: 10px 12px; font-size: 0.78rem; }
+        
         .stat-num { font-size: 1.3rem; }
-        .abstract-text, .sec-text { font-size: 0.9rem; }
-        .info-val { font-size: 0.85rem; }
-        .r-name { font-size: 0.84rem; }
+        .info-row { padding: 8px 0; }
+        .info-val { font-size: 0.82rem; }
+        
+        .yt-comment-header { font-size: 1.1rem; margin-bottom: 16px; }
+        .yt-avatar { width: 34px; height: 34px; font-size: 0.8rem; }
+        .yt-comment-text { font-size: 0.9rem; }
+        .yt-reply-list { margin-left: 24px; }
+    }
+
+    /* Extra Small (iPhone 5/SE old) */
+    @media (max-width: 340px) {
+        .stat-grid { grid-template-columns: 1fr; }
+        .detail-hero-title { font-size: 0.95rem; }
     }
 </style>
 {% endblock %}
