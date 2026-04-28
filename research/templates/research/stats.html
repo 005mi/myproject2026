@@ -270,11 +270,20 @@
         .summary-grid { gap: 8px; }
 
         /* Summary cards: icon + text แนวนอน compact */
-        .summary-card { padding: 12px 10px; gap: 10px; border-radius: 12px; }
-        .icon-box { width: 38px; height: 38px; font-size: 1.1rem; border-radius: 8px; flex-shrink: 0; }
-        .card-info .value { font-size: 1.3rem; line-height: 1.1; }
+        .summary-card { padding: 12px 10px; gap: 10px; border-radius: 12px; align-items: flex-start; }
+        .icon-box { width: 38px; height: 38px; font-size: 1.1rem; border-radius: 8px; flex-shrink: 0; margin-top: 2px; }
+        .card-info .value {
+            font-size: 1.3rem;
+            line-height: 1.2;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
         .card-info .label { font-size: 0.68rem; white-space: normal; line-height: 1.3; }
-        .card-info .sub-value { font-size: 0.82rem; }
+        .card-info .sub-value {
+            font-size: 0.75rem;
+            display: block;
+            margin-top: 2px;
+        }
 
         /* Charts */
         .charts-grid { gap: 14px; }

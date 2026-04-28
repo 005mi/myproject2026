@@ -979,12 +979,32 @@
         .detail-hero-title { font-size: 1.05rem; }
         .detail-hero-meta { font-size: 0.7rem; gap: 6px; }
 
-        .detail-action-bar { padding: 8px var(--page-px); }
-        .detail-content { margin-top: -18px; padding: 0 var(--page-px); }
+        .detail-action-bar {
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 8px var(--page-px);
+            gap: 6px;
+            justify-content: flex-end;
+        }
+        .action-bar-left { display: none; }
+        .action-bar-right {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            width: 100%;
+            justify-content: flex-start;
+        }
 
-        /* Icon-only buttons on very small screens to save space */
+        /* ปุ่มทุกปุ่มเป็น icon-only */
         .btn-bar .btn-text { display: none; }
-        .btn-bar { padding: 8px 10px; font-size: 0.85rem; border-radius: 10px; }
+        .btn-bar {
+            padding: 9px 11px;
+            font-size: 0.9rem;
+            border-radius: 10px;
+            min-width: 38px;
+            justify-content: center;
+        }
 
         .d-card-body { padding: 12px; }
         .d-card-head { padding: 10px 12px; font-size: 0.9rem; }
