@@ -171,19 +171,26 @@ def serve_pdf_preview(request, project_id):
             request.session.modified = True
         # -----------------------------------------------------------------------
         
-        # ✅ ใช้ Signed URL ร่วมกับเซิร์ฟเวอร์ Proxy (ทางแก้ที่สมบูรณ์ที่สุด)
+        # ✅ ใช้ Signed URL ร่วมกับเซิร์ฟเวอร์ Proxy + Bypass SSL
         if project.pdf_file.url.startswith('http'):
             import cloudinary.utils
             import urllib.request
+            import ssl
+            
             # 1. สร้างลิงก์ที่มีกุญแจ (Signed URL)
             signed_url, options = cloudinary.utils.cloudinary_url(
                 project.pdf_file.name, 
                 sign_url=True,
                 resource_type='raw'
             )
-            # 2. ให้เซิร์ฟเวอร์เราไปดูดไฟล์มาแสดงผลเอง (Bypass iframe block)
-            with urllib.request.urlopen(signed_url) as response:
-                return HttpResponse(response.read(), content_type='application/pdf')
+            
+            # 2. ให้เซิร์ฟเวอร์เราไปดูดไฟล์มาแสดงผลเอง
+            try:
+                context = ssl._create_unverified_context()
+                with urllib.request.urlopen(signed_url, context=context) as response:
+                    return HttpResponse(response.read(), content_type='application/pdf')
+            except Exception as e:
+                return HttpResponse(f"ไม่สามารถดึงไฟล์ได้ (สาเหตุ: {str(e)}) | ลิงก์ที่ใช้: {signed_url}", status=404)
 
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
         return response
