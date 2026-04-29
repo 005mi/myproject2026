@@ -114,13 +114,31 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# 🔥 เพิ่มบรรทัดนี้ (สำคัญสำหรับ Render)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 
 # --- Media files ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# --- Storage Configuration (Django 5.2+) ---
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+_cloudinary_url = os.getenv('CLOUDINARY_URL')
+if _cloudinary_url:
+    CLOUDINARY_STORAGE = {
+        'CLOUDINARY_URL': _cloudinary_url
+    }
+    # Overwrite default storage to use Cloudinary
+    STORAGES["default"] = {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    }
 
 
 # --- Login / Logout Settings ---
@@ -144,11 +162,3 @@ if os.getenv('EMAIL_HOST'):
 else:
     # สำหรับทดสอบ: อีเมลจะแสดงใน Console ของ VS Code ไม่ต้องใช้เน็ต
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# --- Cloudinary Storage for Permanent PDF Files ---
-_cloudinary_url = os.getenv('CLOUDINARY_URL')
-if _cloudinary_url:
-    CLOUDINARY_STORAGE = {
-        'CLOUDINARY_URL': _cloudinary_url
-    }
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
