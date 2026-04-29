@@ -185,24 +185,37 @@ def serve_pdf_preview(request, project_id):
                 secure = True
             )
             
-            # 1. สร้างลิงก์ที่มีกุญแจ (Signed URL)
+            # 1. สร้างลิงก์ที่มีกุญแจ (Signed URL) - บังคับส่งค่าคอนฟิกเข้าไปตรงๆ
             signed_url, options = cloudinary.utils.cloudinary_url(
                 project.pdf_file.name, 
                 sign_url=True,
-                resource_type='raw'
+                resource_type='raw',
+                cloud_name=conf.cloud_name,
+                api_key=conf.api_key,
+                api_secret=conf.api_secret
             )
             
             # 2. ให้เซิร์ฟเวอร์เราไปดูดไฟล์มาแสดงผลเอง
             try:
                 context = ssl._create_unverified_context()
+                # ลองดึงไฟล์ด้วย Signed URL
                 with urllib.request.urlopen(signed_url, context=context) as response:
                     return HttpResponse(response.read(), content_type='application/pdf')
             except Exception as e:
-                conf = cloudinary.config()
-                env_val = os.getenv('CLOUDINARY_URL', 'NOT_FOUND')
-                # ปิดบังรหัสลับเพื่อความปลอดภัย แต่โชว์ส่วนหัวและท้ายเพื่อตรวจสอบ
-                masked_env = env_val[:20] + "..." + env_val[-10:] if len(env_val) > 30 else env_val
-                return HttpResponse(f"ไม่สามารถดึงไฟล์ได้ (สาเหตุ: {str(e)}) | ENV: {masked_env} | Cloud: {conf.cloud_name} | URL: {signed_url}", status=404)
+                # 🛡️ แผนสำรอง: ถ้า Signed URL พลาด ลองแบบ Unsigned (สาธารณะ)
+                try:
+                    unsigned_url, _ = cloudinary.utils.cloudinary_url(
+                        project.pdf_file.name, 
+                        sign_url=False,
+                        resource_type='raw',
+                        cloud_name=conf.cloud_name
+                    )
+                    with urllib.request.urlopen(unsigned_url, context=context) as response:
+                        return HttpResponse(response.read(), content_type='application/pdf')
+                except Exception as e2:
+                    env_val = os.getenv('CLOUDINARY_URL', 'NOT_FOUND')
+                    masked_env = env_val[:20] + "..." + env_val[-10:] if len(env_val) > 30 else env_val
+                    return HttpResponse(f"ไม่สามารถดึงไฟล์ได้ (สาเหตุ: {str(e)}) | ENV: {masked_env} | Cloud: {conf.cloud_name} | URL: {signed_url}", status=404)
 
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
         return response
