@@ -132,10 +132,16 @@ STORAGES = {
 
 _cloudinary_url = os.getenv('CLOUDINARY_URL')
 if _cloudinary_url:
+    # 🌟 บังคับตั้งค่า Cloudinary แบบเจาะจงเพื่อแก้ปัญหา 401
+    import cloudinary
+    cloudinary.config(
+        cloudinary_url = _cloudinary_url,
+        secure = True
+    )
+    
     CLOUDINARY_STORAGE = {
-        'CLOUDINARY_URL': _cloudinary_url
+        'CLOUDINARY_URL': _cloudinary_url,
     }
-    # Overwrite default storage to use Cloudinary
     STORAGES["default"] = {
         "BACKEND": "cloudinary_storage.storage.RawMediaCloudinaryStorage",
     }
