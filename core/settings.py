@@ -39,6 +39,47 @@ INSTALLED_APPS = [
     # แอปพลิเคชันของคุณ
     'research', 
     
+# Reload triggered at 2026-04-19 19:40
+"""
+Django settings for core project.
+"""
+
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-it-now')
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+# 🔥 แก้ตรงนี้
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+
+
+# Application definition
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'cloudinary_storage',
+    'django.contrib.staticfiles',
+    'cloudinary',
+    
+    # แอปพลิเคชันของคุณ
+    'research', 
+    
     # ระบบลบไฟล์ขยะอัตโนมัติ
     'django_cleanup.apps.CleanupConfig', 
 ]
@@ -145,8 +186,9 @@ else:
     # สำหรับทดสอบ: อีเมลจะแสดงใน Console ของ VS Code ไม่ต้องใช้เน็ต
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # --- Cloudinary Storage for Permanent PDF Files ---
-if os.getenv('CLOUDINARY_URL'):
+_cloudinary_url = os.getenv('CLOUDINARY_URL')
+if _cloudinary_url:
     CLOUDINARY_STORAGE = {
-        'CLOUDINARY_URL': os.getenv('CLOUDINARY_URL')
+        'CLOUDINARY_URL': _cloudinary_url
     }
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

@@ -178,7 +178,8 @@ def serve_pdf_preview(request, project_id):
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
         return response
     except Exception:
-        return HttpResponse("ไฟล์สูญหายหรือถูกลบจากเซิร์ฟเวอร์", status=404)
+        file_url = project.pdf_file.url if project.pdf_file else "No URL"
+        return HttpResponse(f"ไฟล์สูญหายหรือระบบจัดเก็บขัดข้อง (Path: {file_url})", status=404)
 
 
 def project_stats(request):
