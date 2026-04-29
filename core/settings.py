@@ -104,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'th'
-TIME_ZONE = 'Asia/Bankkok'
+TIME_ZONE = 'Asia/Bangkok'
 USE_I18N = True
 USE_TZ = True
 
