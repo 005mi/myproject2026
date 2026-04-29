@@ -137,7 +137,7 @@ if _cloudinary_url:
     }
     # Overwrite default storage to use Cloudinary
     STORAGES["default"] = {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": "cloudinary_storage.storage.RawMediaCloudinaryStorage",
     }
 
 
