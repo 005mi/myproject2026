@@ -171,10 +171,7 @@ def serve_pdf_preview(request, project_id):
             request.session.modified = True
         # -----------------------------------------------------------------------
         
-        # ✅ Redirect to Cloudinary URL if the file is stored remotely
-        if project.pdf_file.url.startswith('http'):
-            return redirect(project.pdf_file.url)
-
+        # ✅ ใช้การเปิดไฟล์โดยตรง (Django Storage จะดึงจาก Cloudinary ให้เองอัตโนมัติ)
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
         return response
     except Exception:
@@ -481,8 +478,6 @@ def download_pdf(request, project_id):
             request.session[session_key] = True
             request.session.modified = True
         # -------------------------------------------------------------
-        if project.pdf_file.url.startswith('http'):
-            return redirect(project.pdf_file.url)
         return FileResponse(project.pdf_file.open(), content_type='application/pdf')
     messages.warning(request, "ผลงานนี้ยังไม่มีไฟล์ PDF แนบ")
     return redirect('project_detail', project_id=project_id)
