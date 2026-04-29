@@ -190,7 +190,9 @@ def serve_pdf_preview(request, project_id):
                 with urllib.request.urlopen(signed_url, context=context) as response:
                     return HttpResponse(response.read(), content_type='application/pdf')
             except Exception as e:
-                return HttpResponse(f"ไม่สามารถดึงไฟล์ได้ (สาเหตุ: {str(e)}) | ลิงก์ที่ใช้: {signed_url}", status=404)
+                conf = cloudinary.config()
+                key_hint = str(conf.api_key)[:4] if conf.api_key else "None"
+                return HttpResponse(f"ไม่สามารถดึงไฟล์ได้ (สาเหตุ: {str(e)}) | Key: {key_hint}... | Cloud: {conf.cloud_name} | URL: {signed_url}", status=404)
 
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
         return response
