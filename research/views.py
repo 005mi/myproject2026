@@ -199,8 +199,10 @@ def serve_pdf_preview(request, project_id):
                     return HttpResponse(response.read(), content_type='application/pdf')
             except Exception as e:
                 conf = cloudinary.config()
-                key_hint = str(conf.api_key)[:4] if conf.api_key else "None"
-                return HttpResponse(f"ไม่สามารถดึงไฟล์ได้ (สาเหตุ: {str(e)}) | Key: {key_hint}... | Cloud: {conf.cloud_name} | URL: {signed_url}", status=404)
+                env_val = os.getenv('CLOUDINARY_URL', 'NOT_FOUND')
+                # ปิดบังรหัสลับเพื่อความปลอดภัย แต่โชว์ส่วนหัวและท้ายเพื่อตรวจสอบ
+                masked_env = env_val[:20] + "..." + env_val[-10:] if len(env_val) > 30 else env_val
+                return HttpResponse(f"ไม่สามารถดึงไฟล์ได้ (สาเหตุ: {str(e)}) | ENV: {masked_env} | Cloud: {conf.cloud_name} | URL: {signed_url}", status=404)
 
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
         return response
