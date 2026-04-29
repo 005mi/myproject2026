@@ -171,16 +171,19 @@ def serve_pdf_preview(request, project_id):
             request.session.modified = True
         # -----------------------------------------------------------------------
         
-        # ✅ ใช้ Signed URL เพื่อข้ามผ่านการบล็อก 401 (วิธีที่ชัวร์ที่สุด)
+        # ✅ ใช้ Signed URL ร่วมกับเซิร์ฟเวอร์ Proxy (ทางแก้ที่สมบูรณ์ที่สุด)
         if project.pdf_file.url.startswith('http'):
             import cloudinary.utils
-            # สร้างลิงก์ที่มีลายเซ็นยืนยันตัวตน
+            import urllib.request
+            # 1. สร้างลิงก์ที่มีกุญแจ (Signed URL)
             signed_url, options = cloudinary.utils.cloudinary_url(
                 project.pdf_file.name, 
                 sign_url=True,
                 resource_type='raw'
             )
-            return redirect(signed_url)
+            # 2. ให้เซิร์ฟเวอร์เราไปดูดไฟล์มาแสดงผลเอง (Bypass iframe block)
+            with urllib.request.urlopen(signed_url) as response:
+                return HttpResponse(response.read(), content_type='application/pdf')
 
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
         return response
@@ -490,12 +493,14 @@ def download_pdf(request, project_id):
         # -------------------------------------------------------------
         if project.pdf_file.url.startswith('http'):
             import cloudinary.utils
+            import urllib.request
             signed_url, options = cloudinary.utils.cloudinary_url(
                 project.pdf_file.name, 
                 sign_url=True,
                 resource_type='raw'
             )
-            return redirect(signed_url)
+            with urllib.request.urlopen(signed_url) as response:
+                return HttpResponse(response.read(), content_type='application/pdf')
         return FileResponse(project.pdf_file.open(), content_type='application/pdf')
     messages.warning(request, "ผลงานนี้ยังไม่มีไฟล์ PDF แนบ")
     return redirect('project_detail', project_id=project_id)
