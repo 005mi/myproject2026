@@ -146,4 +146,7 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # --- Cloudinary Storage for Permanent PDF Files ---
 if os.getenv('CLOUDINARY_URL'):
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
+    CLOUDINARY_STORAGE = {
+        'CLOUDINARY_URL': os.getenv('CLOUDINARY_URL')
+    }
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
