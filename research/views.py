@@ -173,9 +173,17 @@ def serve_pdf_preview(request, project_id):
         
         # ✅ ใช้ Signed URL ร่วมกับเซิร์ฟเวอร์ Proxy + Bypass SSL
         if project.pdf_file.url.startswith('http'):
+            import cloudinary
             import cloudinary.utils
             import urllib.request
             import ssl
+            import os
+            
+            # 🌟 บังคับให้อ่านกุญแจใหม่จาก Environment ทุกครั้ง (เพื่อความชัวร์)
+            cloudinary.config(
+                cloudinary_url = os.getenv('CLOUDINARY_URL'),
+                secure = True
+            )
             
             # 1. สร้างลิงก์ที่มีกุญแจ (Signed URL)
             signed_url, options = cloudinary.utils.cloudinary_url(
@@ -501,8 +509,16 @@ def download_pdf(request, project_id):
             request.session.modified = True
         # -------------------------------------------------------------
         if project.pdf_file.url.startswith('http'):
+            import cloudinary
             import cloudinary.utils
             import urllib.request
+            import os
+            
+            cloudinary.config(
+                cloudinary_url = os.getenv('CLOUDINARY_URL'),
+                secure = True
+            )
+            
             signed_url, options = cloudinary.utils.cloudinary_url(
                 project.pdf_file.name, 
                 sign_url=True,
