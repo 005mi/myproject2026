@@ -134,6 +134,9 @@ STORAGES = {
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
+# Ignore missing files in CSS/JS references during collectstatic (e.g. Django Admin references)
+WHITENOISE_MANIFEST_STRICT = False
+
 _cloudinary_url = os.getenv('CLOUDINARY_URL')
 if _cloudinary_url:
     # 🌟 บังคับตั้งค่า Cloudinary แบบเจาะจงเพื่อแก้ปัญหา 401
