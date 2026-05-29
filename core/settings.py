@@ -130,6 +130,10 @@ STORAGES = {
     },
 }
 
+# Compatibility fallbacks for older packages (like django-cloudinary-storage) in Django 5.2+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
 _cloudinary_url = os.getenv('CLOUDINARY_URL')
 if _cloudinary_url:
     # 🌟 บังคับตั้งค่า Cloudinary แบบเจาะจงเพื่อแก้ปัญหา 401
@@ -145,6 +149,7 @@ if _cloudinary_url:
     STORAGES["default"] = {
         "BACKEND": "cloudinary_storage.storage.RawMediaCloudinaryStorage",
     }
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.RawMediaCloudinaryStorage"
 
 
 # --- Login / Logout Settings ---
