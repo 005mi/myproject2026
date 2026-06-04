@@ -126,16 +126,13 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
 # Compatibility fallbacks for older packages (like django-cloudinary-storage) in Django 5.2+
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-
-# Ignore missing files in CSS/JS references during collectstatic (e.g. Django Admin references)
-WHITENOISE_MANIFEST_STRICT = False
 
 _cloudinary_url = os.getenv('CLOUDINARY_URL')
 if _cloudinary_url:
