@@ -171,7 +171,9 @@ def serve_pdf_preview(request, project_id):
             request.session.modified = True
         # -----------------------------------------------------------------------
         
-        # ✅ ใช้ Signed URL / Direct Fetch ร่วมกับเซิร์ฟเวอร์ Proxy + Bypass SSL
+        pdf_bytes = None
+
+        # ✅ ดึงไฟล์จาก Cloudinary หรือระบบจัดเก็บ
         if project.pdf_file.url.startswith('http'):
             import cloudinary
             import cloudinary.utils
@@ -190,31 +192,45 @@ def serve_pdf_preview(request, project_id):
             try:
                 req = urllib.request.Request(project.pdf_file.url, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, context=context) as response:
-                    return HttpResponse(response.read(), content_type='application/pdf')
+                    pdf_bytes = response.read()
             except Exception:
                 pass
 
             # 2. ลองดึงผ่าน Signed URL
+            if not pdf_bytes:
+                try:
+                    signed_url, _ = cloudinary.utils.cloudinary_url(
+                        project.pdf_file.name, 
+                        sign_url=True,
+                        resource_type='raw',
+                        cloud_name=getattr(c_config, 'cloud_name', None),
+                        api_key=getattr(c_config, 'api_key', None),
+                        api_secret=getattr(c_config, 'api_secret', None)
+                    )
+                    req = urllib.request.Request(signed_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req, context=context) as response:
+                        pdf_bytes = response.read()
+                except Exception:
+                    pass
+
+        # 3. ลองดึงจากไฟล์ในดิสก์ local
+        if not pdf_bytes and project.pdf_file:
             try:
-                signed_url, _ = cloudinary.utils.cloudinary_url(
-                    project.pdf_file.name, 
-                    sign_url=True,
-                    resource_type='raw',
-                    cloud_name=getattr(c_config, 'cloud_name', None),
-                    api_key=getattr(c_config, 'api_key', None),
-                    api_secret=getattr(c_config, 'api_secret', None)
-                )
-                req = urllib.request.Request(signed_url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req, context=context) as response:
-                    return HttpResponse(response.read(), content_type='application/pdf')
+                with project.pdf_file.open('rb') as f:
+                    pdf_bytes = f.read()
             except Exception:
                 pass
 
-            # 3. หากยังไม่ได้ ให้ redirect ตรงไปที่ Cloudinary URL
-            return redirect(project.pdf_file.url)
+        # ✅ หากดึงไฟล์สำเร็จ ส่งข้อมูลพร้อม Header inline ป้องกันกรอบ iframe สีเทา
+        if pdf_bytes:
+            res = HttpResponse(pdf_bytes, content_type='application/pdf')
+            res['Content-Disposition'] = f'inline; filename="{project.id}_preview.pdf"'
+            res['X-Frame-Options'] = 'SAMEORIGIN'
+            return res
 
-        response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
-        return response
+        # 4. หากทุกทางเลือกดึงไม่ได้ ให้ redirect ตรงไปที่ Cloudinary URL
+        return redirect(project.pdf_file.url)
+
     except Exception as e:
         file_url = project.pdf_file.url if project.pdf_file else "No URL"
         return HttpResponse(f"ไม่สามารถดึงไฟล์ PDF ได้ (สาเหตุ: {str(e)}) | Path: {file_url}", status=404)
