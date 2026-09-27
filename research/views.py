@@ -171,7 +171,7 @@ def serve_pdf_preview(request, project_id):
             request.session.modified = True
         # -----------------------------------------------------------------------
         
-        # ✅ ใช้ Signed URL ร่วมกับเซิร์ฟเวอร์ Proxy + Bypass SSL
+        # ✅ ใช้ Signed URL / Direct Fetch ร่วมกับเซิร์ฟเวอร์ Proxy + Bypass SSL
         if project.pdf_file.url.startswith('http'):
             import cloudinary
             import cloudinary.utils
@@ -179,49 +179,45 @@ def serve_pdf_preview(request, project_id):
             import ssl
             import os
             
-            # 🌟 บังคับให้อ่านกุญแจใหม่จาก Environment ทุกครั้ง (เพื่อความชัวร์)
-            cloudinary.config(
+            c_config = cloudinary.config(
                 cloudinary_url = os.getenv('CLOUDINARY_URL'),
                 secure = True
             )
             
-            # 1. สร้างลิงก์ที่มีกุญแจ (Signed URL) - บังคับส่งค่าคอนฟิกเข้าไปตรงๆ
-            signed_url, options = cloudinary.utils.cloudinary_url(
-                project.pdf_file.name, 
-                sign_url=True,
-                resource_type='raw',
-                cloud_name=conf.cloud_name,
-                api_key=conf.api_key,
-                api_secret=conf.api_secret
-            )
+            context = ssl._create_unverified_context()
             
-            # 2. ให้เซิร์ฟเวอร์เราไปดูดไฟล์มาแสดงผลเอง
+            # 1. ลองดึงตรงจาก project.pdf_file.url
             try:
-                context = ssl._create_unverified_context()
-                # ลองดึงไฟล์ด้วย Signed URL
-                with urllib.request.urlopen(signed_url, context=context) as response:
+                req = urllib.request.Request(project.pdf_file.url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, context=context) as response:
                     return HttpResponse(response.read(), content_type='application/pdf')
-            except Exception as e:
-                # 🛡️ แผนสำรอง: ถ้า Signed URL พลาด ลองแบบ Unsigned (สาธารณะ)
-                try:
-                    unsigned_url, _ = cloudinary.utils.cloudinary_url(
-                        project.pdf_file.name, 
-                        sign_url=False,
-                        resource_type='raw',
-                        cloud_name=conf.cloud_name
-                    )
-                    with urllib.request.urlopen(unsigned_url, context=context) as response:
-                        return HttpResponse(response.read(), content_type='application/pdf')
-                except Exception as e2:
-                    env_val = os.getenv('CLOUDINARY_URL', 'NOT_FOUND')
-                    masked_env = env_val[:20] + "..." + env_val[-10:] if len(env_val) > 30 else env_val
-                    return HttpResponse(f"ไม่สามารถดึงไฟล์ได้ (สาเหตุ: {str(e)}) | ENV: {masked_env} | Cloud: {conf.cloud_name} | URL: {signed_url}", status=404)
+            except Exception:
+                pass
+
+            # 2. ลองดึงผ่าน Signed URL
+            try:
+                signed_url, _ = cloudinary.utils.cloudinary_url(
+                    project.pdf_file.name, 
+                    sign_url=True,
+                    resource_type='raw',
+                    cloud_name=getattr(c_config, 'cloud_name', None),
+                    api_key=getattr(c_config, 'api_key', None),
+                    api_secret=getattr(c_config, 'api_secret', None)
+                )
+                req = urllib.request.Request(signed_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, context=context) as response:
+                    return HttpResponse(response.read(), content_type='application/pdf')
+            except Exception:
+                pass
+
+            # 3. หากยังไม่ได้ ให้ redirect ตรงไปที่ Cloudinary URL
+            return redirect(project.pdf_file.url)
 
         response = FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
         return response
-    except Exception:
+    except Exception as e:
         file_url = project.pdf_file.url if project.pdf_file else "No URL"
-        return HttpResponse(f"ไฟล์สูญหายหรือระบบจัดเก็บขัดข้อง (Path: {file_url})", status=404)
+        return HttpResponse(f"ไม่สามารถดึงไฟล์ PDF ได้ (สาเหตุ: {str(e)}) | Path: {file_url}", status=404)
 
 
 def project_stats(request):
@@ -527,21 +523,41 @@ def download_pdf(request, project_id):
             import cloudinary
             import cloudinary.utils
             import urllib.request
+            import ssl
             import os
             
-            cloudinary.config(
+            c_config = cloudinary.config(
                 cloudinary_url = os.getenv('CLOUDINARY_URL'),
                 secure = True
             )
+            context = ssl._create_unverified_context()
             
-            signed_url, options = cloudinary.utils.cloudinary_url(
-                project.pdf_file.name, 
-                sign_url=True,
-                resource_type='raw'
-            )
-            with urllib.request.urlopen(signed_url) as response:
-                return HttpResponse(response.read(), content_type='application/pdf')
-        return FileResponse(project.pdf_file.open(), content_type='application/pdf')
+            try:
+                req = urllib.request.Request(project.pdf_file.url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, context=context) as response:
+                    res = HttpResponse(response.read(), content_type='application/pdf')
+                    res['Content-Disposition'] = f'attachment; filename="{project.pdf_file.name.split("/")[-1]}"'
+                    return res
+            except Exception:
+                pass
+
+            try:
+                signed_url, _ = cloudinary.utils.cloudinary_url(
+                    project.pdf_file.name, 
+                    sign_url=True,
+                    resource_type='raw'
+                )
+                req = urllib.request.Request(signed_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, context=context) as response:
+                    res = HttpResponse(response.read(), content_type='application/pdf')
+                    res['Content-Disposition'] = f'attachment; filename="{project.pdf_file.name.split("/")[-1]}"'
+                    return res
+            except Exception:
+                pass
+
+            return redirect(project.pdf_file.url)
+
+        return FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
     messages.warning(request, "ผลงานนี้ยังไม่มีไฟล์ PDF แนบ")
     return redirect('project_detail', project_id=project_id)
 
