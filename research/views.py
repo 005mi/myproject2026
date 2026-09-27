@@ -171,28 +171,52 @@ def serve_pdf_preview(request, project_id):
             request.session.modified = True
         # -----------------------------------------------------------------------
 
-        file_url = project.pdf_file.url
+        pdf_bytes = None
 
-        # ✅ สำหรับไฟล์ออนไลน์ (Cloudinary) ใช้ Google Docs Viewer เพื่อแสดงผลใน iframe ได้ทุกเบราว์เซอร์ 100%
-        if file_url.startswith('http'):
+        # 1. หากเป็นไฟล์บน Cloudinary ให้เซิร์ฟเวอร์ดาวน์โหลดไฟล์มาส่งต่อให้อย่างถูกต้อง
+        if project.pdf_file.url.startswith('http'):
+            import urllib.request
             import urllib.parse
-            encoded_url = urllib.parse.quote(file_url, safe='')
-            google_viewer_url = f"https://docs.google.com/gview?url={encoded_url}&embedded=true"
-            return redirect(google_viewer_url)
+            import ssl
+            
+            context = ssl._create_unverified_context()
+            # ถอดรหัส % แล้วเข้ารหัสใหม่อย่างถูกต้องเพื่อป้องกัน Double Encoding
+            clean_url = urllib.parse.unquote(project.pdf_file.url)
+            safe_url = urllib.parse.quote(clean_url, safe=':/?&=%#')
+            
+            try:
+                req = urllib.request.Request(safe_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, context=context) as response:
+                    pdf_bytes = response.read()
+            except Exception:
+                pass
 
-        # ✅ สำหรับไฟล์บนดิสก์ Local
-        try:
-            with project.pdf_file.open('rb') as f:
-                pdf_bytes = f.read()
+        # 2. หากไม่ได้ หรือเป็นไฟล์ Local Disk
+        if not pdf_bytes and project.pdf_file:
+            try:
+                with project.pdf_file.open('rb') as f:
+                    pdf_bytes = f.read()
+            except Exception:
+                pass
+
+        # 3. หากดึงไฟล์สำเร็จ ส่งข้อมูล PDF แบบ Inline แสดงผลใน iframe ได้ทันที
+        if pdf_bytes:
             res = HttpResponse(pdf_bytes, content_type='application/pdf')
-            res['Content-Disposition'] = f'inline; filename="{project.id}_preview.pdf"'
+            res['Content-Disposition'] = f'inline; filename="{project.id}.pdf"'
             return res
-        except Exception:
-            return redirect(file_url)
+
+        # 4. หากไฟล์บน Cloudinary ไม่มีอยู่จริง แจ้งเตือนข้อความภาษาไทยใน Popup ให้ผู้ใช้อัปโหลดใหม่
+        return HttpResponse(
+            "<div style='text-align:center; padding: 60px 20px; font-family: Sarabun, sans-serif; color: #475569;'>"
+            "<i class=\"fas fa-file-excel\" style=\"font-size: 3rem; color: #ef4444; margin-bottom: 16px;\"></i>"
+            "<h3 style='margin-bottom: 8px; color: #1e293b;'>ไม่พบไฟล์ PDF นี้ในระบบจัดเก็บออนไลน์</h3>"
+            "<p style='font-size: 0.95rem; color: #64748b;'>ไฟล์ผลงานรายการนี้อาจถูกลบหรือไม่ได้แนบมาตั้งแต่ต้น<br>กรุณากดแก้ไขผลงานและอัปโหลดไฟล์ PDF ใหม่อีกครั้งครับ</p>"
+            "</div>",
+            status=404
+        )
 
     except Exception as e:
-        file_url = project.pdf_file.url if project.pdf_file else "No URL"
-        return HttpResponse(f"ไม่สามารถดึงไฟล์ PDF ได้ (สาเหตุ: {str(e)}) | Path: {file_url}", status=404)
+        return HttpResponse(f"ไม่สามารถดึงไฟล์ PDF ได้: {str(e)}", status=404)
 
 
 def project_stats(request):
