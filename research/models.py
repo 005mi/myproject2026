@@ -95,8 +95,11 @@ class Project(models.Model):
     pdf_file = models.FileField(
         upload_to=pdf_upload_path,
         verbose_name="ไฟล์ PDF ฉบับเต็ม",
-        validators=[FileExtensionValidator(allowed_extensions=['pdf']), validate_file_size]
+        validators=[FileExtensionValidator(allowed_extensions=['pdf']), validate_file_size],
+        blank=True,
+        null=True
     )
+    pdf_data = models.BinaryField(blank=True, null=True, verbose_name="ข้อมูลไบต์ PDF")
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='uploaded_projects', verbose_name="ผู้เข้าใช้งานที่อัปโหลด")
     is_approved = models.BooleanField(default=False, verbose_name="อนุมัติการเผยแพร่")
     views_count = models.PositiveIntegerField(default=0, verbose_name="ยอดเข้าชม")

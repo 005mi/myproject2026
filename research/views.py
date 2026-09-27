@@ -157,10 +157,9 @@ def project_search(request):
 
 
 @xframe_options_exempt
+@xframe_options_exempt
 def serve_pdf_preview(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    if not project.pdf_file:
-        return HttpResponse("ไม่พบไฟล์ PDF ในระบบ", status=404)
     
     try:
         # --- 🟢 นับยอดวิวเมื่อมีการเปิดดูไฟล์ (ป้องกันการปั๊มยอดด้วย Session) 🟢 ---
@@ -173,14 +172,17 @@ def serve_pdf_preview(request, project_id):
 
         pdf_bytes = None
 
-        # 1. หากเป็นไฟล์บน Cloudinary ให้เซิร์ฟเวอร์ดาวน์โหลดไฟล์มาส่งต่อให้อย่างถูกต้อง
-        if project.pdf_file.url.startswith('http'):
+        # 1. ลำดับแรก: ดึงจากข้อมูลไบต์ PDF ในฐานข้อมูลโดยตรง (ชัวร์ที่สุด)
+        if project.pdf_data:
+            pdf_bytes = bytes(project.pdf_data) if isinstance(project.pdf_data, memoryview) else project.pdf_data
+
+        # 2. หากไม่มีใน DB และมี URL บน Cloudinary ให้เซิร์ฟเวอร์ดาวน์โหลดมา
+        if not pdf_bytes and project.pdf_file and project.pdf_file.url.startswith('http'):
             import urllib.request
             import urllib.parse
             import ssl
             
             context = ssl._create_unverified_context()
-            # ถอดรหัส % แล้วเข้ารหัสใหม่อย่างถูกต้องเพื่อป้องกัน Double Encoding
             clean_url = urllib.parse.unquote(project.pdf_file.url)
             safe_url = urllib.parse.quote(clean_url, safe=':/?&=%#')
             
@@ -191,7 +193,7 @@ def serve_pdf_preview(request, project_id):
             except Exception:
                 pass
 
-        # 2. หากไม่ได้ หรือเป็นไฟล์ Local Disk
+        # 3. หากยังไม่ได้ ให้ดึงจากไฟล์ Local Disk
         if not pdf_bytes and project.pdf_file:
             try:
                 with project.pdf_file.open('rb') as f:
@@ -199,18 +201,20 @@ def serve_pdf_preview(request, project_id):
             except Exception:
                 pass
 
-        # 3. หากดึงไฟล์สำเร็จ ส่งข้อมูล PDF แบบ Inline แสดงผลใน iframe ได้ทันที
+        # 4. หากมีข้อมูล PDF ส่งผลลัพธ์แบบ Inline แสดงใน iframe
         if pdf_bytes:
             res = HttpResponse(pdf_bytes, content_type='application/pdf')
-            res['Content-Disposition'] = f'inline; filename="{project.id}.pdf"'
+            res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
             return res
 
-        # 4. หากไฟล์บน Cloudinary ไม่มีอยู่จริง แจ้งเตือนข้อความภาษาไทยใน Popup ให้ผู้ใช้อัปโหลดใหม่
+        # 5. หากไม่มีไฟล์ PDF ในระบบเลย
         return HttpResponse(
-            "<div style='text-align:center; padding: 60px 20px; font-family: Sarabun, sans-serif; color: #475569;'>"
-            "<i class=\"fas fa-file-excel\" style=\"font-size: 3rem; color: #ef4444; margin-bottom: 16px;\"></i>"
-            "<h3 style='margin-bottom: 8px; color: #1e293b;'>ไม่พบไฟล์ PDF นี้ในระบบจัดเก็บออนไลน์</h3>"
-            "<p style='font-size: 0.95rem; color: #64748b;'>ไฟล์ผลงานรายการนี้อาจถูกลบหรือไม่ได้แนบมาตั้งแต่ต้น<br>กรุณากดแก้ไขผลงานและอัปโหลดไฟล์ PDF ใหม่อีกครั้งครับ</p>"
+            "<div style='height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 40px 20px; font-family: Sarabun, sans-serif; color: #475569; text-align:center; box-sizing:border-box;'>"
+            "<div style='width: 64px; height: 64px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;'>"
+            "<svg width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='#ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z'/><polyline points='14 2 14 8 20 8'/><line x1='9' y1='15' x2='15' y2='15'/></svg>"
+            "</div>"
+            "<h3 style='margin: 0 0 10px 0; font-size: 1.25rem; font-weight: 700; color: #1e293b;'>ยังไม่มีไฟล์ PDF แนบในผลงานนี้</h3>"
+            "<p style='margin: 0; font-size: 0.95rem; color: #64748b; line-height: 1.6;'>กรุณากดแก้ไขผลงานและอัปโหลดไฟล์ PDF ใหม่อีกครั้งครับ</p>"
             "</div>",
             status=404
         )
@@ -399,8 +403,14 @@ def project_upload(request):
         if form.is_valid():
             project = form.save(commit=False)
             project.uploaded_by = request.user
-            # ✅ ไม่ทับ student_name แล้ว เพื่อให้ผู้ใช้พิมพ์ชื่ออะไรก็ได้
             project.is_approved  = False
+            
+            # 📦 เก็บข้อมูลไบต์ PDF ลงในฐานข้อมูลตรงๆ (ตัดปัญหา Cloudinary)
+            if 'pdf_file' in request.FILES:
+                pdf_file_obj = request.FILES['pdf_file']
+                project.pdf_data = pdf_file_obj.read()
+                pdf_file_obj.seek(0)
+                
             project.save()
             messages.success(request, "ส่งผลงานสำเร็จแล้ว! กรุณารอแอดมินตรวจสอบและอนุมัติ")
             return redirect('project_list')
@@ -445,25 +455,22 @@ def edit_project(request, project_id):
         messages.error(request, "คุณไม่มีสิทธิ์แก้ไขผลงานของผู้อื่น")
         return redirect('project_list')
         
-    try:
-        if request.method == 'POST':
-            form = ProjectForm(request.POST, request.FILES, instance=project)
-            if form.is_valid():
-                form.save()
-                messages.success(request, f'แก้ไขผลงาน "{project.title_th}" สำเร็จแล้ว')
-                return redirect('project_list')
-            else:
-                messages.error(request, "กรุณาตรวจสอบข้อมูลที่กรอก มีบางช่องที่ไม่ถูกต้อง")
+    if request.method == 'POST':
+        form = ProjectForm(request.POST, request.FILES, instance=project)
+        if form.is_valid():
+            p = form.save(commit=False)
+            # 📦 หากมีการแนบไฟล์ PDF ใหม่ เก็บลงในฐานข้อมูลตรงๆ
+            if 'pdf_file' in request.FILES:
+                pdf_file_obj = request.FILES['pdf_file']
+                p.pdf_data = pdf_file_obj.read()
+                pdf_file_obj.seek(0)
+            p.save()
+            messages.success(request, f'แก้ไขผลงาน "{project.title_th}" สำเร็จแล้ว')
+            return redirect('project_list')
         else:
-            form = ProjectForm(instance=project)
-    except FileNotFoundError:
-        # If file is missing on Render disk, we still want to allow editing text fields
-        # We manually re-initialize the form without the instance's missing file if needed,
-        # but usually, simply notifying the user is better.
-        messages.warning(request, "ระบบตรวจพบว่าไฟล์ PDF เดิมสูญหายจากเซิร์ฟเวอร์ (เนื่องจากการ Restart) คุณสามารถแก้ไขข้อมูลส่วนอื่นและอัปโหลดไฟล์ใหม่ได้ครับ")
+            messages.error(request, "กรุณาตรวจสอบข้อมูลที่กรอก มีบางช่องที่ไม่ถูกต้อง")
+    else:
         form = ProjectForm(instance=project)
-        # Force pdf_file to None in the form so it doesn't try to access the missing file
-        form.initial['pdf_file'] = None
 
     return render(request, 'research/edit.html', {
         'form':      form,
@@ -510,53 +517,47 @@ def project_detail(request, project_id):
 
 def download_pdf(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    if project.pdf_file:
-        # --- 🟢 เพิ่มระบบ Session ป้องกันการปั๊มยอดดาวน์โหลด 🟢 ---
-        session_key = f'downloaded_project_{project.id}'
-        if not request.session.get(session_key, False):
-            Project.objects.filter(id=project_id).update(download_count=F('download_count') + 1)
-            request.session[session_key] = True
-            request.session.modified = True
-        # -------------------------------------------------------------
-        if project.pdf_file.url.startswith('http'):
-            import cloudinary
-            import cloudinary.utils
-            import urllib.request
-            import ssl
-            import os
-            
-            c_config = cloudinary.config(
-                cloudinary_url = os.getenv('CLOUDINARY_URL'),
-                secure = True
-            )
-            context = ssl._create_unverified_context()
-            
-            try:
-                req = urllib.request.Request(project.pdf_file.url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req, context=context) as response:
-                    res = HttpResponse(response.read(), content_type='application/pdf')
-                    res['Content-Disposition'] = f'attachment; filename="{project.pdf_file.name.split("/")[-1]}"'
-                    return res
-            except Exception:
-                pass
+    
+    # --- 🟢 เพิ่มระบบ Session ป้องกันการปั๊มยอดดาวน์โหลด 🟢 ---
+    session_key = f'downloaded_project_{project.id}'
+    if not request.session.get(session_key, False):
+        Project.objects.filter(id=project_id).update(download_count=F('download_count') + 1)
+        request.session[session_key] = True
+        request.session.modified = True
+    # -------------------------------------------------------------
+    
+    pdf_bytes = None
+    if project.pdf_data:
+        pdf_bytes = bytes(project.pdf_data) if isinstance(project.pdf_data, memoryview) else project.pdf_data
 
-            try:
-                signed_url, _ = cloudinary.utils.cloudinary_url(
-                    project.pdf_file.name, 
-                    sign_url=True,
-                    resource_type='raw'
-                )
-                req = urllib.request.Request(signed_url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req, context=context) as response:
-                    res = HttpResponse(response.read(), content_type='application/pdf')
-                    res['Content-Disposition'] = f'attachment; filename="{project.pdf_file.name.split("/")[-1]}"'
-                    return res
-            except Exception:
-                pass
+    if not pdf_bytes and project.pdf_file and project.pdf_file.url.startswith('http'):
+        import urllib.request
+        import urllib.parse
+        import ssl
+        
+        context = ssl._create_unverified_context()
+        clean_url = urllib.parse.unquote(project.pdf_file.url)
+        safe_url = urllib.parse.quote(clean_url, safe=':/?&=%#')
+        try:
+            req = urllib.request.Request(safe_url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, context=context) as response:
+                pdf_bytes = response.read()
+        except Exception:
+            pass
 
-            return redirect(project.pdf_file.url)
+    if not pdf_bytes and project.pdf_file:
+        try:
+            with project.pdf_file.open('rb') as f:
+                pdf_bytes = f.read()
+        except Exception:
+            pass
 
-        return FileResponse(project.pdf_file.open('rb'), content_type='application/pdf')
+    if pdf_bytes:
+        res = HttpResponse(pdf_bytes, content_type='application/pdf')
+        clean_title = project.title_th[:40].replace(' ', '_')
+        res['Content-Disposition'] = f'attachment; filename="{clean_title}.pdf"'
+        return res
+
     messages.warning(request, "ผลงานนี้ยังไม่มีไฟล์ PDF แนบ")
     return redirect('project_detail', project_id=project_id)
 
