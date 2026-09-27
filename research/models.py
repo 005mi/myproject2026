@@ -34,6 +34,16 @@ def validate_file_size(value):
     return value
 
 
+import uuid
+import os
+
+def pdf_upload_path(instance, filename):
+    ext = filename.split('.')[-1]
+    # Create clean ASCII filename to prevent encoding issues on Cloudinary
+    clean_filename = f"{uuid.uuid4().hex[:12]}.{ext}"
+    return os.path.join('pdfs/', clean_filename)
+
+
 # ─── Project ───────────────────────────────────────────────────────────────────
 class Project(models.Model):
     DEPARTMENTS = [
@@ -83,7 +93,7 @@ class Project(models.Model):
 
     # --- ส่วนที่ 4: ไฟล์และการอนุมัติ ---
     pdf_file = models.FileField(
-        upload_to='pdfs/',
+        upload_to=pdf_upload_path,
         verbose_name="ไฟล์ PDF ฉบับเต็ม",
         validators=[FileExtensionValidator(allowed_extensions=['pdf']), validate_file_size]
     )
