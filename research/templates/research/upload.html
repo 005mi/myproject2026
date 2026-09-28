@@ -357,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('uploadForm');
     const textareas = document.querySelectorAll('textarea');
     const inputs = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
+    let isSubmitting = false;
 
     // 1. Initial Draft Loading (Only if not in Edit mode)
     if (!isEditMode) {
@@ -376,9 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let saveTimeout;
     inputs.forEach(input => {
         input.addEventListener('input', () => {
-            if (isEditMode) return;
+            if (isEditMode || isSubmitting) return;
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(() => {
+                if (isSubmitting) return;
                 const data = {};
                 new FormData(form).forEach((value, key) => {
                     if (key !== 'pdf_file' && key !== 'csrfmiddlewaretoken') data[key] = value;
@@ -449,6 +451,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Lock form submit state & purge draft
+        isSubmitting = true;
+        clearTimeout(saveTimeout);
+        localStorage.removeItem('research_upload_draft');
+
         // Show Loading
         Swal.fire({
             title: 'กำลังส่งข้อมูล...',
@@ -456,8 +463,6 @@ document.addEventListener('DOMContentLoaded', () => {
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
-
-        if (!isEditMode) localStorage.removeItem('research_upload_draft');
     });
 
     // 5. Inject Smart Toolbars and Tab Key Support
