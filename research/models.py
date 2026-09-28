@@ -28,11 +28,14 @@ class UserProfile(models.Model):
 
 # ─── ฟังก์ชันตรวจสอบขนาดไฟล์ (ไม่เกิน 10MB) ────────────────────────────────
 def validate_file_size(value):
-    if value is None:
+    if not value:
         return value
-    filesize = value.size
-    if filesize > 10 * 1024 * 1024:
-        raise ValidationError("ขนาดไฟล์ PDF ต้องไม่เกิน 10MB")
+    try:
+        filesize = getattr(value, 'size', None)
+        if filesize is not None and filesize > 10 * 1024 * 1024:
+            raise ValidationError("ขนาดไฟล์ PDF ต้องไม่เกิน 10MB")
+    except Exception:
+        pass
     return value
 
 
