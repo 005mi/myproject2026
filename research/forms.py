@@ -75,8 +75,8 @@ class ProjectForm(forms.ModelForm):
     # 4. ตรวจสอบไฟล์ PDF
     def clean_pdf_file(self):
         file = self.cleaned_data.get('pdf_file')
-        if file:
-            if not file.name.lower().endswith('.pdf'):
+        if file and hasattr(file, 'size') and file.size is not None:
+            if hasattr(file, 'name') and file.name and not file.name.lower().endswith('.pdf'):
                 raise forms.ValidationError("กรุณาอัปโหลดเฉพาะไฟล์นามสกุล .pdf เท่านั้น")
             if file.size > 10 * 1024 * 1024:
                 raise forms.ValidationError("ไฟล์มีขนาดใหญ่เกินไป (จำกัดไม่เกิน 10MB)")
