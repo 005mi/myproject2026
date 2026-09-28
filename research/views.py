@@ -413,7 +413,8 @@ def project_upload(request):
                 
             project.save()
             messages.success(request, "ส่งผลงานสำเร็จแล้ว! กรุณารอแอดมินตรวจสอบและอนุมัติ")
-            return redirect('project_list')
+            from django.urls import reverse
+            return redirect(reverse('project_upload') + '?uploaded=1')
         else:
             messages.error(request, "กรุณาตรวจสอบข้อมูลที่กรอก มีบางช่องที่ไม่ถูกต้อง")
     else:

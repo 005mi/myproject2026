@@ -359,6 +359,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputs = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
     let isSubmitting = false;
 
+    // 0. ตรวจสอบว่าเพิ่งส่งผลงานสำเร็จ (?uploaded=1) → ล้าง draft แล้วแสดง toast
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('uploaded') === '1') {
+        localStorage.removeItem('research_upload_draft');
+        // ลบ query string ออกจาก URL โดยไม่ reload หน้า
+        window.history.replaceState({}, document.title, window.location.pathname);
+        Swal.fire({
+            icon: 'success',
+            title: '🎉 ส่งผลงานสำเร็จ!',
+            html: 'ผลงานของคุณถูกบันทึกเรียบร้อยแล้ว<br><small style="color:#888">กรุณารอแอดมินตรวจสอบและอนุมัติ</small>',
+            confirmButtonText: 'รับทราบ',
+            confirmButtonColor: '#7a0c22',
+            timer: 6000,
+            timerProgressBar: true,
+        });
+        return; // หยุดโหลด draft เก่า
+    }
+
     // 1. Initial Draft Loading (Only if not in Edit mode)
     if (!isEditMode) {
         const savedDraft = localStorage.getItem('research_upload_draft');
