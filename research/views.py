@@ -172,29 +172,25 @@ def serve_pdf_preview(request, project_id):
         # 1. ถ้ามีไฟล์ใน pdf_file field (Cloudinary หรือ Local)
         if project.pdf_file:
             try:
-                pdf_url = project.pdf_file.url
-                # ถ้าเป็น Cloudinary URL (ขึ้นต้นด้วย http หรือ //)
-                if pdf_url.startswith('http') or pdf_url.startswith('//'):
-                    if pdf_url.startswith('//'):
-                        pdf_url = 'https:' + pdf_url
-                    try:
-                        import urllib.request
-                        import ssl
-                        ctx = ssl.create_default_context()
-                        ctx.check_hostname = False
-                        ctx.verify_mode = ssl.CERT_NONE
-                        req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
-                        with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
-                            pdf_bytes = resp.read()
-                        res = HttpResponse(pdf_bytes, content_type='application/pdf')
-                        res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
-                        return res
-                    except Exception as fetch_err:
-                        return HttpResponse(f"เกิดข้อผิดพลาดในการโหลดไฟล์ PDF: {str(fetch_err)}", status=500)
-                else:
-                    # Local file — อ่านและส่งแบบ inline
+                # อ่านไฟล์ผ่าน Django File Storage API (ใช้ API Key/Secret จาก Cloudinary SDK ในการอ่าน)
+                try:
                     with project.pdf_file.open('rb') as f:
                         pdf_bytes = f.read()
+                    res = HttpResponse(pdf_bytes, content_type='application/pdf')
+                    res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
+                    return res
+                except Exception as read_err:
+                    # หากการอ่านผ่าน storage มีปัญหา ลองดึงผ่าน urllib (Fallback)
+                    pdf_url = project.pdf_file.url
+                    if pdf_url.startswith('//'):
+                        pdf_url = 'https:' + pdf_url
+                    import urllib.request, ssl
+                    ctx = ssl.create_default_context()
+                    ctx.check_hostname = False
+                    ctx.verify_mode = ssl.CERT_NONE
+                    req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
+                        pdf_bytes = resp.read()
                     res = HttpResponse(pdf_bytes, content_type='application/pdf')
                     res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
                     return res
