@@ -179,15 +179,18 @@ def serve_pdf_preview(request, project_id):
                         pdf_url = 'https:' + pdf_url
                     try:
                         import urllib.request
+                        import ssl
+                        ctx = ssl.create_default_context()
+                        ctx.check_hostname = False
+                        ctx.verify_mode = ssl.CERT_NONE
                         req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
-                        with urllib.request.urlopen(req, timeout=10) as resp:
+                        with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
                             pdf_bytes = resp.read()
                         res = HttpResponse(pdf_bytes, content_type='application/pdf')
                         res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
                         return res
                     except Exception as fetch_err:
-                        # หาก proxy โหลดไม่สำเร็จ ให้ fallback ไปยัง Cloudinary URL ตรงๆ
-                        return redirect(pdf_url)
+                        return HttpResponse(f"เกิดข้อผิดพลาดในการโหลดไฟล์ PDF: {str(fetch_err)}", status=500)
                 else:
                     # Local file — อ่านและส่งแบบ inline
                     with project.pdf_file.open('rb') as f:
