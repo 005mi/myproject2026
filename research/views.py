@@ -386,7 +386,7 @@ def project_upload(request):
             project.is_approved  = False
             
             project.save()
-            messages.success(request, "ส่งผลงานสำเร็จแล้ว! กรุณารอแอดมินตรวจสอบและอนุมัติ")
+            messages.success(request, "ส่งผลงานสำเร็จแล้ว! กรุณารอผู้ดูแลระบบตรวจสอบและอนุมัติ")
             from django.urls import reverse
             return redirect(reverse('project_upload') + '?uploaded=1')
         else:
@@ -573,7 +573,7 @@ def register_view(request):
             user.profile.student_id = u_name
         user.profile.save()
 
-        messages.success(request, f'ลงทะเบียนสำเร็จ! ยินดีต้อนรับ "{u_name}" กรุณาเข้าสู่ระบบ')
+        messages.success(request, f'ลงทะเบียนสำเร็จ ยินดีต้อนรับ "{u_name}" กรุณาเข้าสู่ระบบ')
         return redirect('login')
 
     return render(request, 'research/register.html')
@@ -797,4 +797,4 @@ def profile_edit(request):
             messages.success(request, "อัปเดตข้อมูลส่วนตัวเรียบร้อยแล้ว")
             return redirect('project_list')
             
-    return render(request, 'research/profile_edit.html')
+    return render(request, 'research/profile_edit.html')
