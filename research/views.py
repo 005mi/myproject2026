@@ -157,7 +157,6 @@ def project_search(request):
 
 
 @xframe_options_exempt
-@xframe_options_exempt
 def serve_pdf_preview(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     
@@ -170,44 +169,34 @@ def serve_pdf_preview(request, project_id):
             request.session.modified = True
         # -----------------------------------------------------------------------
 
-        pdf_bytes = None
+        # 1. ถ้ามีไฟล์ใน pdf_file field (Cloudinary หรือ Local)
+        if project.pdf_file:
+            try:
+                pdf_url = project.pdf_file.url
+                # ถ้าเป็น Cloudinary URL (ขึ้นต้นด้วย http หรือ //)
+                if pdf_url.startswith('http') or pdf_url.startswith('//'):
+                    # Redirect ตรงๆ ไป Cloudinary — ประหยัด memory และเร็วกว่า
+                    if pdf_url.startswith('//'):
+                        pdf_url = 'https:' + pdf_url
+                    return redirect(pdf_url)
+                else:
+                    # Local file — อ่านและส่งแบบ inline
+                    with project.pdf_file.open('rb') as f:
+                        pdf_bytes = f.read()
+                    res = HttpResponse(pdf_bytes, content_type='application/pdf')
+                    res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
+                    return res
+            except Exception:
+                pass
 
-        # 1. ลำดับแรก: ดึงจากข้อมูลไบต์ PDF ในฐานข้อมูลโดยตรง (ชัวร์ที่สุด)
+        # 2. Fallback: ดึงจาก pdf_data (Legacy)
         if project.pdf_data:
             pdf_bytes = bytes(project.pdf_data) if isinstance(project.pdf_data, memoryview) else project.pdf_data
-
-        # 2. หากไม่มีใน DB และมี URL บน Cloudinary ให้เซิร์ฟเวอร์ดาวน์โหลดมา
-        if not pdf_bytes and project.pdf_file and project.pdf_file.url.startswith('http'):
-            import urllib.request
-            import urllib.parse
-            import ssl
-            
-            context = ssl._create_unverified_context()
-            clean_url = urllib.parse.unquote(project.pdf_file.url)
-            safe_url = urllib.parse.quote(clean_url, safe=':/?&=%#')
-            
-            try:
-                req = urllib.request.Request(safe_url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req, context=context) as response:
-                    pdf_bytes = response.read()
-            except Exception:
-                pass
-
-        # 3. หากยังไม่ได้ ให้ดึงจากไฟล์ Local Disk
-        if not pdf_bytes and project.pdf_file:
-            try:
-                with project.pdf_file.open('rb') as f:
-                    pdf_bytes = f.read()
-            except Exception:
-                pass
-
-        # 4. หากมีข้อมูล PDF ส่งผลลัพธ์แบบ Inline แสดงใน iframe
-        if pdf_bytes:
             res = HttpResponse(pdf_bytes, content_type='application/pdf')
             res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
             return res
 
-        # 5. หากไม่มีไฟล์ PDF ในระบบเลย
+        # 3. หากไม่มีไฟล์ PDF ในระบบเลย
         return HttpResponse(
             "<div style='height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 40px 20px; font-family: Sarabun, sans-serif; color: #475569; text-align:center; box-sizing:border-box;'>"
             "<div style='width: 64px; height: 64px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;'>"
@@ -515,35 +504,33 @@ def download_pdf(request, project_id):
         request.session.modified = True
     # -------------------------------------------------------------
     
-    pdf_bytes = None
+    clean_title = project.title_th[:40].replace(' ', '_')
+
+    # 1. ถ้ามีไฟล์ใน pdf_file field (Cloudinary หรือ Local)
+    if project.pdf_file:
+        try:
+            pdf_url = project.pdf_file.url
+            # ถ้าเป็น Cloudinary URL ให้สร้าง URL สำหรับ download โดยตรง
+            if pdf_url.startswith('http') or pdf_url.startswith('//'):
+                if pdf_url.startswith('//'):
+                    pdf_url = 'https:' + pdf_url
+                # เพิ่ม fl_attachment เพื่อบังคับดาวน์โหลด (Cloudinary transformation)
+                # หรือ redirect ตรง ๆ พร้อม Content-Disposition header
+                return redirect(pdf_url)
+            else:
+                # Local file
+                with project.pdf_file.open('rb') as f:
+                    pdf_bytes = f.read()
+                res = HttpResponse(pdf_bytes, content_type='application/pdf')
+                res['Content-Disposition'] = f'attachment; filename="{clean_title}.pdf"'
+                return res
+        except Exception:
+            pass
+
+    # 2. Fallback: ดึงจาก pdf_data (Legacy)
     if project.pdf_data:
         pdf_bytes = bytes(project.pdf_data) if isinstance(project.pdf_data, memoryview) else project.pdf_data
-
-    if not pdf_bytes and project.pdf_file and project.pdf_file.url.startswith('http'):
-        import urllib.request
-        import urllib.parse
-        import ssl
-        
-        context = ssl._create_unverified_context()
-        clean_url = urllib.parse.unquote(project.pdf_file.url)
-        safe_url = urllib.parse.quote(clean_url, safe=':/?&=%#')
-        try:
-            req = urllib.request.Request(safe_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, context=context) as response:
-                pdf_bytes = response.read()
-        except Exception:
-            pass
-
-    if not pdf_bytes and project.pdf_file:
-        try:
-            with project.pdf_file.open('rb') as f:
-                pdf_bytes = f.read()
-        except Exception:
-            pass
-
-    if pdf_bytes:
         res = HttpResponse(pdf_bytes, content_type='application/pdf')
-        clean_title = project.title_th[:40].replace(' ', '_')
         res['Content-Disposition'] = f'attachment; filename="{clean_title}.pdf"'
         return res
 
