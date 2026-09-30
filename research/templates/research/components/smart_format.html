@@ -43,85 +43,32 @@
 </div>
 
 <script>
-// --- Smart Formatting Utility ---
+// --- Safe Formatting Utility (เน้นเว้นวรรค ปลอดภัยต่อตัวเลข 100%) ---
 function formatAcademicText(text) {
     if (!text) return '';
     
-    // 1.เบื้องต้น: ลบตัวอักษรล่องหน (Zero-width characters)
+    // 1. ลบตัวอักษรขยะล่องหน (Zero-width characters)
     let processed = text.replace(/[\u00AD\u200B\u200C\u200D]/g, '');
     
-    // 2. แยกข้อจำเป็นกลุ่มย่อย (Blocks) โดยใช้บรรทัดว่างเป็นตัวแบ่ง
+    // 2. ปรับแต่งรายบรรทัด โดยคงโครงสร้างบรรทัดและตัวเลขเดิมไว้อย่างสมบูรณ์
     let lines = processed.split('\n');
-    let blocks = [];
-    let currentBlock = [];
-    
-    lines.forEach(line => {
-        let trimmed = line.trim();
-        // กรอง noise (เช่น เลขหน้า, ชื่อวิทยาลัย)
-        if (/^\d+$/.test(trimmed)) return;
-        if (trimmed === 'วิทยาลัยเทคนิคร้อยเอ็ด' || trimmed === 'Roi Et Technical College') return;
+    let formattedLines = lines.map(line => {
+        let l = line;
         
-        if (trimmed === '') {
-            if (currentBlock.length > 0) {
-                blocks.push(currentBlock);
-                currentBlock = [];
-            }
-        } else {
-            // ถ้าขึ้นต้นด้วยหัวข้อ (1., •, -) ให้ถือว่าเป็น Block ใหม่ (ถ้า block เดิมมีของอยู่แล้ว)
-            if (/^(\(?\d+[\.\)]|\d+\.\d+|[-•*])/.test(trimmed) && currentBlock.length > 0) {
-                blocks.push(currentBlock);
-                currentBlock = [];
-            }
-            currentBlock.push(line);
-        }
-    });
-    if (currentBlock.length > 0) blocks.push(currentBlock);
-    
-    // 3. รวมบรรทัดในแต่ละ Block
-    let finalParagraphs = blocks.map(block => {
-        // รวมทุกบรรทัดใน block นี้เป็นบรรทัดเดียว
-        let fullText = block.map(l => l.trim()).join(' ');
+        // 2.1 เพิ่มช่องว่างที่สวยงามระหว่างภาษาไทย - ภาษาอังกฤษ/ตัวเลข
+        l = l.replace(/([ก-๙])([a-zA-Z0-9])/g, '$1 $2');
+        l = l.replace(/([a-zA-Z0-9])([ก-๙])/g, '$1 $2');
         
-        // --- ส่วนเสริมความฉลาดทางภาษา ---
-        // 3.1 เพิ่มช่องว่าง ไทย-อังกฤษ/ตัวเลข
-        fullText = fullText.replace(/([ก-๙])([a-zA-Z0-9])/g, '$1 $2');
-        fullText = fullText.replace(/([a-zA-Z0-9])([ก-๙])/g, '$1 $2');
+        // 2.2 ปรับเครื่องหมายคูณมาตรฐาน (1x2 -> 1 × 2)
+        l = l.replace(/(\d)\s*[xX]\s*(\d)/g, '$1 × $2');
         
-        // 3.2 ปรับเครื่องหมายมาตรฐาน
-        fullText = fullText.replace(/(\d)\s*[xX]\s*(\d)/g, '$1 × $2'); 
-        fullText = fullText.replace(/(\d)-(\d)/g, '$1–$2');           
-        fullText = fullText.replace(/\.\.\./g, '…');
+        // 2.3 ลบช่องว่างซ้ำซ้อนภายในบรรทัด
+        l = l.replace(/[ \t]+/g, ' ');
         
-        // 3.3 ลบเลขกำกับซ้ำซ้อน เช่น "1. 3.1" -> "3.1"
-        fullText = fullText.replace(/^(\d+[\.\)])\s*(\d+\.\d+)/, '$2');
-        fullText = fullText.replace(/^(\(?\d+[\.\)]|\d+\.\d+|\d+\.\d+\.\d+|[-•*])\s*/, '$1 ');
-        
-        // 3.4 ลบช่องว่างที่ซ้ำซ้อน (Double spaces)
-        fullText = fullText.replace(/\s+/g, ' ');
-        
-        return fullText.trim();
+        return l;
     });
     
-    // 4. รวมกลับด้วยตรรกะที่ฉลาดขึ้น (Smart Join)
-    let result = "";
-    finalParagraphs.forEach((para, i) => {
-        if (i === 0) {
-            result = para;
-        } else {
-            // ตรวจสอบว่าเป็นหัวข้อลำดับหรือไม่
-            let isCurrentList = /^(\(?\d+[\.\)]|\d+\.\d+|[-•*])/.test(para);
-            let isPrevList = /^(\(?\d+[\.\)]|\d+\.\d+|[-•*])/.test(finalParagraphs[i-1]);
-            
-            // ถ้าเป็นหัวข้อต่อกัน ให้ขึ้นบรรทัดใหม่ปกติ (\n) ถ้าไม่ใช่ให้เว้นบรรทัดว่าง (\n\n)
-            if (isCurrentList && isPrevList) {
-                result += '\n' + para;
-            } else {
-                result += '\n\n' + para;
-            }
-        }
-    });
-    
-    return result;
+    return formattedLines.join('\n');
 }
 
 function closeGuide() { document.getElementById('formatGuideModal').style.display = 'none'; }
