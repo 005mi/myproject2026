@@ -175,29 +175,10 @@ def serve_pdf_preview(request, project_id):
                 pdf_url = project.pdf_file.url
                 if pdf_url.startswith('//'):
                     pdf_url = 'https:' + pdf_url
-                
-                # ถ้าเป็น Cloudinary URL
-                if pdf_url.startswith('http'):
-                    # ดึงไฟล์ด้วย requests
-                    import requests
-                    resp = requests.get(pdf_url, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
-                    if resp.status_code == 200:
-                        res = HttpResponse(resp.content, content_type='application/pdf')
-                        res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
-                        return res
-                    else:
-                        # ถ้าได้ status code อื่น เช่น 401 หรือ 404 ให้ redirect ไปยัง Cloudinary URL ตรงๆ
-                        return redirect(pdf_url)
-                else:
-                    # Local storage (เครื่องคอมพิวเตอร์แบบออฟไลน์)
-                    with project.pdf_file.open('rb') as f:
-                        pdf_bytes = f.read()
-                    res = HttpResponse(pdf_bytes, content_type='application/pdf')
-                    res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
-                    return res
-            except Exception as file_err:
-                if hasattr(project, 'pdf_file') and project.pdf_file:
-                    return redirect(project.pdf_file.url)
+                # ส่งไปยัง URL ของ PDF โดยตรงให้ Browser PDF Viewer ทำหน้าที่แสดงผล
+                return redirect(pdf_url)
+            except Exception:
+                pass
 
         # 2. Fallback: ดึงจาก pdf_data (Legacy)
         if project.pdf_data:
