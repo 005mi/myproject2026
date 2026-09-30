@@ -175,10 +175,12 @@ def serve_pdf_preview(request, project_id):
                 pdf_url = project.pdf_file.url
                 # ถ้าเป็น Cloudinary URL (ขึ้นต้นด้วย http หรือ //)
                 if pdf_url.startswith('http') or pdf_url.startswith('//'):
-                    # Redirect ตรงๆ ไป Cloudinary — ประหยัด memory และเร็วกว่า
                     if pdf_url.startswith('//'):
                         pdf_url = 'https:' + pdf_url
-                    return redirect(pdf_url)
+                    # ใช้ Google Docs Viewer เพื่อแสดงผลใน iframe (แก้ปัญหา X-Frame-Options ของ Cloudinary)
+                    import urllib.parse
+                    google_viewer_url = f'https://docs.google.com/viewer?url={urllib.parse.quote(pdf_url, safe="")}&embedded=true'
+                    return redirect(google_viewer_url)
                 else:
                     # Local file — อ่านและส่งแบบ inline
                     with project.pdf_file.open('rb') as f:
