@@ -374,11 +374,10 @@ document.addEventListener('DOMContentLoaded', () => {
             timer: 6000,
             timerProgressBar: true,
         });
-        return; // หยุดโหลด draft เก่า
     }
 
-    // 1. Initial Draft Loading (Only if not in Edit mode)
-    if (!isEditMode) {
+    // 1. Initial Draft Loading (Only if not in Edit mode and not just uploaded)
+    if (!isEditMode && urlParams.get('uploaded') !== '1') {
         const savedDraft = localStorage.getItem('research_upload_draft');
         if (savedDraft) {
             try {
