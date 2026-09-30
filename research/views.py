@@ -405,12 +405,6 @@ def project_upload(request):
             project.uploaded_by = request.user
             project.is_approved  = False
             
-            # 📦 เก็บข้อมูลไบต์ PDF ลงในฐานข้อมูลตรงๆ (ตัดปัญหา Cloudinary)
-            if 'pdf_file' in request.FILES:
-                pdf_file_obj = request.FILES['pdf_file']
-                project.pdf_data = pdf_file_obj.read()
-                pdf_file_obj.seek(0)
-                
             project.save()
             messages.success(request, "ส่งผลงานสำเร็จแล้ว! กรุณารอแอดมินตรวจสอบและอนุมัติ")
             from django.urls import reverse
@@ -459,13 +453,7 @@ def edit_project(request, project_id):
     if request.method == 'POST':
         form = ProjectForm(request.POST, request.FILES, instance=project)
         if form.is_valid():
-            p = form.save(commit=False)
-            # 📦 หากมีการแนบไฟล์ PDF ใหม่ เก็บลงในฐานข้อมูลตรงๆ
-            if 'pdf_file' in request.FILES:
-                pdf_file_obj = request.FILES['pdf_file']
-                p.pdf_data = pdf_file_obj.read()
-                pdf_file_obj.seek(0)
-            p.save()
+            p = form.save()
             messages.success(request, f'แก้ไขผลงาน "{project.title_th}" สำเร็จแล้ว')
             return redirect('project_list')
         else:
