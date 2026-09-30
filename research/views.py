@@ -596,14 +596,14 @@ def login_view(request):
             
             # --- 🛡️ การตรวจสอบสิทธิ์แบบเข้มงวด 🛡️ ---
             
-            # 1. กรณีเลือก "เจ้าหน้าที่"
+            # 1. กรณีเลือก "ผู้ดูแลระบบ"
             if user_role_requested == 'admin' and not is_actually_staff:
-                messages.error(request, "บัญชีนี้ไม่มีสิทธิ์เข้าใช้งานในฐานะเจ้าหน้าที่")
+                messages.error(request, "บัญชีนี้ไม่มีสิทธิ์เข้าใช้งานในฐานะผู้ดูแลระบบ")
                 return render(request, 'research/login.html', {'form': form, 'error': True})
             
             # 2. กรณีบัญชี Admin ไปเข้า Tab อื่น
             if user_role_requested != 'admin' and is_actually_staff:
-                messages.error(request, "บัญชีเจ้าหน้าที่ กรุณาเลือกประเภท 'เจ้าหน้าที่' เพื่อเข้าสู่ระบบ")
+                messages.error(request, "บัญชีผู้ดูแลระบบ กรุณาเลือกประเภท 'ผู้ดูแลระบบ' เพื่อเข้าสู่ระบบ")
                 return render(request, 'research/login.html', {'form': form, 'error': True})
             
             # 3. กรณีเลือก "นักศึกษา" แต่เป็น "บุคคลภายนอก"
