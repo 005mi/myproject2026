@@ -177,10 +177,13 @@ def serve_pdf_preview(request, project_id):
                 if pdf_url.startswith('http') or pdf_url.startswith('//'):
                     if pdf_url.startswith('//'):
                         pdf_url = 'https:' + pdf_url
-                    # ใช้ Google Docs Viewer เพื่อแสดงผลใน iframe (แก้ปัญหา X-Frame-Options ของ Cloudinary)
-                    import urllib.parse
-                    google_viewer_url = f'https://docs.google.com/viewer?url={urllib.parse.quote(pdf_url, safe="")}&embedded=true'
-                    return redirect(google_viewer_url)
+                    import urllib.request
+                    req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req) as resp:
+                        pdf_bytes = resp.read()
+                    res = HttpResponse(pdf_bytes, content_type='application/pdf')
+                    res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
+                    return res
                 else:
                     # Local file — อ่านและส่งแบบ inline
                     with project.pdf_file.open('rb') as f:
