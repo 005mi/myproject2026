@@ -177,13 +177,17 @@ def serve_pdf_preview(request, project_id):
                 if pdf_url.startswith('http') or pdf_url.startswith('//'):
                     if pdf_url.startswith('//'):
                         pdf_url = 'https:' + pdf_url
-                    import urllib.request
-                    req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
-                    with urllib.request.urlopen(req) as resp:
-                        pdf_bytes = resp.read()
-                    res = HttpResponse(pdf_bytes, content_type='application/pdf')
-                    res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
-                    return res
+                    try:
+                        import urllib.request
+                        req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
+                        with urllib.request.urlopen(req, timeout=10) as resp:
+                            pdf_bytes = resp.read()
+                        res = HttpResponse(pdf_bytes, content_type='application/pdf')
+                        res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
+                        return res
+                    except Exception as fetch_err:
+                        # หาก proxy โหลดไม่สำเร็จ ให้ fallback ไปยัง Cloudinary URL ตรงๆ
+                        return redirect(pdf_url)
                 else:
                     # Local file — อ่านและส่งแบบ inline
                     with project.pdf_file.open('rb') as f:
@@ -191,7 +195,7 @@ def serve_pdf_preview(request, project_id):
                     res = HttpResponse(pdf_bytes, content_type='application/pdf')
                     res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
                     return res
-            except Exception:
+            except Exception as file_err:
                 pass
 
         # 2. Fallback: ดึงจาก pdf_data (Legacy)
