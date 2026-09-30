@@ -172,30 +172,32 @@ def serve_pdf_preview(request, project_id):
         # 1. ถ้ามีไฟล์ใน pdf_file field (Cloudinary หรือ Local)
         if project.pdf_file:
             try:
-                # อ่านไฟล์ผ่าน Django File Storage API (ใช้ API Key/Secret จาก Cloudinary SDK ในการอ่าน)
-                try:
+                pdf_url = project.pdf_file.url
+                if pdf_url.startswith('//'):
+                    pdf_url = 'https:' + pdf_url
+                
+                # ถ้าเป็น Cloudinary URL
+                if pdf_url.startswith('http'):
+                    # ดึงไฟล์ด้วย requests
+                    import requests
+                    resp = requests.get(pdf_url, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
+                    if resp.status_code == 200:
+                        res = HttpResponse(resp.content, content_type='application/pdf')
+                        res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
+                        return res
+                    else:
+                        # ถ้าได้ status code อื่น เช่น 401 หรือ 404 ให้ redirect ไปยัง Cloudinary URL ตรงๆ
+                        return redirect(pdf_url)
+                else:
+                    # Local storage (เครื่องคอมพิวเตอร์แบบออฟไลน์)
                     with project.pdf_file.open('rb') as f:
                         pdf_bytes = f.read()
                     res = HttpResponse(pdf_bytes, content_type='application/pdf')
                     res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
                     return res
-                except Exception as read_err:
-                    # หากการอ่านผ่าน storage มีปัญหา ลองดึงผ่าน urllib (Fallback)
-                    pdf_url = project.pdf_file.url
-                    if pdf_url.startswith('//'):
-                        pdf_url = 'https:' + pdf_url
-                    import urllib.request, ssl
-                    ctx = ssl.create_default_context()
-                    ctx.check_hostname = False
-                    ctx.verify_mode = ssl.CERT_NONE
-                    req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
-                    with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
-                        pdf_bytes = resp.read()
-                    res = HttpResponse(pdf_bytes, content_type='application/pdf')
-                    res['Content-Disposition'] = f'inline; filename="project_{project.id}.pdf"'
-                    return res
             except Exception as file_err:
-                pass
+                if hasattr(project, 'pdf_file') and project.pdf_file:
+                    return redirect(project.pdf_file.url)
 
         # 2. Fallback: ดึงจาก pdf_data (Legacy)
         if project.pdf_data:
